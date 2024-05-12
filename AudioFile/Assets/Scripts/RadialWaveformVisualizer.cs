@@ -53,8 +53,8 @@ public class RadialWaveformVisualizer : MonoBehaviour
         {
             // Execute the color lerping block
             float lerpFactor = Mathf.PingPong(Time.time, 1f); // Use PingPong to smoothly interpolate between startColor and endColor
-            lineRenderer.startColor = Color.Lerp(startColor, endColor, lerpFactor);
-            lineRenderer.endColor = Color.Lerp(startColor, endColor, lerpFactor);
+            lineRenderer.material.color = Color.Lerp(startColor, endColor, lerpFactor);
+            lineRenderer.material.color = Color.Lerp(startColor, endColor, lerpFactor);
 
             yield return new WaitForSeconds(gradientFrequency); // Wait for gradientFrequency seconds before executing the lerping again
         }
