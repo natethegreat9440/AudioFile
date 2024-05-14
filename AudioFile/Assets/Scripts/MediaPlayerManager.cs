@@ -7,6 +7,8 @@ public class MediaPlayerManager : MonoBehaviour
     #region Variables
     public AudioSource audioSource; // Unity's AudioSource component for playing music
     public MediaLibrary mediaLibrary;
+    //TODO: Add a VisualizerManager class and have these methods refer to whatever selected Visualizer is passed
+    public RadialWaveformVisualizer radialWaveformVisualizer;
     private int currentSongIndex = 0;
 
     // Events to communicate with other components
@@ -53,6 +55,7 @@ public class MediaPlayerManager : MonoBehaviour
         {
             currentSongIndex++;
             PlayCurrentSong();
+            //TODO: Add code to stop visualizer coroutine until next song is played
         }
         else
         {
@@ -66,6 +69,7 @@ public class MediaPlayerManager : MonoBehaviour
         {
             currentSongIndex--;
             PlayCurrentSong();
+            //TODO: Add code to stop visualizer coroutine until previous song is played
         }
         else
         {
@@ -79,8 +83,13 @@ public class MediaPlayerManager : MonoBehaviour
         {
             audioSource.Play();
             Debug.Log("Audio was Played");
+            radialWaveformVisualizer.ResumeRadialWaveformVisualizer();
 
             OnPlayStateChanged?.Invoke(true);
+
+            // Pause the coroutines in the visualizer
+
+
             //// Check if the OnPlayStateChanged event has any subscribers
             //if (OnPlayStateChanged != null)
             //{
@@ -96,8 +105,11 @@ public class MediaPlayerManager : MonoBehaviour
         {
             audioSource.Pause();
             Debug.Log("Audio was Paused");
+            radialWaveformVisualizer.PauseRadialWaveformVisualizer();
 
             OnPlayStateChanged?.Invoke(false);
+            // Pause the coroutines in the visualizer
+
         }
     }
 

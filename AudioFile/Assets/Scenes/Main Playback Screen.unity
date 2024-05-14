@@ -140,7 +140,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!82 &390340140
 AudioSource:
   m_ObjectHideFlags: 0
@@ -251,6 +251,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   audioSource: {fileID: 390340140}
   mediaLibrary: {fileID: 1336213869}
+  radialWaveformVisualizer: {fileID: 1760339785}
 --- !u!4 &390340142
 Transform:
   m_ObjectHideFlags: 0
@@ -1123,6 +1124,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   songs:
+  - name: Friday
+    clip: {fileID: 8300000, guid: e4ec6a541b04297419f6aa21965bb8c4, type: 3}
   - name: Thrift Shop
     clip: {fileID: 8300000, guid: 856f74796731c9b438c2d36439d2a9cb, type: 3}
   - name: Crying Shame
@@ -1137,8 +1140,6 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 3243e7758a1570749993d9ab8b715537, type: 3}
   - name: Good Evening Mr. Hitchcock
     clip: {fileID: 8300000, guid: e16eb8b335173444fb7faa455972a347, type: 3}
-  - name: Friday
-    clip: {fileID: 8300000, guid: e4ec6a541b04297419f6aa21965bb8c4, type: 3}
   - name: Portorose In July
     clip: {fileID: 8300000, guid: 294c275ea8431fc41af0d05a75b6316c, type: 3}
   - name: Skylight
@@ -1664,7 +1665,7 @@ AudioSource:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1760339782}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: e4ec6a541b04297419f6aa21965bb8c4, type: 3}
@@ -1765,7 +1766,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b5d0da81f2edba43b01c9c59c241dca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioSource: {fileID: 1760339784}
+  mediaPlayerManager: {fileID: 390340139}
   lineRenderer: {fileID: 1760339783}
   resolution: 1024
   radius: 4.5

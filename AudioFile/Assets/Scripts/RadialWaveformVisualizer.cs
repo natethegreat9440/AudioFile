@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class RadialWaveformVisualizer : MonoBehaviour
 {
-    public AudioSource audioSource;
+    public GameObject mediaPlayerManager;
+    private AudioSource currentTrack;
     public LineRenderer lineRenderer;
     public int resolution = 1024; // Number of samples to analyze
     public float radius = 5f; // Radius of the circle
@@ -13,9 +14,11 @@ public class RadialWaveformVisualizer : MonoBehaviour
     public float renderingFrequency = 0.1f; // Frequency of the rendering execution (in seconds)
     public float colorChangeFrequency = 3f; // Frequency of the color change lerping (in seconds)
 
+    private bool isPlaying = true; // Flag to control coroutine execution
+
     private float[] samples;
 
-    void Start()
+    public void Start()
     {
         samples = new float[resolution];
         lineRenderer.positionCount = resolution;
@@ -23,23 +26,47 @@ public class RadialWaveformVisualizer : MonoBehaviour
         lineRenderer.startColor = startColor;
         lineRenderer.endColor = endColor;
 
+        currentTrack = mediaPlayerManager.GetComponent<AudioSource>();
 
-        // Initialize the LineRenderer along the circumference of the circle
-        for (int i = 0; i < resolution; i++)
+        if (currentTrack != null)
         {
-            float angle = Mathf.PI * 2f * i / resolution;
-            float x = Mathf.Cos(angle) * radius;
-            float y = Mathf.Sin(angle) * radius;
-            lineRenderer.SetPosition(i, new Vector3(x, y, 0f));
-        }
+            // Initialize the LineRenderer along the circumference of the circle
+            for (int i = 0; i < resolution; i++)
+            {
+                float angle = Mathf.PI * 2f * i / resolution;
+                float x = Mathf.Cos(angle) * radius;
+                float y = Mathf.Sin(angle) * radius;
+                lineRenderer.SetPosition(i, new Vector3(x, y, 0f));
+            }
 
-        // Start coroutines for executing the for loop and color lerping at specified frequencies
-        StartCoroutine(ExecuteRendering());
-        StartCoroutine(ExecuteColorChange());
+            // Start coroutines for executing the for loop and color lerping at specified frequencies
+            StartCoroutine(ExecuteRendering());
+            StartCoroutine(ExecuteColorChange());
+        }
+        else
+        {
+            Debug.LogWarning("There is no current track to play");
+        }
     }
+
+    // Method to pause coroutines
+    public void PauseRadialWaveformVisualizer()
+    {
+        isPlaying = false;
+        Debug.Log("Visualizer was Paused");
+    }
+
+    // Method to resume coroutines
+    public void ResumeRadialWaveformVisualizer()
+    {
+        isPlaying = true;
+        Start();
+        Debug.Log("Visualizer was resumed");
+    }
+
     IEnumerator ExecuteRendering()
     {
-        while (true)
+        while (isPlaying)
         {          
             // Execute the for loop
             for (int i = 0; i < resolution; i++)
@@ -56,7 +83,7 @@ public class RadialWaveformVisualizer : MonoBehaviour
 
     IEnumerator ExecuteColorChange()
     {
-        while (true)
+        while (isPlaying)
         {
             // Execute the color lerping block
             float lerpFactor = Mathf.PingPong(Time.time, 1f); // Use PingPong to smoothly interpolate between startColor and endColor
@@ -70,6 +97,6 @@ public class RadialWaveformVisualizer : MonoBehaviour
     void Update()
     {
         // Get audio samples from the AudioSource
-        audioSource.GetOutputData(samples, 0);
+        currentTrack.GetOutputData(samples, 0);
     }
 }
