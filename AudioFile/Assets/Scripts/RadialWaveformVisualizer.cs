@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class RadialWaveformVisualizer : MonoBehaviour
 {
-    public GameObject mediaPlayerManager;
     private AudioSource currentTrack;
     public LineRenderer lineRenderer;
     public int resolution = 1024; // Number of samples to analyze
@@ -13,8 +12,8 @@ public class RadialWaveformVisualizer : MonoBehaviour
     public Color endColor = Color.blue; // Final color of the line
     public float renderingFrequency = 0.1f; // Frequency of the rendering execution (in seconds)
     public float colorChangeFrequency = 3f; // Frequency of the color change lerping (in seconds)
-
-    private bool isPlaying = true; // Flag to control coroutine execution
+    private Coroutine renderingCoroutine;
+    private Coroutine colorChangeCoroutine;
 
     private float[] samples;
 
@@ -25,6 +24,8 @@ public class RadialWaveformVisualizer : MonoBehaviour
 
         lineRenderer.startColor = startColor;
         lineRenderer.endColor = endColor;
+
+        MediaPlayerManager mediaPlayerManager = FindObjectOfType<MediaPlayerManager>();
 
         currentTrack = mediaPlayerManager.GetComponent<AudioSource>();
 
@@ -39,34 +40,75 @@ public class RadialWaveformVisualizer : MonoBehaviour
                 lineRenderer.SetPosition(i, new Vector3(x, y, 0f));
             }
 
-            // Start coroutines for executing the for loop and color lerping at specified frequencies
-            StartCoroutine(ExecuteRendering());
-            StartCoroutine(ExecuteColorChange());
+            // Subscribe to events
+            if (mediaPlayerManager != null)
+            {
+                mediaPlayerManager.OnPlayStateChanged += HandlePlayStateChanged;
+                mediaPlayerManager.OnTrackChanged += HandleTrackChanged;
+            }
+
+            // Start coroutines for executing the for loop and color lerping at specified frequencies.
+            //Coroutines need to be assigned to a reference otherwise other methods will ignore them
+            renderingCoroutine = StartCoroutine(ExecuteRendering());
+            colorChangeCoroutine = StartCoroutine(ExecuteColorChange());
         }
         else
         {
             Debug.LogWarning("There is no current track to play");
         }
     }
-
-    // Method to pause coroutines
-    public void PauseRadialWaveformVisualizer()
+    private void HandlePlayStateChanged(bool isPlaying)
     {
-        isPlaying = false;
-        Debug.Log("Visualizer was Paused");
+        if (isPlaying)
+        {
+            if (renderingCoroutine == null)
+            {
+                renderingCoroutine = StartCoroutine(ExecuteRendering());
+            }
+            if (colorChangeCoroutine == null)
+            {
+                colorChangeCoroutine = StartCoroutine(ExecuteColorChange());
+            }
+            Debug.Log("Visualizer started");
+        }
+        else
+        {
+            if (renderingCoroutine != null)
+            {
+                StopCoroutine(renderingCoroutine);
+                renderingCoroutine = null;
+            }
+            if (colorChangeCoroutine != null)
+            {
+                StopCoroutine(colorChangeCoroutine);
+                colorChangeCoroutine = null;
+            }
+            Debug.Log("Visualizer stopped");
+        }
     }
 
-    // Method to resume coroutines
-    public void ResumeRadialWaveformVisualizer()
+    private void HandleTrackChanged(string trackName)
     {
-        isPlaying = true;
-        Start();
-        Debug.Log("Visualizer was resumed");
+        if (renderingCoroutine != null)
+        {
+            StopCoroutine(renderingCoroutine);
+            renderingCoroutine = null;
+        }
+        if (colorChangeCoroutine != null)
+        {
+            StopCoroutine(colorChangeCoroutine);
+            colorChangeCoroutine = null;
+        }
+        Debug.Log("Visualizer stopped");
+
+        renderingCoroutine = StartCoroutine(ExecuteRendering());
+        colorChangeCoroutine = StartCoroutine(ExecuteColorChange());
+        Debug.Log("Visualizer started");
     }
 
     IEnumerator ExecuteRendering()
     {
-        while (isPlaying)
+        while (true)
         {          
             // Execute the for loop
             for (int i = 0; i < resolution; i++)
@@ -83,20 +125,25 @@ public class RadialWaveformVisualizer : MonoBehaviour
 
     IEnumerator ExecuteColorChange()
     {
-        while (isPlaying)
+        while (true)
         {
             // Execute the color lerping block
             float lerpFactor = Mathf.PingPong(Time.time, 1f); // Use PingPong to smoothly interpolate between startColor and endColor
-            lineRenderer.material.color = Color.Lerp(startColor, endColor, lerpFactor);
             lineRenderer.material.color = Color.Lerp(startColor, endColor, lerpFactor);
 
             yield return new WaitForSeconds(colorChangeFrequency); // Wait for colorChangeFrequency seconds before executing the lerping again
         }
     }
-
     void Update()
     {
         // Get audio samples from the AudioSource
         currentTrack.GetOutputData(samples, 0);
+    }
+    private void OnDestroy()
+    {
+        //Unsubscribes HandlePlayStateChanged and HandleTrackChanged methods from the OnPlayStateChanged and OnTrackChanged events respectively
+        MediaPlayerManager mediaPlayerManager = FindObjectOfType<MediaPlayerManager>();
+        mediaPlayerManager.OnPlayStateChanged -= HandlePlayStateChanged;
+        mediaPlayerManager.OnTrackChanged -= HandleTrackChanged;
     }
 }

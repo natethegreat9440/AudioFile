@@ -55,7 +55,8 @@ public class MediaPlayerManager : MonoBehaviour
         {
             currentSongIndex++;
             PlayCurrentSong();
-            //TODO: Add code to stop visualizer coroutine until next song is played
+            OnTrackChanged?.Invoke(audioSource.clip.name);
+
         }
         else
         {
@@ -69,7 +70,7 @@ public class MediaPlayerManager : MonoBehaviour
         {
             currentSongIndex--;
             PlayCurrentSong();
-            //TODO: Add code to stop visualizer coroutine until previous song is played
+            OnTrackChanged?.Invoke(audioSource.clip.name);
         }
         else
         {
@@ -83,14 +84,11 @@ public class MediaPlayerManager : MonoBehaviour
         {
             audioSource.Play();
             Debug.Log("Audio was Played");
-            radialWaveformVisualizer.ResumeRadialWaveformVisualizer();
+            //radialWaveformVisualizer.ResumeRadialWaveformVisualizer();
 
             OnPlayStateChanged?.Invoke(true);
 
-            // Pause the coroutines in the visualizer
-
-
-            //// Check if the OnPlayStateChanged event has any subscribers
+            // Check if the OnPlayStateChanged event has any subscribers
             //if (OnPlayStateChanged != null)
             //{
             //    // If there are subscribers, invoke the event and pass 'true' to indicate the player is now playing
@@ -105,17 +103,15 @@ public class MediaPlayerManager : MonoBehaviour
         {
             audioSource.Pause();
             Debug.Log("Audio was Paused");
-            radialWaveformVisualizer.PauseRadialWaveformVisualizer();
 
             OnPlayStateChanged?.Invoke(false);
-            // Pause the coroutines in the visualizer
 
         }
     }
 
     public void Skip(bool forward)
     {
-        // This is a placeholder for how you might handle track skipping
+        // This is a placeholder for how you might handle track skipping (i.e., if tracks are missing or can't be loaded)
         if (forward)
         {
             // Move to the next track
