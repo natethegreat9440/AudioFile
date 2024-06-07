@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum PlayMode { Consecutive, RecommendedRandom, TrueRandom }
@@ -7,8 +8,7 @@ public class MediaPlayerManager : MonoBehaviour
     #region Variables
     public AudioSource audioSource; // Unity's AudioSource component for playing music
     public MediaLibrary mediaLibrary;
-    //TODO: Add a VisualizerManager class and have these methods refer to whatever selected Visualizer is passed
-    public RadialWaveformVisualizer radialWaveformVisualizer;
+    public GameObject radialWaveformVisualizerPrefab;
     private int currentSongIndex = 0;
 
     // Events to communicate with other components
@@ -19,6 +19,12 @@ public class MediaPlayerManager : MonoBehaviour
     public event PlayStateChangeHandler OnPlayStateChanged;
 
     private PlayMode currentPlayMode = PlayMode.Consecutive;
+
+    // List to track instances of RadialWaveformVisualizer
+    public List<RadialWaveformVisualizer> visualizers = new List<RadialWaveformVisualizer>();
+    public float smallestRingProportion = 0.1f;
+    public int numberOfRings = 10;
+    public float expansionDuration = 10f; // Duration over which the visualizers expand
     #endregion
 
     #region UnityEngine
@@ -33,6 +39,10 @@ public class MediaPlayerManager : MonoBehaviour
         {
             PlayCurrentSong();
         }
+
+        // Call DuplicateVisualizer in the Start method
+        DuplicateVisualizerInward();
+        DuplicateVisualizerOutward();
     }
     #endregion
 
@@ -84,16 +94,7 @@ public class MediaPlayerManager : MonoBehaviour
         {
             audioSource.Play();
             Debug.Log("Audio was Played");
-            //radialWaveformVisualizer.ResumeRadialWaveformVisualizer();
-
             OnPlayStateChanged?.Invoke(true);
-
-            // Check if the OnPlayStateChanged event has any subscribers
-            //if (OnPlayStateChanged != null)
-            //{
-            //    // If there are subscribers, invoke the event and pass 'true' to indicate the player is now playing
-            //    OnPlayStateChanged.Invoke(true);
-            //}
         }
     }
 
@@ -103,9 +104,7 @@ public class MediaPlayerManager : MonoBehaviour
         {
             audioSource.Pause();
             Debug.Log("Audio was Paused");
-
             OnPlayStateChanged?.Invoke(false);
-
         }
     }
 
@@ -132,5 +131,49 @@ public class MediaPlayerManager : MonoBehaviour
     {
         currentPlayMode = mode;
         Debug.Log($"Play mode changed to: {mode}");
+    }
+
+    public void DuplicateVisualizerInward()
+    {
+        Vector3 startingPosition = new Vector3(960, 540, 0);
+        float step = (1.0f - smallestRingProportion) / (numberOfRings - 1);
+
+        for (int i = 0; i < numberOfRings; i++)
+        {
+            float scale = 1.0f - (step * i);
+            GameObject newVisualizer = Instantiate(radialWaveformVisualizerPrefab);
+            newVisualizer.transform.SetParent(transform);
+            newVisualizer.transform.localPosition = startingPosition;
+            newVisualizer.transform.localScale = new Vector3(scale, scale, scale);
+
+            RadialWaveformVisualizer visualizerScript = newVisualizer.GetComponent<RadialWaveformVisualizer>();
+            if (visualizerScript != null)
+            {
+                visualizerScript.Initialize(audioSource, this, scale);
+                visualizers.Add(visualizerScript);
+            }
+        }
+    }
+
+    public void DuplicateVisualizerOutward()
+    {
+        Vector3 startingPosition = new Vector3(960, 540, 0);
+        float step = (3.0f - 1.0f) / (numberOfRings - 1);
+
+        for (int i = 0; i < numberOfRings; i++)
+        {
+            float scale = 1.0f + (step * i);
+            GameObject newVisualizer = Instantiate(radialWaveformVisualizerPrefab);
+            newVisualizer.transform.SetParent(transform);
+            newVisualizer.transform.localPosition = startingPosition;
+            newVisualizer.transform.localScale = new Vector3(scale, scale, scale);
+
+            RadialWaveformVisualizer visualizerScript = newVisualizer.GetComponent<RadialWaveformVisualizer>();
+            if (visualizerScript != null)
+            {
+                visualizerScript.Initialize(audioSource, this, scale);
+                visualizers.Add(visualizerScript);
+            }
+        }
     }
 }
