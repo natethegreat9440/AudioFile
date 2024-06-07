@@ -1,0 +1,251 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8717929435528989366
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5733194380506985931}
+  - component: {fileID: 6120853551541221106}
+  - component: {fileID: 7725258525371935512}
+  - component: {fileID: 5890399964226329694}
+  m_Layer: 0
+  m_Name: MediaPlayerManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5733194380506985931
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8717929435528989366}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7082004327659997417}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6120853551541221106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8717929435528989366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1baa8eee063f1f94ab1d5d6cf591d1a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  audioSource: {fileID: 5890399964226329694}
+  mediaLibrary: {fileID: 7725258525371935512}
+  radialWaveformVisualizerPrefab: {fileID: 419941029766051496}
+  visualizers: []
+  numberOfRings: 25
+  currentSongIndex: 0
+--- !u!114 &7725258525371935512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8717929435528989366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e860fd19e874dc4fbc77215b98736e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  songs:
+  - name: Thrift Shop
+    clip: {fileID: 8300000, guid: 856f74796731c9b438c2d36439d2a9cb, type: 3}
+  - name: Friday
+    clip: {fileID: 8300000, guid: e4ec6a541b04297419f6aa21965bb8c4, type: 3}
+  - name: Crying Shame
+    clip: {fileID: 8300000, guid: 3b96ae6d8d6656c43b18682d3384c9d9, type: 3}
+  - name: Portorose In July
+    clip: {fileID: 8300000, guid: 294c275ea8431fc41af0d05a75b6316c, type: 3}
+  - name: The Monolith
+    clip: {fileID: 8300000, guid: 3243e7758a1570749993d9ab8b715537, type: 3}
+  - name: So Much For Love
+    clip: {fileID: 8300000, guid: 243e8f0d37f80fe43aeb3fd8aba723dd, type: 3}
+  - name: Good Evening Mr. Hitchcock
+    clip: {fileID: 8300000, guid: e16eb8b335173444fb7faa455972a347, type: 3}
+  - name: DreamBIG
+    clip: {fileID: 8300000, guid: f517ced6914f81345bb144bdb78214cc, type: 3}
+  - name: The Drink Is Called Rakija
+    clip: {fileID: 8300000, guid: 473e5e7a637c33447838eaa8fc767605, type: 3}
+  - name: Skylight
+    clip: {fileID: 8300000, guid: 521f83e5dad678949bf48c06406942d0, type: 3}
+--- !u!82 &5890399964226329694
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8717929435528989366}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!1001 &4383537467566564570
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5733194380506985931}
+    m_Modifications:
+    - target: {fileID: 4109141302379713138, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+      propertyPath: m_Name
+      value: RadialWaveFormVisuals
+      objectReference: {fileID: 0}
+    - target: {fileID: 6817642192910134323, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 960
+      objectReference: {fileID: 0}
+    - target: {fileID: 6817642192910134323, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 540
+      objectReference: {fileID: 0}
+    - target: {fileID: 6817642192910134323, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6817642192910134323, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6817642192910134323, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6817642192910134323, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6817642192910134323, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6817642192910134323, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6817642192910134323, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6817642192910134323, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+--- !u!1 &419941029766051496 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4109141302379713138, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+  m_PrefabInstance: {fileID: 4383537467566564570}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7082004327659997417 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6817642192910134323, guid: c620e0d7082db344687266432a8ea9e7, type: 3}
+  m_PrefabInstance: {fileID: 4383537467566564570}
+  m_PrefabAsset: {fileID: 0}

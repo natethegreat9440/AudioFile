@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,25 +7,27 @@ public enum PlayMode { Consecutive, RecommendedRandom, TrueRandom }
 public class MediaPlayerManager : MonoBehaviour
 {
     #region Variables
-    public AudioSource audioSource; // Unity's AudioSource component for playing music
+    [Header("Sound Components:")]
+    public AudioSource audioSource;
     public MediaLibrary mediaLibrary;
-    public GameObject radialWaveformVisualizerPrefab;
-    private int currentSongIndex = 0;
 
-    // Events to communicate with other components
+    [Header("Visual Components:")]
+    public int numberOfRings = 10;
+    private float songDuration;
+    public GameObject radialWaveformVisualizerPrefab;
+    public List<RadialWaveformVisualizer> visualizers = new List<RadialWaveformVisualizer>();
+    public float expansionSpeed = 1.5f; // Factor to make the rings expand faster
+
+    [HideInInspector]
+    public int currentSongIndex = 0;
+
+    private PlayMode currentPlayMode = PlayMode.Consecutive;
+
     public delegate void TrackChangeHandler(string trackName);
     public event TrackChangeHandler OnTrackChanged;
 
     public delegate void PlayStateChangeHandler(bool isPlaying);
     public event PlayStateChangeHandler OnPlayStateChanged;
-
-    private PlayMode currentPlayMode = PlayMode.Consecutive;
-
-    // List to track instances of RadialWaveformVisualizer
-    public List<RadialWaveformVisualizer> visualizers = new List<RadialWaveformVisualizer>();
-    public float smallestRingProportion = 0.1f;
-    public int numberOfRings = 10;
-    public float expansionDuration = 10f; // Duration over which the visualizers expand
     #endregion
 
     #region UnityEngine
@@ -33,16 +36,18 @@ public class MediaPlayerManager : MonoBehaviour
         if (audioSource == null || mediaLibrary == null || mediaLibrary.songs.Length == 0)
         {
             Debug.LogError("MediaPlayerManager setup error: Ensure AudioSource and MediaLibrary are set and MediaLibrary is not empty.");
-            this.enabled = false; // Disable the script if setup is incomplete
+            this.enabled = false;
         }
         else
         {
             PlayCurrentSong();
+            CreateAndExpandVisualizers();
         }
+    }
 
-        // Call DuplicateVisualizer in the Start method
-        DuplicateVisualizerInward();
-        DuplicateVisualizerOutward();
+    private void Update()
+    {
+        CheckIfSongFinished();
     }
     #endregion
 
@@ -52,21 +57,23 @@ public class MediaPlayerManager : MonoBehaviour
         if (mediaLibrary.songs.Length > 0 && currentSongIndex < mediaLibrary.songs.Length)
         {
             audioSource.clip = mediaLibrary.songs[currentSongIndex].clip;
+            songDuration = audioSource.clip.length; // Get the duration of the current song
             audioSource.Play();
+            OnTrackChanged?.Invoke(mediaLibrary.songs[currentSongIndex].name); // Use Song name
+            CreateAndExpandVisualizers();
         }
         else
         {
             Debug.LogError("No songs available or index out of range.");
         }
     }
+
     public void NextSong()
     {
         if (currentSongIndex < mediaLibrary.songs.Length - 1)
         {
             currentSongIndex++;
             PlayCurrentSong();
-            OnTrackChanged?.Invoke(audioSource.clip.name);
-
         }
         else
         {
@@ -74,13 +81,13 @@ public class MediaPlayerManager : MonoBehaviour
         }
     }
     #endregion
+
     public void PreviousSong()
     {
         if (currentSongIndex > 0)
         {
             currentSongIndex--;
             PlayCurrentSong();
-            OnTrackChanged?.Invoke(audioSource.clip.name);
         }
         else
         {
@@ -93,7 +100,6 @@ public class MediaPlayerManager : MonoBehaviour
         if (!audioSource.isPlaying)
         {
             audioSource.Play();
-            Debug.Log("Audio was Played");
             OnPlayStateChanged?.Invoke(true);
         }
     }
@@ -103,28 +109,20 @@ public class MediaPlayerManager : MonoBehaviour
         if (audioSource.isPlaying)
         {
             audioSource.Pause();
-            Debug.Log("Audio was Paused");
             OnPlayStateChanged?.Invoke(false);
         }
     }
 
     public void Skip(bool forward)
     {
-        // This is a placeholder for how you might handle track skipping (i.e., if tracks are missing or can't be loaded)
         if (forward)
         {
-            // Move to the next track
-            Debug.Log("Skipping to next track");
+            NextSong();
         }
         else
         {
-            // Move to the previous track
-            Debug.Log("Skipping to previous track");
+            PreviousSong();
         }
-
-        // Trigger the track change event
-        OnTrackChanged?.Invoke(audioSource.clip.name);
-        Play(); // Play the new track
     }
 
     public void SetPlayMode(PlayMode mode)
@@ -133,46 +131,62 @@ public class MediaPlayerManager : MonoBehaviour
         Debug.Log($"Play mode changed to: {mode}");
     }
 
-    public void DuplicateVisualizerInward()
+    private void CheckIfSongFinished()
     {
-        Vector3 startingPosition = new Vector3(960, 540, 0);
-        float step = (1.0f - smallestRingProportion) / (numberOfRings - 1);
-
-        for (int i = 0; i < numberOfRings; i++)
+        if (!audioSource.isPlaying && audioSource.time >= songDuration)
         {
-            float scale = 1.0f - (step * i);
-            GameObject newVisualizer = Instantiate(radialWaveformVisualizerPrefab);
-            newVisualizer.transform.SetParent(transform);
-            newVisualizer.transform.localPosition = startingPosition;
-            newVisualizer.transform.localScale = new Vector3(scale, scale, scale);
-
-            RadialWaveformVisualizer visualizerScript = newVisualizer.GetComponent<RadialWaveformVisualizer>();
-            if (visualizerScript != null)
-            {
-                visualizerScript.Initialize(audioSource, this, scale);
-                visualizers.Add(visualizerScript);
-            }
+            NextSong();
         }
     }
 
-    public void DuplicateVisualizerOutward()
+    public void CreateAndExpandVisualizers()
     {
+        // Clear existing visualizers
+        foreach (var visualizer in visualizers)
+        {
+            Destroy(visualizer.gameObject);
+        }
+        visualizers.Clear();
+
         Vector3 startingPosition = new Vector3(960, 540, 0);
-        float step = (3.0f - 1.0f) / (numberOfRings - 1);
+        float timeOffsetStep = songDuration / numberOfRings;
 
         for (int i = 0; i < numberOfRings; i++)
         {
-            float scale = 1.0f + (step * i);
             GameObject newVisualizer = Instantiate(radialWaveformVisualizerPrefab);
             newVisualizer.transform.SetParent(transform);
             newVisualizer.transform.localPosition = startingPosition;
-            newVisualizer.transform.localScale = new Vector3(scale, scale, scale);
+
+            float initialRadiusOffset = timeOffsetStep * i;
 
             RadialWaveformVisualizer visualizerScript = newVisualizer.GetComponent<RadialWaveformVisualizer>();
             if (visualizerScript != null)
             {
-                visualizerScript.Initialize(audioSource, this, scale);
+                visualizerScript.Initialize(audioSource, this, 0.1f, initialRadiusOffset);
                 visualizers.Add(visualizerScript);
+            }
+        }
+
+        StartCoroutine(ExpandVisualizersOneByOne());
+    }
+
+    private IEnumerator ExpandVisualizersOneByOne()
+    {
+        while (true)
+        {
+            float startTime = Time.time;
+
+            while (Time.time - startTime < songDuration)
+            {
+                for (int i = 0; i < visualizers.Count; i++)
+                {
+                    float elapsedTime = (Time.time - startTime - (songDuration / visualizers.Count) * i * expansionSpeed) % songDuration;
+                    float scale = Mathf.Lerp(0.0f, 3.0f, elapsedTime / songDuration);
+                    visualizers[i].transform.localScale = new Vector3(scale, scale, scale);
+                    visualizers[i].UpdateRadius(scale * 5f); // Adjust radius to match the new scale
+                }
+
+                yield return null;
             }
         }
     }

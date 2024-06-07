@@ -22,17 +22,17 @@ public class GUIController : MonoBehaviour
         nextButton.onClick.AddListener(PlayNextSong);
         previousButton.onClick.AddListener(PlayPreviousSong);
 
+        // Subscribe to the OnTrackChanged event
+        mediaPlayerManager.OnTrackChanged += UpdateSongName;
+
         // Update the song name initially
-        UpdateSongName();
+        UpdateSongName(mediaPlayerManager.audioSource.clip != null ? mediaPlayerManager.mediaLibrary.songs[mediaPlayerManager.currentSongIndex].name : "No Song");
     }
 
-    private void Update()
+    private void OnDestroy()
     {
-        // Continuously update the song name in case it changes
-        if (mediaPlayerManager.audioSource.clip != null)
-        {
-            songNameText.text = mediaPlayerManager.audioSource.clip.name;
-        }
+        // Unsubscribe from the OnTrackChanged event to prevent memory leaks
+        mediaPlayerManager.OnTrackChanged -= UpdateSongName;
     }
     #endregion
 
@@ -56,20 +56,15 @@ public class GUIController : MonoBehaviour
     public void PlayNextSong()
     {
         mediaPlayerManager.NextSong();
-        UpdateSongName();
     }
 
     public void PlayPreviousSong()
     {
         mediaPlayerManager.PreviousSong();
-        UpdateSongName();
     }
 
-    private void UpdateSongName()
+    private void UpdateSongName(string trackName)
     {
-        if (mediaPlayerManager.audioSource.clip != null)
-        {
-            songNameText.text = mediaPlayerManager.audioSource.clip.name;
-        }
+        songNameText.text = trackName;
     }
 }
