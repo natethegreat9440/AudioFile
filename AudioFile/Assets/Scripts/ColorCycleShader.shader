@@ -49,7 +49,8 @@ Shader "Custom/ColorCycleShader"
 
                 // Calculate distance from the center
                 float distance = length(v.vertex.xy);
-                float hue = frac(_CustomTime * _ColorSpeed + distance);
+                // Adjust hue calculation to move colors outward over time
+                float hue = frac(_CustomTime * _ColorSpeed - distance);
                 o.color = float4(hue, 1.0, 1.0, 1.0);
                 o.color.rgb = hsv2rgb(o.color.rgb);
                 o.color.a = 1.0;

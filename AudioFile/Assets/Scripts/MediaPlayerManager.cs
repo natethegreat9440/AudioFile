@@ -12,11 +12,10 @@ public class MediaPlayerManager : MonoBehaviour
     public MediaLibrary mediaLibrary;
 
     [Header("Visual Components:")]
-    public int numberOfRings = 10;
+    public int numberOfRings = 25;
     private float songDuration;
     public GameObject radialWaveformVisualizerPrefab;
     public List<RadialWaveformVisualizer> visualizers = new List<RadialWaveformVisualizer>();
-    public float expansionSpeed = 1.5f; // Factor to make the rings expand faster
 
     [HideInInspector]
     public int currentSongIndex = 0;
@@ -180,8 +179,8 @@ public class MediaPlayerManager : MonoBehaviour
             {
                 for (int i = 0; i < visualizers.Count; i++)
                 {
-                    float elapsedTime = (Time.time - startTime - (songDuration / visualizers.Count) * i * expansionSpeed) % songDuration;
-                    float scale = Mathf.Lerp(0.0f, 3.0f, elapsedTime / songDuration);
+                    float elapsedTime = (Time.time - startTime - (songDuration / visualizers.Count) * i) % songDuration;
+                    float scale = Mathf.Lerp(0.0f, 3.0f, elapsedTime / (songDuration / 2)); // Faster expansion
                     visualizers[i].transform.localScale = new Vector3(scale, scale, scale);
                     visualizers[i].UpdateRadius(scale * 5f); // Adjust radius to match the new scale
                 }

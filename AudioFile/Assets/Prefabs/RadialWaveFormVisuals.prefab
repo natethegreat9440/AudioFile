@@ -48,10 +48,9 @@ MonoBehaviour:
   lineRenderer: {fileID: 20206250413566853}
   resolution: 1024
   radius: 4.5
-  startColor: {r: 0.0107040405, g: 1, b: 0, a: 1}
-  endColor: {r: 0, g: 0, b: 1, a: 1}
   renderingFrequency: 0.1
   colorChangeFrequency: 3
+  colorCycleMaterial: {fileID: 0}
 --- !u!120 &20206250413566853
 LineRenderer:
   serializedVersion: 2
@@ -96,10 +95,10 @@ LineRenderer:
   m_SortingOrder: 0
   m_Positions:
   - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 1}
+  - {x: 0, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.15
+    widthMultiplier: 0.05
     widthCurve:
       serializedVersion: 2
       m_Curve:

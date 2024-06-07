@@ -133,6 +133,7 @@ public class RadialWaveformVisualizer : MonoBehaviour
         if (lineRenderer.material != null)
         {
             lineRenderer.material.SetFloat("_ColorSpeed", 1.0f / colorChangeFrequency);
+            lineRenderer.material.SetFloat("_CustomTime", Time.time);
         }
     }
 
