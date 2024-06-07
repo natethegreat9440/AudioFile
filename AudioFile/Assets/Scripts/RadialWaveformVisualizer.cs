@@ -15,6 +15,7 @@ public class RadialWaveformVisualizer : MonoBehaviour
     private float radiusOffset;
 
     private float[] samples;
+    public Material colorCycleMaterial; // Reference to the material with the color cycle shader
 
     public void Initialize(AudioSource track, MediaPlayerManager mediaPlayerManager, float scale, float initialRadiusOffset)
     {
@@ -24,6 +25,12 @@ public class RadialWaveformVisualizer : MonoBehaviour
 
         radius = scale * 5f;
         radiusOffset = initialRadiusOffset;
+
+        // Apply the material with the color cycle shader
+        if (colorCycleMaterial != null)
+        {
+            lineRenderer.material = colorCycleMaterial;
+        }
 
         if (currentTrack != null)
         {
@@ -115,12 +122,17 @@ public class RadialWaveformVisualizer : MonoBehaviour
     {
         while (true)
         {
-            float hue = Mathf.Repeat(Time.time / colorChangeFrequency, 1f);
-            Color newColor = Color.HSVToRGB(hue, 1f, 1f);
-
-            lineRenderer.material.color = newColor;
-
+            UpdateLineColors();
             yield return null;
+        }
+    }
+
+    private void UpdateLineColors()
+    {
+        // Ensure the material exists and update the color speed
+        if (lineRenderer.material != null)
+        {
+            lineRenderer.material.SetFloat("_ColorSpeed", 1.0f / colorChangeFrequency);
         }
     }
 

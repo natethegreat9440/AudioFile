@@ -1576,6 +1576,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6120853551541221106, guid: d243105ca4877b04d9e952a5c42daceb, type: 3}
+      propertyPath: expansionSpeed
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 8717929435528989366, guid: d243105ca4877b04d9e952a5c42daceb, type: 3}
       propertyPath: m_Name
       value: MediaPlayerManager
