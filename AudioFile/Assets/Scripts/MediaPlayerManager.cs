@@ -33,7 +33,7 @@ public class MediaPlayerManager : MonoBehaviour
     #region UnityEngine
     private void Start()
     {
-        if (audioSource == null || mediaLibrary == null || mediaLibrary.songs.Length == 0)
+        if (audioSource == null || mediaLibrary == null || mediaLibrary.songs.Count == 0)
         {
             Debug.LogError("MediaPlayerManager setup error: Ensure AudioSource and MediaLibrary are set and MediaLibrary is not empty.");
             this.enabled = false; // Disable the script if setup is incomplete
@@ -52,7 +52,7 @@ public class MediaPlayerManager : MonoBehaviour
     #region TestingMethods
     public void PlayCurrentSong()
     {
-        if (mediaLibrary.songs.Length > 0 && currentSongIndex < mediaLibrary.songs.Length)
+        if (mediaLibrary.songs.Count > 0 && currentSongIndex < mediaLibrary.songs.Count)
         {
             audioSource.clip = mediaLibrary.songs[currentSongIndex].clip;
 
@@ -65,7 +65,7 @@ public class MediaPlayerManager : MonoBehaviour
             }
             else
             {
-                if (currentSongIndex == mediaLibrary.songs.Length - 1)
+                if (currentSongIndex == mediaLibrary.songs.Count - 1)
                 {
                     Skip(false); // Skip to the previous song if the current clip is null and you are at the last song on a playlist
                 }
@@ -83,7 +83,7 @@ public class MediaPlayerManager : MonoBehaviour
     }
     public void NextSong()
     {
-        if (currentSongIndex < mediaLibrary.songs.Length - 1)
+        if (currentSongIndex < mediaLibrary.songs.Count - 1)
         {
             currentSongIndex++;
             PlayCurrentSong();

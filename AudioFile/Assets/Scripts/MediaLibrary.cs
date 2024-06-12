@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
+//Song should be broken out into a new Track.cs object
 public class Song
 {
     public string name;
@@ -15,20 +17,39 @@ public class Song
 
 public class MediaLibrary : MonoBehaviour
 {
-    public Song[] songs; // Array to store songs
+    public List<Song> songs = new List<Song>(); // List to store songs. List is dynamically resizable at runtime whereas an array is not
 
     public void AddSong(string songName, AudioClip clip)
     {
-        //Create Song
-        Song newSong = new Song(songName, clip);
+        if (string.IsNullOrEmpty(songName) || clip == null)
+        {
+            Debug.LogError("Invalid song name or clip.");
+            return;
+        }
 
-        //Receate Array
-        int currentLength = songs.Length;
-        Song[] newSongs = new Song[currentLength + 1];
-        songs.CopyTo(newSongs, 0);
-        newSongs[currentLength] = newSong;
+        if (songs.Exists(song => song.name == songName))
+        {
+            Debug.LogWarning("Song already exists in the library.");
+            return;
+        }
 
-        //Update Array Reference
-        songs = newSongs;
+        songs.Add(new Song(songName, clip));
+    }
+    public bool RemoveSongByName(string songName)
+    {
+        Song songToRemove = songs.Find(song => song.name == songName);
+        if (songToRemove != null)
+        {
+            songs.Remove(songToRemove);
+            return true;
+        }
+        return false;
+    }
+    public void RemoveSongAtIndex(int index)
+    {
+        if (index >= 0 && index < songs.Count)
+        {
+            songs.RemoveAt(index);
+        }
     }
 }
