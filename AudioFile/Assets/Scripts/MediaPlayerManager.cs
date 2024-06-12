@@ -1,15 +1,24 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
 
 public enum PlayMode { Consecutive, RecommendedRandom, TrueRandom }
 
 public class MediaPlayerManager : MonoBehaviour
 {
     #region Variables
+    [Header("Sound Components:")]
     public AudioSource audioSource; // Unity's AudioSource component for playing music
     public MediaLibrary mediaLibrary;
+
+    [Header("Visual Components:")]
     //TODO: Add a VisualizerManager class and have these methods refer to whatever selected Visualizer is passed
     public RadialWaveformVisualizer radialWaveformVisualizer;
+
+    [HideInInspector]
     private int currentSongIndex = 0;
+    private float songDuration;
 
     // Events to communicate with other components
     public delegate void TrackChangeHandler(string trackName);
@@ -34,6 +43,10 @@ public class MediaPlayerManager : MonoBehaviour
             PlayCurrentSong();
         }
     }
+    private void Update()
+    {
+        CheckIfSongFinished();
+    }
     #endregion
 
     #region TestingMethods
@@ -42,7 +55,26 @@ public class MediaPlayerManager : MonoBehaviour
         if (mediaLibrary.songs.Length > 0 && currentSongIndex < mediaLibrary.songs.Length)
         {
             audioSource.clip = mediaLibrary.songs[currentSongIndex].clip;
-            audioSource.Play();
+
+            if (audioSource.clip != null)
+            {
+                songDuration = audioSource.clip.length; // Get the duration of the current song
+                audioSource.Play();
+                OnTrackChanged?.Invoke(audioSource.clip.name); // Trigger event here
+                //CreateAndExpandVisualizers();
+            }
+            else
+            {
+                if (currentSongIndex == mediaLibrary.songs.Length - 1)
+                {
+                    Skip(false); // Skip to the previous song if the current clip is null and you are at the last song on a playlist
+                }
+                else
+                {
+                    Skip(true);  // Skip to the next song if the current clip is null and you are NOT at the last song on a playlist
+                }
+
+            }
         }
         else
         {
@@ -55,26 +87,29 @@ public class MediaPlayerManager : MonoBehaviour
         {
             currentSongIndex++;
             PlayCurrentSong();
-            OnTrackChanged?.Invoke(audioSource.clip.name);
-
         }
         else
         {
             Debug.Log("Reached the end of the playlist.");
         }
     }
-    #endregion
     public void PreviousSong()
     {
         if (currentSongIndex > 0)
         {
             currentSongIndex--;
             PlayCurrentSong();
-            OnTrackChanged?.Invoke(audioSource.clip.name);
         }
         else
         {
             Debug.Log("Already at the beginning of the playlist.");
+        }
+    }
+    private void CheckIfSongFinished()
+    {
+        if (!audioSource.isPlaying && audioSource.time >= songDuration)
+        {
+            NextSong();
         }
     }
 
@@ -84,16 +119,9 @@ public class MediaPlayerManager : MonoBehaviour
         {
             audioSource.Play();
             Debug.Log("Audio was Played");
-            //radialWaveformVisualizer.ResumeRadialWaveformVisualizer();
 
             OnPlayStateChanged?.Invoke(true);
 
-            // Check if the OnPlayStateChanged event has any subscribers
-            //if (OnPlayStateChanged != null)
-            //{
-            //    // If there are subscribers, invoke the event and pass 'true' to indicate the player is now playing
-            //    OnPlayStateChanged.Invoke(true);
-            //}
         }
     }
 
@@ -108,24 +136,18 @@ public class MediaPlayerManager : MonoBehaviour
 
         }
     }
-
     public void Skip(bool forward)
     {
-        // This is a placeholder for how you might handle track skipping (i.e., if tracks are missing or can't be loaded)
         if (forward)
         {
-            // Move to the next track
-            Debug.Log("Skipping to next track");
+            Debug.LogError($"Clip at index {currentSongIndex} is null. Skipping to the next song.");
+            NextSong();
         }
         else
         {
-            // Move to the previous track
-            Debug.Log("Skipping to previous track");
+            Debug.LogError($"Clip at index {currentSongIndex} is null. Skipping to the previous song.");
+            PreviousSong();
         }
-
-        // Trigger the track change event
-        OnTrackChanged?.Invoke(audioSource.clip.name);
-        Play(); // Play the new track
     }
 
     public void SetPlayMode(PlayMode mode)
@@ -134,3 +156,4 @@ public class MediaPlayerManager : MonoBehaviour
         Debug.Log($"Play mode changed to: {mode}");
     }
 }
+#endregion
