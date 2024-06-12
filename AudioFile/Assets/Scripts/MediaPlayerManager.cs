@@ -17,7 +17,7 @@ public class MediaPlayerManager : MonoBehaviour
     public RadialWaveformVisualizer radialWaveformVisualizer;
 
     [HideInInspector]
-    private int currentSongIndex = 0;
+    public int currentSongIndex = 0;
     private float songDuration;
 
     // Events to communicate with other components
