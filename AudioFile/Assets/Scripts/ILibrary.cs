@@ -22,27 +22,29 @@
     /Create this interface
 */
 
-public interface ILibrary
-{     
-    void Add(MediaItem item);
-    void Remove(MediaItem item);
-    MediaItem GetSelection();
-    int GetSelectionCount();
-    void ClearSelection();
-    List<MediaItem> GetItems();
-    int GetItemCount();
-    List<MediaItem> GetSelectedItems();
-    int GetSelectedItemCount();
-    void Clear();
-    void SelectAll();
-    void DeselectAll();
-    MediaItem GetItem(int index);
-    MediaItem GetSelectedItem(int index);
-    void SelectItem(int index);
-    void DeselectItem(int index);
-    bool IsItemSelected(int index);
-    void Sort(SortCriteria criteria);
+/* public interface ILibrary
+{
+    //void Sort(SortCriteria criteria);
+    //void Add(MediaItem item);
+    //void Remove(MediaItem item);
+    /*    MediaItem GetSelection();
+        int GetSelectionCount();
+        void ClearSelection();
+        List<MediaItem> GetItems();
+        int GetItemCount();
+        List<MediaItem> GetSelectedItems();
+        int GetSelectedItemCount();
+        void Clear();
+        void SelectAll();
+        void DeselectAll();
+        MediaItem GetItem(int index);
+        MediaItem GetSelectedItem(int index);
+        void SelectItem(int index);
+        void DeselectItem(int index);
+        bool IsItemSelected(int index);
+        */
 }
+*/
 
 
 
