@@ -22,29 +22,31 @@
     /Create this interface
 */
 
-/* public interface ILibrary
+using System;
+using System.Collections.Generic;
+
+public interface ILibrary<T> : IList<T>, IComparable<T>
 {
-    //void Sort(SortCriteria criteria);
-    //void Add(MediaItem item);
-    //void Remove(MediaItem item);
-    /*    MediaItem GetSelection();
-        int GetSelectionCount();
+    //void Sort(SortCriteria criteria); 
+    //void Add(MediaItem item); //Add() from IList<T> does the same thing
+    //void Remove(MediaItem item); //Remove() from IList<T> does the same thing
+        MediaItem GetSelection();
+    //  int GetSelectionCount(); Count() from IList<T> does the same thing
         void ClearSelection();
-        List<MediaItem> GetItems();
-        int GetItemCount();
+        // List<MediaItem> GetItems();
+    //    int GetItemCount();
         List<MediaItem> GetSelectedItems();
-        int GetSelectedItemCount();
-        void Clear();
+    //    int GetSelectedItemCount();
+    //    void Clear();
         void SelectAll();
         void DeselectAll();
-        MediaItem GetItem(int index);
+    //    MediaItem GetItem(int index); Item[Int32] from IList<T> does the same thing
         MediaItem GetSelectedItem(int index);
         void SelectItem(int index);
         void DeselectItem(int index);
         bool IsItemSelected(int index);
-        */
+     
 }
-*/
 
 
 

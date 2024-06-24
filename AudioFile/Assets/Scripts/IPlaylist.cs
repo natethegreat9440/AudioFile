@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-public interface IPlaylist<T> : IList<T>
+public interface IPlaylist<T> : ILibrary<T>
 {
     void AddPlaylistTitle(string title);
     void AddPlaylistDescription(string description);
