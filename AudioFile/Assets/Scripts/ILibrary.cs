@@ -44,6 +44,9 @@ public interface ILibrary<T> : IList<T>, IComparable<T>
         MediaItem GetSelectedItem(int index);
         void SelectItem(int index);
         void DeselectItem(int index);
+
+    // Checks if the media item at the specified index is selected.
+    // Returns true if selected, false otherwise.
         bool IsItemSelected(int index);
      
 }
