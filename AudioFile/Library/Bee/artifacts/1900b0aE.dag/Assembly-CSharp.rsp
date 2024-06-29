@@ -365,6 +365,7 @@
 "Assets/Scripts/MediaLibrary.cs"
 "Assets/Scripts/MediaPlayerManager.cs"
 "Assets/Scripts/RadialWaveformVisualizer.cs"
+"Assets/Scripts/TrackLibrary.cs"
 -langversion:9.0
 
 /deterministic

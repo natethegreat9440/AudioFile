@@ -8,4 +8,3 @@ public interface IEventNotifier
     event EventHandler ImportStageChanged;
     event EventHandler ExportStageChanged;
 }
-}
