@@ -364,8 +364,12 @@
 "Assets/Scripts/IWritable.cs"
 "Assets/Scripts/MediaLibrary.cs"
 "Assets/Scripts/MediaPlayerManager.cs"
+"Assets/Scripts/Playlist.cs"
+"Assets/Scripts/Queue.cs"
 "Assets/Scripts/RadialWaveformVisualizer.cs"
 "Assets/Scripts/TrackLibrary.cs"
+"Assets/Scripts/Visualizer.cs"
+"Assets/Scripts/VisualizerLibrary.cs"
 -langversion:9.0
 
 /deterministic

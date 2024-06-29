@@ -8,6 +8,8 @@ public enum PlayMode { Consecutive, RecommendedRandom, TrueRandom }
 public class MediaPlayerManager : MonoBehaviour
 {
     #region Variables
+    //TODO: See how to reimplement MediaLibrary as either/or a TrackLibrary or VisualLibrary
+    //or Playlist
     [Header("Sound Components:")]
     public AudioSource audioSource; // Unity's AudioSource component for playing music
     public MediaLibrary mediaLibrary;

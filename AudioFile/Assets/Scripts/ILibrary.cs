@@ -23,25 +23,26 @@
 */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
-public interface ILibrary<T> : IList<T>, IComparable<T>
+public interface ILibrary<T> : IList<T>, IComparable<T> where T : IPlayable
 {
     //void Sort(SortCriteria criteria); 
     //void Add(MediaItem item); //Add() from IList<T> does the same thing
     //void Remove(MediaItem item); //Remove() from IList<T> does the same thing
-        MediaItem GetSelection();
+        T GetSelection();
     //  int GetSelectionCount(); Count() from IList<T> does the same thing
         void ClearSelection();
         // List<MediaItem> GetItems();
     //    int GetItemCount();
-        List<MediaItem> GetSelectedItems();
+        List<T> GetSelectedItems();
     //    int GetSelectedItemCount();
     //    void Clear();
         void SelectAll();
         void DeselectAll();
     //    MediaItem GetItem(int index); Item[Int32] from IList<T> does the same thing
-        MediaItem GetSelectedItem(int index);
+        T GetSelectedItem(int index);
         void SelectItem(int index);
         void DeselectItem(int index);
 

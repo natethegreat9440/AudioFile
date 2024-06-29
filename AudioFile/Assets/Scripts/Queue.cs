@@ -3,7 +3,7 @@
 using system;
 using system.collections;
 
-public class Queue : IQueue<MediaItem>
+public class Queue : IQueue<T> where T : IPlayable
 {
     #region Singleton pattern with Lazy<T> implementation (thread-safe)
     private static readonly Lazy<Queue> lazy =

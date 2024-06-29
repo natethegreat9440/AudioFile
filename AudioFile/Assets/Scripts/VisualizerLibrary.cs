@@ -2,24 +2,24 @@
 
 using System;
 
-public class VisualLibrary : ILibrary<Visual>
+public class VisualizerLibrary : ILibrary<Visualizer>
 {
     #region Singleton pattern with Lazy<T> implementation (thread-safe)
-    private static readonly Lazy<VisualLibrary> lazy =
-        new Lazy<VisualLibrary>(() => new VisualLibrary());
+    private static readonly Lazy<VisualizerLibrary> lazy =
+        new Lazy<VisualizerLibrary>(() => new VisualizerLibrary());
 
-    public static VisualLibrary Instance { get { return lazy.Value; } }
+    public static VisualizerLibrary Instance { get { return lazy.Value; } }
 
-    private List<Visual> visuals;
+    private List<Visualizer> visuals;
 
-    private VisualLibrary()
+    private VisualizerLibrary()
     {
-        visuals = new List<Visual>();
+        visuals = new List<Visualizer>();
     }
     #endregion
 
     #region Variables
-    public Visual this[int index] { get => visuals[index]; set => visuals[index] = value; }
+    public Visualizer this[int index] { get => visuals[index]; set => visuals[index] = value; }
 
     public int Count => visuals.Count;
 
@@ -28,7 +28,7 @@ public class VisualLibrary : ILibrary<Visual>
 
     #region IList implementation
 
-    public void Add(Visual item)
+    public void Add(Visualizer item)
     {
         visuals.Add(item);
     }
@@ -38,27 +38,27 @@ public class VisualLibrary : ILibrary<Visual>
         visuals.Clear();
     }
 
-    public bool Contains(Visual item)
+    public bool Contains(Visualizer item)
     {
         return visuals.Contains(item);
     }
 
-    public void CopyTo(Visual[] array, int arrayIndex)
+    public void CopyTo(Visualizer[] array, int arrayIndex)
     {
         visuals.CopyTo(array, arrayIndex);
     }
 
-    public int IndexOf(Visual item)
+    public int IndexOf(Visualizer item)
     {
         return visuals.IndexOf(item);
     }
 
-    public void Insert(int index, Visual item)
+    public void Insert(int index, Visualizer item)
     {
         visuals.Insert(index, item);
     }
 
-    public bool Remove(Visual item)
+    public bool Remove(Visualizer item)
     {
         return visuals.Remove(item);
     }

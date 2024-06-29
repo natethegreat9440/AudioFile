@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Playlist : IPlaylist<MediaItem>
+public class Playlist : IPlaylist<T> where T : Track
 {
     #region Singleton pattern with Lazy<T> implementation (thread-safe)
     private static readonly Lazy<Playlist> lazy =
@@ -12,16 +12,16 @@ public class Playlist : IPlaylist<MediaItem>
 
     public static Playlist Instance { get { return lazy.Value; } }
 
-    private List<MediaItem> playlist;
+    private List<Track> playlist;
 
     private Playlist()
     {
-        playlist = new List<MediaItem>();
+        playlist = new List<Track>();
     }
     #endregion
 
     #region Variables
-    public MediaItem this[int index] { get => playlist[index]; set => playlist[index] = value; }
+    public Track this[int index] { get => playlist[index]; set => playlist[index] = value; }
 
     public int Count => playlist.Count;
 
@@ -30,7 +30,7 @@ public class Playlist : IPlaylist<MediaItem>
 
     #region IList implementation
 
-    public void Add(MediaItem item)
+    public void Add(Track item)
     {
         playlist.Add(item);
     }
@@ -40,29 +40,29 @@ public class Playlist : IPlaylist<MediaItem>
         playlist.Clear();
     }
 
-    public bool Contains(MediaItem item)
+    public bool Contains(Track item)
     {
         return playlist.Contains(item);
     }
 
-    public void CopyTo(MediaItem[] array, int arrayIndex)
+    public void CopyTo(Track[] array, int arrayIndex)
     {
         playlist.CopyTo(array, arrayIndex);
     }
 
-    public int IndexOf(MediaItem item)
+    public int IndexOf(Track item)
     {
         return playlist.IndexOf(item);
     }
 
-    public void Insert(int index, MediaItem item)
+    public void Insert(int index, Track item)
     {
         playlist.Insert(index, item);
     }
     #endregion 
     //Add the other methods from the IPlaylist interface
 
-    public void Remove(MediaItem item)
+    public void Remove(Track item)
     {
         playlist.Remove(item);
     }
@@ -72,7 +72,7 @@ public class Playlist : IPlaylist<MediaItem>
         playlist.RemoveAt(index);
     }
 
-    public IEnumerator<MediaItem> GetEnumerator()
+    public IEnumerator<Track> GetEnumerator()
     {
         return playlist.GetEnumerator();
     }
@@ -90,7 +90,7 @@ public class Playlist : IPlaylist<MediaItem>
         {
             n--;
             int k = rng.Next(n + 1);
-            MediaItem value = playlist[k];
+            Track value = playlist[k];
             playlist[k] = playlist[n];
             playlist[n] = value;
         }

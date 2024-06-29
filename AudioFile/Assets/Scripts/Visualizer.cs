@@ -15,20 +15,20 @@ public class Visualizer : IVisualizer
 
     private Visualizer()
     {
-        visuals = new List<Visual>();
+        visuals = new List<Visualizer>();
     }
     #endregion
 
     #region Variables
-    public Visual this[int index] { get => visuals[index]; set => visuals[index] = value; }
+    public Visualizer this[int index] { get => visuals[index]; set => visuals[index] = value; }
 
     public int Count => visuals.Count;
 
     public bool IsReadOnly => false;
     #endregion
 
-    #region IList implementation
-
+    #region IList implementation (commented out because I'm not sure it's needed)
+    /* Not sure how this got in here. I don't think it's needed, but we'll leave as comments for now.
     public void Add(Visual item)
     {
         visuals.Add(item);
@@ -68,20 +68,51 @@ public class Visualizer : IVisualizer
     {
         visuals.RemoveAt(index);
     }
+    */
     #endregion
 
-    public void Initialize();
+    #region IVisualizer implementation
+
+    public void Initialize()
     {
         throw new NotImplementedException();
     }    
 
-    public void UpdateVisualization();
+    public void UpdateVisualization()
     {
        throw new NotImplementedException();     
     }
 
-    public void Reset();
+    public void Reset()
     {
         throw new NotImplementedException();
     }
+    #endregion
+
+    #region IPlayable implementation
+    public void Play()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Pause()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Stop()
+    {
+        throw new NotImplementedException();
+    }
+
+    public float GetDuration()
+    {
+        throw new NotImplementedException();
+    }
+
+    public float GetCurrentPosition()
+    { 
+        throw new NotImplementedException();
+    }
+    #endregion
 }
