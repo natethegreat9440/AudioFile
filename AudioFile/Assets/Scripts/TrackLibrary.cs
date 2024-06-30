@@ -82,11 +82,11 @@ public class TrackLibrary : ILibrary<Track>
     //Codepilot seems to suggest this method should be implemented in the Track class
     // should I just have it return 0?
 
-    /*public int CompareTo(Track other) //Add this to the Track class
+    public int CompareTo(Track other) //Add this to the Track class
     {
         throw new NotImplementedException();
     }
-    */
+    
     #endregion
 
     #region ILibrary implementation

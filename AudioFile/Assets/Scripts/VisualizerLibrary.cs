@@ -1,6 +1,8 @@
 ﻿//Create a concrete class called VisualLibrary that implements the ILibrary interface. Make this class a singleton.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 public class VisualizerLibrary : ILibrary<Visualizer>
 {

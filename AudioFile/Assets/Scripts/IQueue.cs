@@ -4,13 +4,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public interface IQueue<T> where T : Track
+public interface IQueue<T>
 {
-    void Enqueue(Track item); //Adds to the end of the queue. Not sure if I need this inheriting ILibrary.Add()
-    Track Dequeue(); //Remove and return item at front of queue
-    Track Peek(); // Returns first item at front of queue without alterating queue
+    void Enqueue(T item); //Adds to the end of the queue. Not sure if I need this inheriting ILibrary.Add()
+    T Dequeue(); //Remove and return item at front of queue
+    T Peek(); // Returns first item at front of queue without alterating queue
     void AddUpNext();
     //bool IsEmpty();
-    List<Track> GetQueue();
-    List<Track> GenerateQueue(Func<List<Track>, int, List<Track>> shuffleMethod, int queueLength); 
+    List<T> GetQueue();
+    List<T> GenerateQueue(Func<List<T>, int, List<T>> shuffleMethod, int queueLength); 
 }

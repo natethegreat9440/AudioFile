@@ -1,9 +1,10 @@
 ﻿//Create a concrete class called Queue that implements the IQueue interface. Make this class a singleton.
 
-using system;
-using system.collections;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
-public class Queue : IQueue<T> where T : IPlayable
+public class Queue : IQueue<T> where T : IPlayable<T>
 {
     #region Singleton pattern with Lazy<T> implementation (thread-safe)
     private static readonly Lazy<Queue> lazy =

@@ -23,10 +23,10 @@
 */
 
 using System;
-using System.Collections;
+//using System.Collections;
 using System.Collections.Generic;
 
-public interface ILibrary<T> : IList<T>, IComparable<T> where T : IPlayable
+public interface ILibrary<T> : IList<T>, IComparable<T>
 {
     //void Sort(SortCriteria criteria); 
     //void Add(MediaItem item); //Add() from IList<T> does the same thing

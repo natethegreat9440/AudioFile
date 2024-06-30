@@ -1,12 +1,13 @@
 ﻿//Create a concrete class called Visualizer that implements the IVisualizer interface. 
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 public class Visualizer : IVisualizer
 {
     #region Singleton pattern with Lazy<T> implementation (thread-safe)
-    private static readonly Lazy<Visualizer> lazy =
+    /*private static readonly Lazy<Visualizer> lazy =
         new Lazy<Visualizer>(() => new Visualizer());
 
     public static Visualizer Instance { get { return lazy.Value; } }
@@ -17,6 +18,7 @@ public class Visualizer : IVisualizer
     {
         visuals = new List<Visualizer>();
     }
+    */
     #endregion
 
     #region Variables
