@@ -4,24 +4,24 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Queue : IQueue<T> where T : IPlayable<T>
+public class Queue<T> : IQueue<T> where T : IPlayable<T>
 {
     #region Singleton pattern with Lazy<T> implementation (thread-safe)
-    private static readonly Lazy<Queue> lazy =
-        new Lazy<Queue>(() => new Queue());
+    private static readonly Lazy<Queue<T>> lazy =
+        new Lazy<Queue<T>>(() => new Queue<T>());
 
-    public static Queue Instance { get { return lazy.Value; } }
+    public static Queue<T> Instance { get { return lazy.Value; } }
 
-    private List<MediaItem> queue;
+    private List<T> queue;
 
     private Queue()
     {
-        queue = new List<MediaItem>();
+        queue = new List<T>();
     }
     #endregion
 
     #region Variables
-    public MediaItem this[int index] { get => queue[index]; set => queue[index] = value; }
+    public T this[int index] { get => queue[index]; set => queue[index] = value; }
 
     public int Count => queue.Count;
 
@@ -30,7 +30,7 @@ public class Queue : IQueue<T> where T : IPlayable<T>
 
     #region IList implementation
 
-    public void Add(MediaItem item)
+    public void Add(T item)
     {
         queue.Add(item);
     }
@@ -40,46 +40,51 @@ public class Queue : IQueue<T> where T : IPlayable<T>
         queue.Clear();
     }
 
-    public bool Contains(MediaItem item)
+    public bool Contains(T item)
     {
         return queue.Contains(item);
     }
 
-    public void CopyTo(MediaItem[] array, int arrayIndex)
+    public void CopyTo(T[] array, int arrayIndex)
     {
         queue.CopyTo(array, arrayIndex);
     }
 
-    public int IndexOf(MediaItem item)
+    public int IndexOf(T item)
     {
         return queue.IndexOf(item);
     }
 
-    public void Insert(int index, MediaItem item)
+    public void Insert(int index, T item)
     {
         queue.Insert(index, item);
     }
     #endregion
 
     #region IQueue implementation  
-    public MediaItem Dequeue()
+    public T Dequeue()
     {
         if (queue.Count == 0)
         {
-            return null;
+            return default(T);
         }
-        MediaItem item = queue[0];
+        T item = queue[0];
         queue.RemoveAt(0);
         return item;
     }
 
-    public MediaItem Peek()
+    public T Peek()
     {
         if (queue.Count == 0)
         {
-            return null;
+            return default(T);
         }
         return queue[0];
+    }
+
+    public void Enqueue(T item)
+    {
+        queue.Add(item);
     }
 
     public void AddUpNext()
@@ -87,12 +92,12 @@ public class Queue : IQueue<T> where T : IPlayable<T>
         throw new NotImplementedException();
     }
 
-    public List<MediaItem> GetQueue()
+    public List<T> GetQueue()
     {
         return queue;
     }
 
-    public List<Track> GenerateQueue(Func<List<Track>, int, List<Track>> shuffleMethod, int queueLength)
+    public List<T> GenerateQueue(Func<List<T>, int, List<T>> shuffleMethod, int queueLength)
     {
         throw new NotImplementedException();
     }

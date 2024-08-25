@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Visualizer : IVisualizer<Visual>
+public class Visualizer : IVisualizer<Visualizer>
 {
     #region Singleton pattern with Lazy<T> implementation (thread-safe)
     private static readonly Lazy<Visualizer> lazy =
@@ -12,17 +12,17 @@ public class Visualizer : IVisualizer<Visual>
 
     public static Visualizer Instance { get { return lazy.Value; } }
 
-    private List<Visual> visuals;
+    private List<Visualizer> visuals;
 
     private Visualizer()
     {
-        visuals = new List<Visual>();
+        visuals = new List<Visualizer>();
     }
     
     #endregion
 
     #region Variables
-    public Visual this[int index] { get => visuals[index]; set => visuals[index] = value; }
+    public Visualizer this[int index] { get => visuals[index]; set => visuals[index] = value; }
 
     public int Count => visuals.Count;
 
@@ -92,27 +92,27 @@ public class Visualizer : IVisualizer<Visual>
     #endregion
 
     #region IPlayable implementation
-    public void Play()
+    public void Play(Visualizer item)
     {
         throw new NotImplementedException();
     }
 
-    public void Pause()
+    public void Pause(Visualizer item)
     {
         throw new NotImplementedException();
     }
 
-    public void Stop()
+    public void Stop(Visualizer item)
     {
         throw new NotImplementedException();
     }
 
-    public float GetDuration()
+    public float GetDuration(Visualizer item)
     {
         throw new NotImplementedException();
     }
 
-    public float GetCurrentPosition()
+    public float GetCurrentPosition(Visualizer item)
     { 
         throw new NotImplementedException();
     }

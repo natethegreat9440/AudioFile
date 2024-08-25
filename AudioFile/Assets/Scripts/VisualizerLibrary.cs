@@ -30,9 +30,56 @@ public class VisualizerLibrary : ILibrary<Visualizer>
     public bool IsReadOnly => false;
     #endregion
 
-    #region IList implementation
+    #region IVisualizer implementation
+    public void Initialize()
+    {
+        // Implement the Initialize method
+    }
 
-    public void Add(Visualizer item)
+    public void UpdateVisualization()
+    {
+        // Implement the UpdateVisualization method
+    }
+
+    public void Reset()
+    {
+        // Implement the Reset method
+    }
+    #endregion
+
+    #region IPlayable implementation
+    public void Play(Visualizer item)
+    {
+        // Implement the Play method
+    }
+
+    public void Pause(Visualizer item)
+    {
+        // Implement the Pause method
+    }
+
+    public void Stop(Visualizer item)
+    {
+        // Implement the Stop method
+    }
+
+    public float GetDuration(Visualizer item)
+    {
+        // Implement the GetDuration method
+        return 0.0f;
+    }
+
+    public float GetCurrentPosition(Visualizer item)
+    {
+        // Implement the GetCurrentPosition method
+        return 0.0f;
+    }
+    #endregion
+
+
+#region IList implementation
+
+public void Add(Visualizer item)
     {
         visuals.Add(item);
     }
@@ -91,12 +138,14 @@ public class VisualizerLibrary : ILibrary<Visualizer>
         selectedIndices.Clear();
     }
 
-    public IEnumerable<Visualizer> GetSelectedItems()
+    public List<Visualizer> GetSelectedItems()
     {
+        List<Visualizer> selectedItems = new List<Visualizer>();
         foreach (var index in selectedIndices)
         {
-            yield return visuals[index];
+            selectedItems.Add(visuals[index]);
         }
+        return selectedItems;
     }
 
     public void SelectAll()
@@ -161,6 +210,4 @@ public class VisualizerLibrary : ILibrary<Visualizer>
     }
 
     #endregion
-}
-
 }
