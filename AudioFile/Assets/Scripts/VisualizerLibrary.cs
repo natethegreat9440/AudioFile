@@ -13,10 +13,12 @@ public class VisualizerLibrary : ILibrary<Visualizer>
     public static VisualizerLibrary Instance { get { return lazy.Value; } }
 
     private List<Visualizer> visuals;
+    private HashSet<int> selectedIndices;
 
     private VisualizerLibrary()
     {
         visuals = new List<Visualizer>();
+        selectedIndices = new HashSet<int>();
     }
     #endregion
 
@@ -38,6 +40,7 @@ public class VisualizerLibrary : ILibrary<Visualizer>
     public void Clear()
     {
         visuals.Clear();
+        selectedIndices.Clear();
     }
 
     public bool Contains(Visualizer item)
@@ -68,7 +71,96 @@ public class VisualizerLibrary : ILibrary<Visualizer>
     public void RemoveAt(int index)
     {
         visuals.RemoveAt(index);
+        selectedIndices.Remove(index);
+    }
+    #endregion
+
+    #region ILibrary implementation
+
+    public Visualizer GetSelection()
+    {
+        foreach (var index in selectedIndices)
+        {
+            return visuals[index];
+        }
+        return null;
+    }
+
+    public void ClearSelection()
+    {
+        selectedIndices.Clear();
+    }
+
+    public IEnumerable<Visualizer> GetSelectedItems()
+    {
+        foreach (var index in selectedIndices)
+        {
+            yield return visuals[index];
+        }
+    }
+
+    public void SelectAll()
+    {
+        for (int i = 0; i < visuals.Count; i++)
+        {
+            selectedIndices.Add(i);
+        }
+    }
+
+    public void DeselectAll()
+    {
+        selectedIndices.Clear();
+    }
+
+    public Visualizer GetSelectedItem(int index)
+    {
+        return selectedIndices.Contains(index) ? visuals[index] : null;
+    }
+
+    public void SelectItem(int index)
+    {
+        if (index >= 0 && index < visuals.Count)
+        {
+            selectedIndices.Add(index);
+        }
+    }
+
+    public void DeselectItem(int index)
+    {
+        selectedIndices.Remove(index);
+    }
+
+    public bool IsItemSelected(int index)
+    {
+        return selectedIndices.Contains(index);
     }
 
     #endregion
+
+    #region IEnumerable implementation
+
+    public IEnumerator<Visualizer> GetEnumerator()
+    {
+        return visuals.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    #endregion
+
+    #region IComparable implementation
+
+    public int CompareTo(Visualizer other)
+    {
+        // Assuming Visualizer has a property to compare, e.g., ID
+        // return this.ID.CompareTo(other.ID);
+        throw new NotImplementedException();
+    }
+
+    #endregion
+}
+
 }

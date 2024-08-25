@@ -4,10 +4,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Visualizer : IVisualizer
+public class Visualizer : IVisualizer<Visual>
 {
     #region Singleton pattern with Lazy<T> implementation (thread-safe)
-    /*private static readonly Lazy<Visualizer> lazy =
+    private static readonly Lazy<Visualizer> lazy =
         new Lazy<Visualizer>(() => new Visualizer());
 
     public static Visualizer Instance { get { return lazy.Value; } }
@@ -16,13 +16,13 @@ public class Visualizer : IVisualizer
 
     private Visualizer()
     {
-        visuals = new List<Visualizer>();
+        visuals = new List<Visual>();
     }
-    */
+    
     #endregion
 
     #region Variables
-    public Visualizer this[int index] { get => visuals[index]; set => visuals[index] = value; }
+    public Visual this[int index] { get => visuals[index]; set => visuals[index] = value; }
 
     public int Count => visuals.Count;
 
