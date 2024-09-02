@@ -140,7 +140,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!82 &390340140
 AudioSource:
   m_ObjectHideFlags: 0
@@ -251,6 +251,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   audioSource: {fileID: 390340140}
   mediaLibrary: {fileID: 1336213869}
+  radialWaveformVisualizer: {fileID: 0}
+  currentSongIndex: 0
 --- !u!4 &390340142
 Transform:
   m_ObjectHideFlags: 0
@@ -1712,7 +1714,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b5d0da81f2edba43b01c9c59c241dca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioSource: {fileID: 1760339784}
   lineRenderer: {fileID: 1760339783}
   resolution: 1024
   radius: 5
