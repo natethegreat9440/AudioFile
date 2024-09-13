@@ -115,7 +115,7 @@ public class MediaPlayerManager : MonoBehaviour
         }
     }
 
-    public void Play()
+ /*   public void Play()
     {
         if (!audioSource.isPlaying)
         {
@@ -126,6 +126,7 @@ public class MediaPlayerManager : MonoBehaviour
 
         }
     }
+ */
 
     public void Pause()
     {

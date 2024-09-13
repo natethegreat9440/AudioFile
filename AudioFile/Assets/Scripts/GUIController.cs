@@ -55,7 +55,7 @@ public class GUIController : MonoBehaviour
         }
         else
         {
-            mediaPlayerManager.Play();
+            mediaPlayerManager.PlayCurrentSong();
 
             //Update UI to show Play Button
         }
