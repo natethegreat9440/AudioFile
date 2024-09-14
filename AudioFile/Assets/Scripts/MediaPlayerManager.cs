@@ -19,8 +19,8 @@ public class MediaPlayerManager : MonoBehaviour
     public RadialWaveformVisualizer radialWaveformVisualizer;
 
     [HideInInspector]
-    public int currentSongIndex = 0;
-    private float songDuration;
+    public int currentTrackIndex = 0;
+    private float trackDuration;
 
     // Events to communicate with other components
     public delegate void TrackChangeHandler(string trackName);
@@ -35,83 +35,85 @@ public class MediaPlayerManager : MonoBehaviour
     #region UnityEngine
     private void Start()
     {
-        if (audioSource == null || mediaLibrary == null || mediaLibrary.songs.Count == 0)
+        if (audioSource == null || mediaLibrary == null || mediaLibrary.tracks.Count == 0)
         {
             Debug.LogError("MediaPlayerManager setup error: Ensure AudioSource and MediaLibrary are set and MediaLibrary is not empty.");
             this.enabled = false; // Disable the script if setup is incomplete
         }
         else
         {
-            PlayCurrentSong();
+            PlayCurrentTrack();
         }
     }
     private void Update()
     {
-        CheckIfSongFinished();
+        CheckIfTrackFinished();
     }
     #endregion
 
     #region TestingMethods
-    public void PlayCurrentSong()
+    //TODO: Refactor PlayCurrentTrack() to use Track instead of audiSource.clip
+    public void PlayCurrentTrack()
     {
-        if (mediaLibrary.songs.Count > 0 && currentSongIndex < mediaLibrary.songs.Count)
+        if (mediaLibrary.tracks.Count > 0 && currentTrackIndex < mediaLibrary.tracks.Count)
         {
-            audioSource.clip = mediaLibrary.songs[currentSongIndex].clip;
+            AudioClip currentTrackClip = mediaLibrary.tracks[currentTrackIndex].AudioSource.clip;
+            audioSource = mediaLibrary.tracks[currentTrackIndex].AudioSource;
 
-            if (audioSource.clip != null)
+            if (audioSource != null)
             {
-                songDuration = audioSource.clip.length; // Get the duration of the current song
+                trackDuration = mediaLibrary.tracks[currentTrackIndex].Duration; // Get the duration of the current track
                 audioSource.Play();
-                OnTrackChanged?.Invoke(audioSource.clip.name); // Trigger event here
+                OnTrackChanged?.Invoke(currentTrackClip.name); // Trigger event here
                 //CreateAndExpandVisualizers();
             }
             else
             {
-                if (currentSongIndex == mediaLibrary.songs.Count - 1)
+                if (currentTrackIndex == mediaLibrary.tracks.Count - 1)
                 {
-                    Skip(false); // Skip to the previous song if the current clip is null and you are at the last song on a playlist
+                    Skip(false); // Skip to the previous track if the current clip is null and you are at the last track on a playlist
                 }
                 else
                 {
-                    Skip(true);  // Skip to the next song if the current clip is null and you are NOT at the last song on a playlist
+                    Skip(true);  // Skip to the next track if the current clip is null and you are NOT at the last track on a playlist
                 }
 
             }
         }
         else
         {
-            Debug.LogError("No songs available or index out of range.");
+            Debug.LogError("No tracks available or index out of range.");
         }
     }
-    public void NextSong()
+    public void NextTrack()
     {
-        if (currentSongIndex < mediaLibrary.songs.Count - 1)
+        if (currentTrackIndex < mediaLibrary.tracks.Count - 1)
         {
-            currentSongIndex++;
-            PlayCurrentSong();
+            currentTrackIndex++;
+            PlayCurrentTrack();
         }
         else
         {
             Debug.Log("Reached the end of the playlist.");
         }
     }
-    public void PreviousSong()
+    public void PreviousTrack()
     {
-        if (currentSongIndex > 0)
+        if (currentTrackIndex > 0)
         {
-            currentSongIndex--;
-            PlayCurrentSong();
+            currentTrackIndex--;
+            PlayCurrentTrack();
         }
         else
         {
             Debug.Log("Already at the beginning of the playlist.");
         }
     }
-    private void CheckIfSongFinished()
+    private void CheckIfTrackFinished()
     {
-        if (!audioSource.isPlaying && audioSource.time >= songDuration)
+        if (!audioSource.isPlaying && audioSource.time >= trackDuration)
         {
-            NextSong();
+            NextTrack();
         }
     }
 
@@ -143,13 +145,13 @@ public class MediaPlayerManager : MonoBehaviour
     {
         if (forward)
         {
-            Debug.LogError($"Clip at index {currentSongIndex} is null. Skipping to the next song.");
-            NextSong();
+            Debug.LogError($"Clip at index {currentTrackIndex} is null. Skipping to the next track.");
+            NextTrack();
         }
         else
         {
-            Debug.LogError($"Clip at index {currentSongIndex} is null. Skipping to the previous song.");
-            PreviousSong();
+            Debug.LogError($"Clip at index {currentTrackIndex} is null. Skipping to the previous track.");
+            PreviousTrack();
         }
     }
 

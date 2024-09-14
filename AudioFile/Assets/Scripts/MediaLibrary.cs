@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [System.Serializable]
 //Song should be broken out into a new Track.cs object
-public class Song
+/*public class Song
 {
     public string name;
     public AudioClip clip;
@@ -14,42 +15,61 @@ public class Song
         this.clip = clip;
     }
 }
+*/
 
+//TODO: Add method to change track type
 public class MediaLibrary : MonoBehaviour
 {
-    public List<Song> songs = new List<Song>(); // List to store songs. List is dynamically resizable at runtime whereas an array is not
+    public List<Track> tracks = new List<Track>(); // List to store tracks. List is dynamically resizable at runtime whereas an array is not
 
-    public void AddSong(string songName, AudioClip clip)
+    public void AddTrack(string type, string trackName, AudioClip clip)
     {
-        if (string.IsNullOrEmpty(songName) || clip == null)
+        if (string.IsNullOrEmpty(trackName) || clip == null)
         {
-            Debug.LogError("Invalid song name or clip.");
+            Debug.LogError("Invalid track name or clip.");
             return;
         }
 
-        if (songs.Exists(song => song.name == songName))
+        if (tracks.Exists(track => track.Name == trackName))
         {
-            Debug.LogWarning("Song already exists in the library.");
+            Debug.LogWarning("Track already exists in the library.");
             return;
         }
 
-        songs.Add(new Song(songName, clip));
+        Track newTrack = TrackFactory.CreateTrack("GenericTrack", trackName, "", "", "", 120, clip);
+        tracks.Add(newTrack);
     }
-    public bool RemoveSongByName(string songName)
+    public bool RemoveTrackByName(string trackName)
     {
-        Song songToRemove = songs.Find(song => song.name == songName);
-        if (songToRemove != null)
+        /* Track trackToRemove = tracks.Find(t => t.name == trackName);
+         if (trackToRemove != null)
+         {
+             tracks.Remove(trackToRemove);
+             return true;
+         }
+         return false;
+        */
+        Track trackToRemove = null;
+        foreach (Track track in tracks)
         {
-            songs.Remove(songToRemove);
+            if (track.Name == trackName)
+            {
+                trackToRemove = track;
+                break;
+            }
+        }
+        if (trackToRemove != null)
+        {
+            tracks.Remove(trackToRemove);
             return true;
         }
         return false;
     }
-    public void RemoveSongAtIndex(int index)
+    public void RemoveTrackAtIndex(int index)
     {
-        if (index >= 0 && index < songs.Count)
+        if (index >= 0 && index < tracks.Count)
         {
-            songs.RemoveAt(index);
+            tracks.RemoveAt(index);
         }
     }
 }

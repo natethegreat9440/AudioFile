@@ -6,7 +6,7 @@ public class GUIController : MonoBehaviour
 {
     #region Variables
     public MediaPlayerManager mediaPlayerManager;
-    public TMP_Text songNameText;
+    public TMP_Text trackNameText;
     public Button playButton;
     public Button nextButton;
     public Button previousButton;
@@ -19,14 +19,14 @@ public class GUIController : MonoBehaviour
     {
         // Set up button listeners
         playButton.onClick.AddListener(TogglePlay);
-        nextButton.onClick.AddListener(PlayNextSong);
-        previousButton.onClick.AddListener(PlayPreviousSong);
+        nextButton.onClick.AddListener(PlayNextTrack);
+        previousButton.onClick.AddListener(PlayPreviousTrack);
 
         // Subscribe to the OnTrackChanged event
-        mediaPlayerManager.OnTrackChanged += UpdateSongName;
+        mediaPlayerManager.OnTrackChanged += UpdateTrackName;
 
-        // Update the song name initially. The ? is used to check if the condition (part before ?) is true. If true it returns the part before the ":" sign and if false it does what is after
-        UpdateSongName(mediaPlayerManager.audioSource.clip != null ? mediaPlayerManager.mediaLibrary.songs[mediaPlayerManager.currentSongIndex].name : "No Song");
+        // Update the track name initially. The ? is used to check if the condition (part before ?) is true. If true it returns the part before the ":" sign and if false it does what is after
+        UpdateTrackName(mediaPlayerManager.audioSource.clip != null ? mediaPlayerManager.mediaLibrary.tracks[mediaPlayerManager.currentTrackIndex].Name : "No Track");
     }
 
     private void Update()
@@ -34,14 +34,14 @@ public class GUIController : MonoBehaviour
         // Continuously update the song name in case it changes
         if (mediaPlayerManager.audioSource.clip != null)
         {
-            songNameText.text = mediaPlayerManager.audioSource.clip.name;
+            trackNameText.text = mediaPlayerManager.audioSource.clip.name;
         }
     }
 
     private void OnDestroy()
     {
         // Unsubscribe from the OnTrackChanged event to prevent memory leaks
-        mediaPlayerManager.OnTrackChanged -= UpdateSongName;
+        mediaPlayerManager.OnTrackChanged -= UpdateTrackName;
     }
     #endregion
 
@@ -55,33 +55,33 @@ public class GUIController : MonoBehaviour
         }
         else
         {
-            mediaPlayerManager.PlayCurrentSong();
+            mediaPlayerManager.PlayCurrentTrack();
 
             //Update UI to show Play Button
         }
         isPlaying = !isPlaying;
     }
 
-    public void PlayNextSong()
+    public void PlayNextTrack()
     {
-        mediaPlayerManager.NextSong();
-        //UpdateSongName();
+        mediaPlayerManager.NextTrack();
+        //UpdateTrackName();
     }
 
-    public void PlayPreviousSong()
+    public void PlayPreviousTrack()
     {
-        mediaPlayerManager.PreviousSong();
-        //UpdateSongName();
+        mediaPlayerManager.PreviousTrack();
+        //UpdateTrackName();
     }
 
-    //TODO: Update method so it displays song Title (from MP3 metadata) as opposed to track/clip name which is essentially the file name. Display file name if no Track metadata field is found. See ChatGPT convo
-    private void UpdateSongName(string trackName)
+    //TODO: Update method so it displays track Title (from MP3 metadata) as opposed to track/clip name which is essentially the file name. Display file name if no Track metadata field is found. See ChatGPT convo
+    private void UpdateTrackName(string trackName)
     {
         if (mediaPlayerManager.audioSource.clip != null)
         {
-            songNameText.text = trackName;
-            //songNameText.text = mediaPlayerManager.audioSource.clip.name;
-            //songNameText.text = trackName;
+            trackNameText.text = trackName;
+            //trackNameText.text = mediaPlayerManager.audioSource.clip.name;
+            //trackNameText.text = trackName;
         }
     }
 }
