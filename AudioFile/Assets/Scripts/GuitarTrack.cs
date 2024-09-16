@@ -11,12 +11,13 @@ public class GuitarTrack : Track
         Electric,
         Bass,
         Classical,
-        TwelveString
+        TwelveString,
+        Unspecified
     }
     public GuitarTypes GuitarType { get; set; }
     //public Tablature Tablature { get; set; }
 
-    public GuitarTrack(string name, string userDescription, string artist, string album, float duration, float bpm, AudioClip clip, AudioSource audioSource, GuitarTypes guitarType)
+    public GuitarTrack(string name, string userDescription, string artist, string album, float bpm, AudioClip clip, AudioSource audioSource, GuitarTypes guitarType = GuitarTypes.Unspecified)
         : base(name, userDescription, artist, album, bpm, clip, audioSource)
     {
         GuitarType = guitarType;
