@@ -16,7 +16,7 @@ public class MediaPlayerManager : MonoBehaviour
 
     [Header("Visual Components:")]
     //TODO: Add a VisualizerManager class and have these methods refer to whatever selected Visualizer is passed
-    public RadialWaveformVisualizer radialWaveformVisualizer;
+    //public RadialWaveformVisualizer radialWaveformVisualizer;
 
     [HideInInspector]
     public int currentTrackIndex = 0;

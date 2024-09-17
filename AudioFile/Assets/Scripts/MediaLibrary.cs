@@ -22,7 +22,7 @@ public class MediaLibrary : MonoBehaviour
 {
     public List<Track> tracks = new List<Track>(); // List to store tracks. List is dynamically resizable at runtime whereas an array is not
 
-    public void AddTrack(string type, string trackName, AudioClip clip)
+    public void AddTrackToLibrary(string trackName, string userDescription, string artist, string album, float bpm, AudioClip clip, AudioSource audioSource)
     {
         if (string.IsNullOrEmpty(trackName) || clip == null)
         {
@@ -36,8 +36,11 @@ public class MediaLibrary : MonoBehaviour
             return;
         }
 
-        Track newTrack = TrackFactory.CreateTrack("GenericTrack", trackName, "", "", "", 120, clip);
-        tracks.Add(newTrack);
+        //Track newTrack = TrackFactory.CreateTrack("GenericTrack", trackName, "", "", "", 120, clip);
+        Track newTrack = new Track(trackName, userDescription, artist, album, bpm, clip, audioSource);
+        GuitarBehavior newGuitarBehaviour = new GuitarBehavior(newTrack); //Guitar behaviour for track allowing for tablature to be added as needed
+        MusicSampleBehavior newMusicSampleBehaviour = new MusicSampleBehavior(newTrack); //Music Sample behaviour for track allowing for music samples to be added as needed
+        tracks.Add(newTrack); // Adds tracks to the tracks list
     }
     public bool RemoveTrackByName(string trackName)
     {

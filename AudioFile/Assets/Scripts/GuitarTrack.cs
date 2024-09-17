@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class GuitarTrack : Track
+public class GuitarTrack
 {
+    private readonly Track _track;
+
     public enum GuitarTypes
     {
         Acoustic,
@@ -14,48 +14,66 @@ public class GuitarTrack : Track
         TwelveString,
         Unspecified
     }
+
     public GuitarTypes GuitarType { get; set; }
-    //public Tablature Tablature { get; set; }
+    public Tablature Tablature { get; set; }
 
-    public GuitarTrack(string name, string userDescription, string artist, string album, float bpm, AudioClip clip, AudioSource audioSource, GuitarTypes guitarType = GuitarTypes.Unspecified)
-        : base(name, userDescription, artist, album, bpm, clip, audioSource)
+    public GuitarTrack(Track track, GuitarTypes guitarType = GuitarTypes.Unspecified, Tablature tablature = null)
     {
+        _track = track ?? throw new ArgumentNullException(nameof(track));
         GuitarType = guitarType;
-        //Tablature = tablature;
+        Tablature = tablature;
     }
 
-    public override void Play(Track item)
+    public void Play()
     {
-        throw new NotImplementedException();
+        _track.Play(_track);
+        Debug.Log("Playing guitar track with type: " + GuitarType);
     }
 
-    public override void Pause(Track item)
+    public void Pause()
     {
-        throw new NotImplementedException();
+        _track.Pause(_track);
+        Debug.Log("Pausing guitar track with type: " + GuitarType);
     }
 
-    public override void Stop(Track item)
+    public void Stop()
     {
-        throw new NotImplementedException();
+        _track.Stop(_track);
+        Debug.Log("Stopping guitar track with type: " + GuitarType);
     }
 
-    public override float GetDuration(Track item)
+    public float GetDuration()
     {
-        return Duration;
+        return _track.GetDuration(_track);
     }
 
-    public override float GetCurrentPosition(Track item)
+    public float GetCurrentPosition()
     {
-        return CurrentPosition;
+        return _track.GetCurrentPosition(_track);
     }
 
-    public override void UpdateMetadata()
+    public void UpdateMetadata()
     {
-        throw new NotImplementedException();
+        _track.UpdateMetadata();
+        Debug.Log("Updating metadata for guitar track with type: " + GuitarType);
     }
 
-    public override void ClearMetadata()
+    public void ClearMetadata()
     {
-        throw new NotImplementedException();
+        _track.ClearMetadata();
+        Debug.Log("Clearing metadata for guitar track with type: " + GuitarType);
+    }
+
+    public void DisplayTablature()
+    {
+        if (Tablature != null)
+        {
+            Tablature.Display();
+        }
+        else
+        {
+            Debug.Log("No tablature available for this guitar track.");
+        }
     }
 }

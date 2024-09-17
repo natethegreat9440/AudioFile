@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Track : ITrack<Track>
+public class Track : ITrack<Track>
 {
     #region Variables
     public string Name { get; private set; } //Name is intrinsic to the Track
@@ -16,33 +16,24 @@ public abstract class Track : ITrack<Track>
     public float CurrentPosition { get; set; }
     public float BPM { get; private set; }
     public AudioSource AudioSource { get; private set; }
+    public AudioClip AudioClip { get; private set; }
 
 
-protected Track(string name, string userDescription, string artist, string album, float bpm, AudioClip clip, AudioSource audioSource)
+public Track(string name, string userDescription, string artist, string album, float bpm, AudioClip clip, AudioSource audioSource)
     {
         Name = name;
         UserDescription = userDescription;
         Artist = artist;
         Album = album;
-        BPM = bpm;
+        BPM = bpm; //No get method exists for BPM on an AudioClip object
+        AudioClip = clip; // Set the AudioSource's clip
         AudioSource = audioSource;
-        AudioSource.clip = clip; // Set the AudioSource's clip
-        Duration = AudioSource.clip.length; // Set the Duration
-
-
+        //Duration = AudioSource.clip.length; // Set the Duration
     }
     #endregion
 
-    public abstract void Play(Track item);
-public abstract void Pause(Track item);
-public abstract void Stop(Track item);
-public abstract float GetDuration(Track item);
-public abstract float GetCurrentPosition(Track item);
-public abstract void UpdateMetadata();
-public abstract void ClearMetadata();
-
     #region IPlayable implementation
-    /*public void Play(Track item)
+    public void Play(Track item)
     {
         throw new NotImplementedException();
     }
@@ -79,7 +70,7 @@ public abstract void ClearMetadata();
     {
         throw new NotImplementedException();
     }
-*/
+
     #endregion
 }
 

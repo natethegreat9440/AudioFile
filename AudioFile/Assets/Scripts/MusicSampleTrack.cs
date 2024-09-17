@@ -1,72 +1,95 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MusicSampleTrack : Track
+public class MusicSampleBehavior
 {
-   public Dictionary<string, SampleInfo> Samples { get; private set; }
+    private readonly Track _track;
 
-    public MusicSampleTrack(string name, string userDescription, string artist, string album, float bpm, AudioClip clip, AudioSource audioSource)
-        : base(name, userDescription, artist, album, bpm, clip, audioSource)
-    {
-        Samples = new Dictionary<string, SampleInfo>();
-    }
-#region MusicSampleTrack specific methods
-    public void AddSample(string key, SampleInfo sampleInfo)
-    {
-        Samples[key] = sampleInfo;
-    }
+    public Dictionary<string, SampleInfo> MusicSamples { get; private set; }
 
-    public void RemoveSample(string key)
+    public MusicSampleBehavior(Track track)
     {
-        Samples.Remove(key);
+        _track = track ?? throw new ArgumentNullException(nameof(track));
+        MusicSamples = new Dictionary<string, SampleInfo>();
     }
-    #endregion
-    public override void Play(Track item)
+    public void DisplaySampleInfo()
     {
-        throw new NotImplementedException();
+        if (MusicSamples != null)
+        {
+            //MusicSamples.Display();
+            throw new NotImplementedException();
+        }
+        else
+        {
+            Debug.Log("No sample info available for this track.");
+        }
     }
+    public class SampleInfo
+    {
+        public string SampleTrackName { get; set; }
+        public string SampleTrackArtist { get; set; }
 
-    public override void Pause(Track item)
-    {
-        throw new NotImplementedException();
-    }
+        public SampleInfo(string sampleTrackName, string sampleTrackArtist)
+        {
+            SampleTrackName = sampleTrackName;
+            SampleTrackArtist = sampleTrackArtist;
+        }
 
-    public override void Stop(Track item)
-    {
-        throw new NotImplementedException();
-    }
 
-    public override float GetDuration(Track item)
-    {
-        return Duration;
-    }
+        #region MusicSampleBehavior specific methods
+        /*
+        public void AddSample(string key, SampleInfo sampleInfo)
+        {
+            Samples[key] = sampleInfo;
+        }
 
-    public override float GetCurrentPosition(Track item)
-    {
-        return CurrentPosition;
-    }
+        public void RemoveSample(string key)
+        {
+            Samples.Remove(key);
+        }
+        #endregion
 
-    public override void UpdateMetadata()
-    {
-        throw new NotImplementedException();
-    }
+        public void Play()
+        {
+            _track.Play(_track);
+            Debug.Log("Playing music sample track.");
+        }
 
-    public override void ClearMetadata()
-    {
-        throw new NotImplementedException();
-    }
-}
+        public void Pause()
+        {
+            _track.Pause(_track);
+            Debug.Log("Pausing music sample track.");
+        }
 
-public class SampleInfo
-{
-    public string SampleTrackName { get; set; }
-    public string SampleTrackArtist { get; set; }
+        public void Stop()
+        {
+            _track.Stop(_track);
+            Debug.Log("Stopping music sample track.");
+        }
 
-    public SampleInfo(string sampleTrackName, string sampleTrackArtist)
-    {
-        SampleTrackName = sampleTrackName;
-        SampleTrackArtist = sampleTrackArtist;
+        public float GetDuration()
+        {
+            return _track.GetDuration(_track);
+        }
+
+        public float GetCurrentPosition()
+        {
+            return _track.GetCurrentPosition(_track);
+        }
+
+        public void UpdateMetadata()
+        {
+            _track.UpdateMetadata();
+            Debug.Log("Updating metadata for music sample track.");
+        }
+
+        public void ClearMetadata()
+        {
+            _track.ClearMetadata();
+            Debug.Log("Clearing metadata for music sample track.");
+        }
     }
-}
+    */
+
+    }
