@@ -28,6 +28,7 @@ public class TrackLibrary : ILibrary<Track>
     public bool IsReadOnly => false;
     #endregion
 
+    
     #region IList implementation
 
     public void Add(Track item)

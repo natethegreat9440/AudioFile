@@ -1,0 +1,69 @@
+﻿@startuml
+interface IPlayable {
+	-void Play(T item)
+	-void Pause(T item)
+	-void Stop(T item)
+	-float GetDuration(T item)
+	-float GetCurrentPosition(T item)
+}
+interface ITrack {
+	-void UpdateMetadata()
+	-void ClearMetadata()
+}
+
+class Track {
+	+string Name
+	+string UserDescription
+	+string Artist
+	+string Album
+	+float Duration
+	+float CurrentPosition
+	+float BPM
+	+AudioSource AudioSource
+	+AudioClip AudioClip
+}
+
+ITrack <|-- Track
+IPlayable <|-- ITrack
+
+interface ILibrary {
+	-T GetSelection()
+	-void ClearSelection()
+	-List<T> GetSelectedItems()
+	-void SelectAll()
+	-void DeselectAll()
+	-T GetSelectedItem(int index)
+	-void SelectItem(int index)
+	-void DeselectItem(int index)
+	-bool IsItemSelected(int index)
+}
+
+class MediaLibrary {
+	+List<Track> tracks
+	+void AddTrackToLibrary(mult args)
+	+bool RemoveTrackByName(string trackName)
+	+void RemoveTrackAtIndex(int index)
+}
+
+note left of MediaLibrary : This class inherits MonoBehaviour\nDoesn't implement ILibrary
+note top of MediaLibrary : Methods are named as Track specific however I may want to be generic\nbetween Tracks and Visualizers
+
+class TrackLibrary {
+	+Track this[int index]
+	+int Count
+	+bool IsReadOnly
+	+Add(Track item)
+	+void Clear()
+	+bool Contains(Track item)
+	+void CopyTo(Track[] array, int arrayIndex)
+	+int IndexOf(Track item)
+	+void Insert(int index, Track item)
+	+void Remove(Track item)
+	+void RemoveAt(int index)
+	+IEnumerator<Track> GetEnumerator()
+	-IEnumerator IEnumerable.GetEnumerator()
+	+int CompareTo(Track other)
+}
+ note left of TrackLibrary : All shown is actually IList implementation
+ILibrary <|-- TrackLibrary
+@enduml
