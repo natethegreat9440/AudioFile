@@ -3,9 +3,11 @@ using UnityEngine.UI;
 using TMPro;
 using System;
 using System.Collections.Generic;
-using System.Media;
 using System.Threading;
-using System.Windows.Forms;
+using System.Xml.Linq;
+using Unity.VisualScripting;
+using UnityEngine.EventSystems;
+//using UnityEngine.UIElements; Having this line in causes ambiguous references for Buttons etc. This library is for newer buttons whereas UnityEngine.UI has all of the legacy UI elements
 
 namespace AudioFile
 {
@@ -16,62 +18,67 @@ namespace AudioFile
 
     public abstract class MenuComponent
     {
-        bool _enabled = true;
-        public void Add(MenuComponent menuComponent)
+        protected bool _enabled = true;
+        public virtual void Add(MenuComponent menuComponent)
         {
-            throw new UnsupportedOperationException();
+            throw new NotImplementedException();
         }
 
-        public void Remove(MenuComponent menuComponent)
+        public virtual void Remove(MenuComponent menuComponent)
         {
-            throw new UnsupportedOperationException();
+            throw new NotImplementedException();
         }
 
-        public MenuComponent GetChild(int i)
+        public virtual MenuComponent GetChild(int i)
         {
-            throw new UnsupportedOperationException();
+            throw new NotImplementedException();
         }
 
-        public void GetName()
+        public virtual string GetName()
         {
-            throw new UnsupportedOperationException();
+            throw new NotImplementedException();
         }
 
-        public void GetDescription()
+        public virtual string GetDescription()
         {
-            throw new UnsupportedOperationException();
+            throw new NotImplementedException();
         }
 
-        bool IsEnabled()
+        protected bool IsEnabled()
         {
             if (_enabled == true) return true;
             else return false;
         }
 
-        void SetEnabled(bool enabled)
+        protected void SetEnabled(bool enabled)
         {
             _enabled = enabled;
         }
 
-        public void Display()
+        public virtual void Display()
         {
-            throw new UnsupportedOperationException();
+            throw new NotImplementedException();
         }
 
-        public void ExecuteAction()
-        { 
-            throw new UnsupportedOperationException();
+        public virtual void Hide()
+        {
+            throw new NotImplementedException();
         }
 
-        public void MenuItem_Click(object sender, MouseEventArgs e)
+        public virtual void ExecuteAction()
         {
-            throw new UnsupportedOperationException();
+            throw new NotImplementedException();
         }
 
-        public void Menu_MouseEnter(object sender, EventArgs e)
+        public virtual void MenuItem_Click()
+        {
+            throw new NotImplementedException();
+        }
+
+        /*public virtual void Menu_MouseEnter()
         {
             throw new UnsupportedOperationException();
-        }
+        }*/
     }
 
     public class MenuItem : MenuComponent
@@ -87,7 +94,7 @@ namespace AudioFile
             _description = description;
             _button = button;
             _button.GetComponentInChildren<Text>().text = name;
-            _button.Click += MenuItem_Click; // Wire up the event handler
+            _button.onClick.AddListener(MenuItem_Click); // Wire up the event handler
             _command = command;
         }
 
@@ -106,7 +113,7 @@ namespace AudioFile
             return _description;
         }
 
-        public void override Display()
+        public override void Display()
         {
             if (_enabled == true)
             {
@@ -118,20 +125,98 @@ namespace AudioFile
             }
         }
 
-        public void override ExecuteAction()
+        public override void Hide()
         {
-            if (enabled && command != null)
+            _button.gameObject.SetActive(false); //set button when Hide is called
+        }
+
+        public override void ExecuteAction()
+        {
+            if (_enabled && _command != null)
             {
-                command.Execute();
+                _command.Execute();
             }
         }
 
-        public override void MenuItem_Click(object sender, MouseEventArgs e)
+        public override void MenuItem_Click()
         {
             this.ExecuteAction();
         }
 
     }
+
+    public class Menu : MenuComponent, IPointerEnterHandler, IPointerExitHandler
+    {
+        List<MenuComponent> _menuComponents = new List<MenuComponent>();
+        string _name;
+        string _description;
+        Text _text;
+
+        public Menu(string name, string description, Text text)
+        {
+            _name = name;
+            _description = description;
+            _text = text;
+            _text.text = name;
+
+            // Enable Raycast Target for hover detection
+            _text.raycastTarget = true;
+
+            // Attach the event handling to the Text GameObject
+            if (_text.gameObject.GetComponent<EventTrigger>() == null)
+            {
+                _text.gameObject.AddComponent<EventTrigger>();
+            }
+        }
+
+
+        public override void Add(MenuComponent menuComponent) => _menuComponents.Add(menuComponent);
+        public override void Remove(MenuComponent menuComponent) => _menuComponents.Remove(menuComponent);
+        public override MenuComponent GetChild(int i) => _menuComponents[i];
+
+        public override string GetName() => _name;
+        public override string GetDescription() => _description;
+
+
+        public override void Display()
+        {
+            if (_enabled == true)
+            {
+                _text.gameObject.SetActive(true); //set button when Display is called
+                foreach (var component in _menuComponents)
+                {
+                    component.Display();
+                }
+            }
+            else
+            {
+                _text.enabled = false;
+            }
+        }
+
+        public override void Hide() // Hide method to undisplay the menu components (called on OnPointerExit)
+        {
+            foreach (var component in _menuComponents)
+            {
+                component.Hide(); // Assuming child components have a Hide() method
+            }
+        }
+
+        void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
+        {
+            this.Display();
+        }
+
+        void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
+        {
+            this.Hide();
+        }
+    }
+
+
+
+
+
     /*public class GUIController : MonoBehaviour
     {
         #region Variables
