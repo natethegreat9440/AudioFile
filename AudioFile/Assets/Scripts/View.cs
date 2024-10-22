@@ -13,7 +13,23 @@ namespace AudioFile
 {
     public abstract class MenuComponent
     {
+        protected Button _button;
+        public Text _text;
+        protected string _name;
+        protected string _description;
         protected bool _enabled = true;
+
+        public MenuComponent(Button button, string description) 
+        {
+            _button = button;
+            _name = _button.GetComponentInChildren<Text>().text;
+            _text = _button.GetComponentInChildren<Text>();
+            _description = description;
+        }
+        public override string ToString()
+        {
+            return $"{_name} - {_description}";
+        }
         public virtual void Add(MenuComponent menuComponent)
         {
             throw new NotImplementedException();
@@ -79,24 +95,15 @@ namespace AudioFile
 
     public class MenuItem : MenuComponent
     {
-        string _name;
-        string _description;
-        Button _button;
+        //string _name;
+        //string _description;
+        //Button _button;
         ICommand _command;
 
-        public MenuItem(string name, string description, Button button, ICommand command)
+        public MenuItem(Button button, string description, ICommand command) : base(button, description)
         {
-            _name = name;
-            _description = description;
-            _button = button;
-            _button.GetComponentInChildren<Text>().text = name;
             _button.onClick.AddListener(MenuItem_Click); // Wire up the event handler
             _command = command;
-        }
-
-        public override string ToString()
-        {
-            return $"{_name} - {_description}";
         }
 
         public override string GetName()
@@ -144,25 +151,12 @@ namespace AudioFile
     public class Menu : MenuComponent, IPointerEnterHandler, IPointerExitHandler
     {
         List<MenuComponent> _menuComponents = new List<MenuComponent>();
-        string _name;
-        string _description;
-        Text _text;
 
-        public Menu(string name, string description, Text text)
+        public Menu(Button button, string description) : base(button, description)
         {
-            _name = name;
-            _description = description;
-            _text = text;
-            _text.text = name;
-
             // Enable Raycast Target for hover detection
             _text.raycastTarget = true;
 
-            // Attach the event handling to the Text GameObject
-            /*if (_text.gameObject.GetComponent<EventTrigger>() == null)
-            {
-                _text.gameObject.AddComponent<EventTrigger>();
-            }*/
             // Attach the event handling to the Text GameObject
             EventTrigger trigger = _text.gameObject.GetComponent<EventTrigger>();
             if (trigger == null)
@@ -185,11 +179,6 @@ namespace AudioFile
             };
             pointerExitEntry.callback.AddListener((eventData) => { ((IPointerExitHandler)this).OnPointerExit((PointerEventData)eventData); });
             trigger.triggers.Add(pointerExitEntry);
-        }
-
-        public override string ToString()
-        {
-            return $"{_name} - {_description}";
         }
         public override void Add(MenuComponent menuComponent) => _menuComponents.Add(menuComponent);
         public override void Remove(MenuComponent menuComponent) => _menuComponents.Remove(menuComponent);
