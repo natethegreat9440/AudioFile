@@ -52,6 +52,7 @@ namespace AudioFile
 
         public virtual void Display()
         {
+            Debug.Log("Display called on a MenuComponent interface");
             throw new NotImplementedException();
         }
 
@@ -202,16 +203,17 @@ namespace AudioFile
         {
             if (_enabled == true)
             {
-                _text.gameObject.SetActive(true); //set button when Display is called
-                foreach (var component in _menuComponents)
+                _text.gameObject.SetActive(true);
+
+                for (int i = 0; i < this._menuComponents.Count; i++)
                 {
-                    component.Display();
+                    MenuComponent child = this.GetChild(i);
+                    //Menu child = this.GetChild(i) as Menu;
+                    child._text.gameObject.SetActive(true);
+                    //child.Display(); Don't call this or else you will get full recursion
                 }
             }
-            else
-            {
-                _text.enabled = false;
-            }
+
         }
 
         public override void Hide() // Hide method to undisplay the menu components (called on OnPointerExit)
@@ -226,13 +228,37 @@ namespace AudioFile
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
             Debug.Log("Pointer Entered: " + this._name);
-            this.Display();
+            Display();
+            /*for (int i = 0; i < _menuComponents.Count; i++)
+            {
+                _menuComponents[i].Display();
+            }
+            */
+            /*foreach (var component in _menuComponents)
+            {
+                component.Display(); // Display only direct children
+            }*/
         }
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
-            Debug.Log("Pointer Exited: " + this._name);
-            this.Hide();
+            //Debug.Log("Pointer Exited: " + this._name);
+            //this.Hide();
+
+            RectTransform rectTransform = _text.GetComponent<RectTransform>();
+
+            Vector2 localMousePosition = rectTransform.InverseTransformPoint(eventData.position);
+            Rect rect = rectTransform.rect;
+
+            // Check if mouse is exiting from the bottom boundary only
+            /*if (localMousePosition.y < rect.yMin)
+            {
+                Debug.Log("Pointer Exited from the bottom boundary: " + this._name);
+                foreach (var component in _menuComponents)
+                {
+                    component.Display(); // Hide only direct children
+                }
+            }*/
         }
     }
 
