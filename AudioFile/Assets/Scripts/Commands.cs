@@ -14,4 +14,20 @@ namespace AudioFile
     {
         void Execute();
     }
+
+    public class NewTrackCommand : ICommand
+    {
+        /* TODO: Implement this later once Controller is implemented
+        private IController controller;
+        public NewCommand(IController controller)
+        {
+            this.controller = controller;
+        }
+        */
+        public void Execute()
+        {
+            //controller.AddTrack();
+            Debug.Log("New Track Command executed");
+        }
+    }
 }

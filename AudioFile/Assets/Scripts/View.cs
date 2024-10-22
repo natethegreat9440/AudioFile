@@ -87,17 +87,10 @@ namespace AudioFile
             throw new NotImplementedException();
         }
 
-        /*public virtual void Menu_MouseEnter()
-        {
-            throw new UnsupportedOperationException();
-        }*/
     }
 
     public class MenuItem : MenuComponent
     {
-        //string _name;
-        //string _description;
-        //Button _button;
         ICommand _command;
 
         public MenuItem(Button button, string description, ICommand command) : base(button, description)
@@ -197,7 +190,6 @@ namespace AudioFile
                 for (int i = 0; i < this._menuComponents.Count; i++)
                 {
                     MenuComponent child = this.GetChild(i);
-                    //Menu child = this.GetChild(i) as Menu;
                     child._button.gameObject.SetActive(true);
                     //child.Display(); Don't call this or else you will get full recursion
                 }
