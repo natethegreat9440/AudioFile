@@ -1,5 +1,5 @@
 ﻿//Create a concrete class called Queue that implements the IQueue interface. Make this class a singleton.
-
+/*
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -102,4 +102,4 @@ public class Queue<T> : IQueue<T> where T : IPlayable<T>
         throw new NotImplementedException();
     }
     #endregion
-}
+}*/

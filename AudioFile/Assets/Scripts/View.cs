@@ -11,11 +11,6 @@ using UnityEngine.EventSystems;
 
 namespace AudioFile
 {
-    public interface ICommand
-    {
-        void Execute();
-    }
-
     public abstract class MenuComponent
     {
         protected bool _enabled = true;
@@ -163,13 +158,38 @@ namespace AudioFile
             _text.raycastTarget = true;
 
             // Attach the event handling to the Text GameObject
-            if (_text.gameObject.GetComponent<EventTrigger>() == null)
+            /*if (_text.gameObject.GetComponent<EventTrigger>() == null)
             {
                 _text.gameObject.AddComponent<EventTrigger>();
+            }*/
+            // Attach the event handling to the Text GameObject
+            EventTrigger trigger = _text.gameObject.GetComponent<EventTrigger>();
+            if (trigger == null)
+            {
+                trigger = _text.gameObject.AddComponent<EventTrigger>();
             }
+
+            // Add OnPointerEnter event
+            EventTrigger.Entry pointerEnterEntry = new EventTrigger.Entry
+            {
+                eventID = EventTriggerType.PointerEnter
+            };
+            pointerEnterEntry.callback.AddListener((eventData) => { ((IPointerEnterHandler)this).OnPointerEnter((PointerEventData)eventData); });
+            trigger.triggers.Add(pointerEnterEntry);
+
+            // Add OnPointerExit event
+            EventTrigger.Entry pointerExitEntry = new EventTrigger.Entry
+            {
+                eventID = EventTriggerType.PointerExit
+            };
+            pointerExitEntry.callback.AddListener((eventData) => { ((IPointerExitHandler)this).OnPointerExit((PointerEventData)eventData); });
+            trigger.triggers.Add(pointerExitEntry);
         }
 
-
+        public override string ToString()
+        {
+            return $"{_name} - {_description}";
+        }
         public override void Add(MenuComponent menuComponent) => _menuComponents.Add(menuComponent);
         public override void Remove(MenuComponent menuComponent) => _menuComponents.Remove(menuComponent);
         public override MenuComponent GetChild(int i) => _menuComponents[i];
@@ -196,6 +216,7 @@ namespace AudioFile
 
         public override void Hide() // Hide method to undisplay the menu components (called on OnPointerExit)
         {
+            _text.gameObject.SetActive(false);
             foreach (var component in _menuComponents)
             {
                 component.Hide(); // Assuming child components have a Hide() method
@@ -204,11 +225,13 @@ namespace AudioFile
 
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
+            Debug.Log("Pointer Entered: " + this._name);
             this.Display();
         }
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
+            Debug.Log("Pointer Exited: " + this._name);
             this.Hide();
         }
     }

@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
 [System.Serializable]
 //Song should be broken out into a new Track.cs object
-/*public class Song
+public class Song
 {
     public string name;
     public AudioClip clip;
@@ -15,7 +15,7 @@ using UnityEngine;
         this.clip = clip;
     }
 }
-*/
+
 
 //TODO: Add method to change track type
 public class MediaLibrary : MonoBehaviour
@@ -51,7 +51,7 @@ public class MediaLibrary : MonoBehaviour
              return true;
          }
          return false;
-        */
+        
         Track trackToRemove = null;
         foreach (Track track in tracks)
         {
@@ -76,3 +76,4 @@ public class MediaLibrary : MonoBehaviour
         }
     }
 }
+*/

@@ -21,7 +21,7 @@
         / The IsItemVisible() method will return true if the media item at the specified index is visible.
     /Create this interface
 */
-
+/*
 using System;
 //using System.Collections;
 using System.Collections.Generic;
@@ -51,7 +51,7 @@ public interface ILibrary<T> : IList<T>, IComparable<T>
         bool IsItemSelected(int index);
      
 }
-
+*/
 
 
 

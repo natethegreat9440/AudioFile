@@ -1,5 +1,5 @@
 ﻿//Create a concrete class called Visualizer that implements the IVisualizer interface. 
-
+/*
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -70,7 +70,7 @@ public class Visualizer : IVisualizer<Visualizer>
     {
         visuals.RemoveAt(index);
     }
-    */
+    
     #endregion
 
     #region IVisualizer implementation
@@ -117,4 +117,4 @@ public class Visualizer : IVisualizer<Visualizer>
         throw new NotImplementedException();
     }
     #endregion
-}
+}*/
