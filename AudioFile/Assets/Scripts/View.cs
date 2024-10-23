@@ -13,17 +13,17 @@ namespace AudioFile
 {
     public abstract class MenuComponent
     {
-        public Button _button;
-        public Text _text;
+        public Button button;
+        public Text text;
         protected string _name;
         protected string _description;
         protected bool _enabled = true;
 
         public MenuComponent(Button button, string description) 
         {
-            _button = button;
-            _name = _button.GetComponentInChildren<Text>().text;
-            _text = _button.GetComponentInChildren<Text>();
+            this.button = button;
+            _name = button.GetComponentInChildren<Text>().text;
+            text = button.GetComponentInChildren<Text>();
             _description = description;
         }
         public override string ToString()
@@ -95,7 +95,7 @@ namespace AudioFile
 
         public MenuItem(Button button, string description, ICommand command) : base(button, description)
         {
-            _button.onClick.AddListener(MenuItem_Click); // Wire up the event handler
+            button.onClick.AddListener(MenuItem_Click); // Wire up the event handler
             _command = command;
         }
 
@@ -113,17 +113,17 @@ namespace AudioFile
         {
             if (_enabled == true)
             {
-                _button.gameObject.SetActive(true); //set button when Display is called
+                button.gameObject.SetActive(true); //set button when Display is called
             }
             else
             {
-                _button.enabled = false;
+                button.enabled = false;
             }
         }
 
         public override void Hide()
         {
-            _button.gameObject.SetActive(false); //set button when Hide is called
+            button.gameObject.SetActive(false); //set button when Hide is called
         }
 
         public override void ExecuteAction()
@@ -144,17 +144,19 @@ namespace AudioFile
     public class Menu : MenuComponent, IPointerEnterHandler, IPointerExitHandler
     {
         List<MenuComponent> _menuComponents = new List<MenuComponent>();
+        bool _alphaMenu;
 
-        public Menu(Button button, string description) : base(button, description)
+        public Menu(Button button, string description, bool alphaMenu = false) : base(button, description)
         {
+            _alphaMenu = alphaMenu;
             // Enable Raycast Target for hover detection
-            _text.raycastTarget = true;
+            text.raycastTarget = true;
 
             // Attach the event handling to the Text GameObject
-            EventTrigger trigger = _text.gameObject.GetComponent<EventTrigger>();
+            EventTrigger trigger = text.gameObject.GetComponent<EventTrigger>();
             if (trigger == null)
             {
-                trigger = _text.gameObject.AddComponent<EventTrigger>();
+                trigger = text.gameObject.AddComponent<EventTrigger>();
             }
 
             // Add OnPointerEnter event
@@ -185,12 +187,12 @@ namespace AudioFile
         {
             if (_enabled == true)
             {
-                _button.gameObject.SetActive(true);
+                button.gameObject.SetActive(true);
 
                 for (int i = 0; i < this._menuComponents.Count; i++)
                 {
                     MenuComponent child = this.GetChild(i);
-                    child._button.gameObject.SetActive(true);
+                    child.button.gameObject.SetActive(true);
                     //child.Display(); Don't call this or else you will get full recursion
                 }
             }
@@ -199,47 +201,47 @@ namespace AudioFile
 
         public override void Hide() // Hide method to undisplay the menu components (called on OnPointerExit)
         {
-            _text.gameObject.SetActive(false);
-            foreach (var component in _menuComponents)
+            //button.gameObject.SetActive(false);
+
+            for (int i = 0; i < this._menuComponents.Count; i++)
+            {
+                MenuComponent child = this.GetChild(i);
+                child.button.gameObject.SetActive(false);
+                //child.Hide(); Don't call this or else you will get full recursion
+            }
+            /*foreach (var component in _menuComponents)
             {
                 component.Hide(); // Assuming child components have a Hide() method
-            }
+            }*/
         }
 
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
             Debug.Log("Pointer Entered: " + this._name);
             Display();
-            /*for (int i = 0; i < _menuComponents.Count; i++)
-            {
-                _menuComponents[i].Display();
-            }
-            */
-            /*foreach (var component in _menuComponents)
-            {
-                component.Display(); // Display only direct children
-            }*/
         }
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
-            //Debug.Log("Pointer Exited: " + this._name);
-            //this.Hide();
+            Debug.Log("Pointer Exited: " + this._name);
 
-            RectTransform rectTransform = _text.GetComponent<RectTransform>();
+            RectTransform rectTransform = text.GetComponent<RectTransform>();
 
             Vector2 localMousePosition = rectTransform.InverseTransformPoint(eventData.position);
             Rect rect = rectTransform.rect;
 
             // Check if mouse is exiting from the bottom boundary only
-            /*if (localMousePosition.y < rect.yMin)
+            if ((localMousePosition.y > rect.yMax || localMousePosition.y < rect.yMin) && !_alphaMenu)
             {
-                Debug.Log("Pointer Exited from the bottom boundary: " + this._name);
-                foreach (var component in _menuComponents)
-                {
-                    component.Display(); // Hide only direct children
-                }
-            }*/
+                Debug.Log("Pointer Exited from the top/bottom boundary: " + this._name);
+                Hide();
+            }
+            else if ((localMousePosition.x < rect.xMin || localMousePosition.x > rect.xMax || localMousePosition.y > rect.yMax) && _alphaMenu)
+            {
+                Debug.Log("Pointer Exited from the top/left/right boundary: " + this._name);
+                Hide();
+
+            }
         }
     }
 }

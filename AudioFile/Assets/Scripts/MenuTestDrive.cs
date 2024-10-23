@@ -40,7 +40,7 @@ namespace AudioFile
             #endregion
 
             #region Menu Components
-            Menu fileMenu = new Menu(fileButton, "File Menu");
+            Menu fileMenu = new Menu(fileButton, "File Menu", true);
             MenuItem newMenuItem = new MenuItem(newButton, "New Menu", newTrackCommand);
             Menu openMenu = new Menu(openButton, "Open Menu");
             Menu optionsMenu = new Menu(optionsButton, "Options Menu");
