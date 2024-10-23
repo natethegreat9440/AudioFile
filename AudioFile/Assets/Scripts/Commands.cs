@@ -15,11 +15,11 @@ namespace AudioFile
         void Execute();
     }
 
-    public class NewTrackCommand : ICommand
+    public class AddTrackCommand : ICommand
     {
         /* TODO: Implement this later once Controller is implemented
         private IController controller;
-        public NewCommand(IController controller)
+        public AddTrackCommand(IController controller)
         {
             this.controller = controller;
         }
@@ -28,6 +28,59 @@ namespace AudioFile
         {
             //controller.AddTrack();
             Debug.Log("New Track Command executed");
+            throw new NotImplementedException();
+        }
+    }
+
+    public class AddPlaylistCommand : ICommand
+    {
+        /* TODO: Implement this later once Controller is implemented
+        private IController controller;
+        public AddPlaylistCommand(IController controller)
+        {
+            this.controller = controller;
+        }
+        */
+        public void Execute()
+        {
+            //controller.AddEmptyPlaylist();
+            Debug.Log("New Playlist Command executed");
+            throw new NotImplementedException();
+        }
+    }
+
+    public class AddPlaylistFolderCommand : ICommand
+    {
+        /* TODO: Implement this later once Controller is implemented
+        private IController controller;
+        public AddPlaylistFolderCommand(IController controller)
+        {
+            this.controller = controller;
+        }
+        */
+        public void Execute()
+        {
+            //controller.AddEmptyPlaylistFolder();
+            Debug.Log("New Playlist Folder Command executed");
+            throw new NotImplementedException();
+        }
+    }
+
+
+    public class ExitProgramCommand : ICommand
+    {
+        /* TODO: Implement this later once Controller is implemented
+        private IController controller;
+        public ExitProgramCommand(IController controller)
+        {
+            this.controller = controller;
+        }
+        */
+        public void Execute()
+        {
+            //controller.ExitProgram();
+            Debug.Log("Exit Program Command executed");
+            throw new NotImplementedException();
         }
     }
 }
