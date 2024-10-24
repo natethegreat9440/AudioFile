@@ -23,12 +23,12 @@ namespace AudioFile.View
             #endregion
 
             #region GameObject containers
-            GameObject fileGameObject = GameObject.Find("File Button");
-            GameObject addGameObject = GameObject.Find("Add Button");
-            GameObject newGameObject = GameObject.Find("New Button");
-            GameObject newPlaylistGameObject = GameObject.Find("New Playlist Button");
-            GameObject newPlaylistFolderGameObject = GameObject.Find("New Playlist Folder Button");
-            GameObject exitGameObject = GameObject.Find("Exit Button");
+            GameObject fileGameObject = GameObject.Find("File_Button");
+            GameObject addGameObject = GameObject.Find("Add_Button");
+            GameObject newGameObject = GameObject.Find("New_Button");
+            GameObject newPlaylistGameObject = GameObject.Find("New_Playlist_Button");
+            GameObject newPlaylistFolderGameObject = GameObject.Find("New_Playlist_Folder_Button");
+            GameObject exitGameObject = GameObject.Find("Exit_Button");
             #endregion
 
             #region Buttons
