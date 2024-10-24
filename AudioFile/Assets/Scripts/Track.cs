@@ -1,11 +1,19 @@
 ﻿//Create a concrete class called Track that implements the IPlayable interface. 
-/*
+
+using AudioFile.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Playables;
 
-public class Track : ITrack<Track>
+public class Track : IMediaLibraryComponent
+{
+    PlayableGraph playableGraph;
+    private PlayableHandle playableHandle;
+}
+
+/*public class Track : ITrack<Track>
 {
     #region Variables
     public string Name { get; private set; } //Name is intrinsic to the Track

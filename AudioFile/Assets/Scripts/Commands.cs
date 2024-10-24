@@ -8,7 +8,7 @@ using System.Xml.Linq;
 using Unity.VisualScripting;
 using UnityEngine.EventSystems;
 
-namespace AudioFile
+namespace AudioFile.View
 {
     public interface ICommand
     {
