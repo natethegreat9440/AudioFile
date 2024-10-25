@@ -4,6 +4,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using AudioFile.ObserverManager;
+using System.IO;
+using UnityEngine.Networking;
 
 namespace AudioFile.Model
 {
@@ -66,7 +68,57 @@ namespace AudioFile.Model
 
         public override void LoadItem()
         {
-            base.LoadItem();
+            string path = OpenFileDialog(); // Call a native file dialog to get the path to an mp3 file
+            if (!string.IsNullOrEmpty(path) && File.Exists(path))
+            {
+                StartCoroutine(LoadAudioClipFromFile(path));
+            }
+            else
+            {
+                Debug.LogError("Invalid file path or file does not exist.");
+            }
+        }
+
+        // Coroutine to load the mp3 file as an AudioClip
+        private IEnumerator LoadAudioClipFromFile(string filePath)
+        {
+            //TODO: Download the TagLib# library from Github and use that to read the Tags for the MP3 file to grab the "metadata" for the file
+            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
+            {
+                yield return www.SendWebRequest();
+
+                if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
+                {
+                    Debug.LogError("Error loading audio file: " + www.error);
+                }
+                else
+                {
+                    AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
+                    if (audioClip != null)
+                    {
+                        Debug.Log("Successfully loaded audio clip!");
+                        CreateTrack(audioClip);
+                    }
+                }
+            }
+        }
+
+        // Function to create a track with the loaded AudioClip
+        private void CreateTrack(AudioClip audioClip)
+        {
+            Track newTrack = new Track(audioClip);
+            // Add newTrack to your media library collection, etc.
+            Debug.Log($"Track '{newTrack}' has been added to the media library.");
+        }
+
+        // Function to open a file dialog (example, would need a third-party library)
+        private string OpenFileDialog()
+        {
+            //TODO:Find the standalone file browser (SFB) library on Github and use that to open a file dialog for selecting MP3 files
+            
+            // Use a file dialog to select an mp3 file (you'll need a package like StandaloneFileBrowser)
+            // For now, let's just hardcode a file path for this example:
+            return "/path/to/your/audiofile.mp3"; // Replace with actual file dialog implementation.
         }
         public override void AddItem()
         { 

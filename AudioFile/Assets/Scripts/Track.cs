@@ -15,19 +15,21 @@ namespace AudioFile.Model
     {
         //_playableGraph and _playableHandle are declared in the base class
         AudioSource _audioSource;
+        //AudioClip _audioClip;
         AudioPlayableOutput _audioPlayableOutput;
         AudioClipPlayable _audioPlayable;
-        TrackProperties _trackProperties;
+        public TrackProperties TrackProperties;
         TrackLibrary _trackLibrary;
 
-        public Track(AudioSource source, string trackTitle, string trackArtist, string trackAlbum, string trackDuration, string name = "A track") : base(name)
+        public Track(AudioClip loadedClip, string trackTitle= "Untitled Track", string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string trackDuration = "--:--", string name = "A track") : base(name)
         {
-            _audioSource = source; // Set the AudioSource's clip and spaud
-            _trackProperties = new TrackProperties();
-            _trackProperties.SetProperty("Title", trackTitle);
-            _trackProperties.SetProperty("Artist", trackArtist);
-            _trackProperties.SetProperty("Album", trackAlbum);
-            _trackProperties.SetProperty("Duration", trackDuration);
+            //_audioSource = source; // Set the AudioSource's clip and spaud
+            _audioSource.clip = loadedClip;
+            TrackProperties = new TrackProperties();
+            TrackProperties.SetProperty("Title", trackTitle);
+            TrackProperties.SetProperty("Artist", trackArtist);
+            TrackProperties.SetProperty("Album", trackAlbum);
+            TrackProperties.SetProperty("Duration", trackDuration);
 
             _playableGraph = PlayableGraph.Create();
 
@@ -45,7 +47,7 @@ namespace AudioFile.Model
 
         public override string ToString()
         {
-            return $"{_trackProperties.GetProperty("Title")} - {_trackProperties.GetProperty("Artist")}";
+            return $"{TrackProperties.GetProperty("Title")} - {TrackProperties.GetProperty("Artist")}";
         }
         #region Playback method implementations
         // Play the track
