@@ -8,87 +8,118 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Playables;
 
-public class Track : MediaLibraryComponent, IPlayable
+namespace AudioFile.Model
 {
-    AudioSource _audioSource;
-    AudioPlayableOutput _audioPlayableOutput;
-    AudioClipPlayable _audioPlayable;
-    //PlayableGraph _playableGraph;
-    //PlayableHandle _playableHandle;
-
-    //Abstract these out into a TrackProperties Dictionary
-    public string trackTitle { get; set; }
-    public string trackArtist { get; set; }
-    public string trackAlbum { get; set; }
-
-    public string trackDuration { get; }
-
-    public Track(AudioSource source, string trackTitle, string trackArtist, string trackAlbum, string trackDuration, string name="A track") : base(name)
+    public class TrackProperties
     {
-        _audioSource = source; // Set the AudioSource's clip and spaud
-        this.trackTitle = trackTitle;
-        this.trackArtist = trackArtist;
-        this.trackAlbum = trackAlbum;
-        this.trackDuration = trackDuration;
+        Dictionary<string, string> trackProperties = new Dictionary<string, string>()
+        {
+            {"Title", "Untitled Track"},
+            {"Artist", "Unknown Artist"},
+            {"Album", "Unknown Album"},
+            {"Duration", "--:--"},
+            {"BPM", "--" }
+        };
 
-        _playableGraph = PlayableGraph.Create();
+        public string GetProperty(string key)
+        {
+            if (trackProperties.ContainsKey(key))
+            {
+                return trackProperties[key];
+            }
+            return null;
+        }
 
-        // Create an AudioPlayableOutput linked to this track's AudioSource
-        AudioPlayableOutput _audioPlayableOutput = AudioPlayableOutput.Create(_playableGraph, "Audio", _audioSource);
+        /*Method not needed can just call the trackProperties.Values or trackProperties.Keys to get all keys and values 
+public Dictionary<string, string> GetAllProperties()
+        {
+            return new Dictionary<string, string>(trackProperties);
+        }*/
 
-        // Create an AudioPlayable that this Track controls
-        AudioClipPlayable _audioPlayable = AudioClipPlayable.Create(_playableGraph, _audioSource.clip, false);
-
-        // Link the PlayableOutput to the Playable
-        _audioPlayableOutput.SetSourcePlayable(_audioPlayable);
-
-        _playableHandle = _audioPlayable.GetHandle();
+        public void SetProperty(string key, string value)
+        {
+            if (trackProperties.ContainsKey(key))
+            {
+                trackProperties[key] = value;
+            }
+        }
     }
-
-    public override string ToString()
+    public class Track : MediaLibraryComponent, IPlayable
     {
-        return $"{trackTitle} - {trackArtist}";
-    }
+        //_playableGraph and _playableHandle are declared in the base class
+        AudioSource _audioSource;
+        AudioPlayableOutput _audioPlayableOutput;
+        AudioClipPlayable _audioPlayable;
+        TrackProperties _trackProperties;
 
-    // Play the track
-    public override void Play()
-    {
-        _playableGraph.Play();
-        _audioSource.Play();
-    }
+        public Track(AudioSource source, string trackTitle, string trackArtist, string trackAlbum, string trackDuration, string name = "A track") : base(name)
+        {
+            _audioSource = source; // Set the AudioSource's clip and spaud
+            _trackProperties = new TrackProperties();
+            _trackProperties.SetProperty("Title", trackTitle);
+            _trackProperties.SetProperty("Artist", trackArtist);
+            _trackProperties.SetProperty("Album", trackAlbum);
+            _trackProperties.SetProperty("Duration", trackDuration);
 
-    // Pause the track
-    public override void Pause()
-    {
-        _playableGraph.Stop();
-        _audioSource.Pause();
-    }
+            _playableGraph = PlayableGraph.Create();
 
-    // Stop the track
-    public override void Stop()
-    {
-        _playableGraph.Stop();
-        _audioSource.Stop();
-    }
+            // Create an AudioPlayableOutput linked to this track's AudioSource
+            AudioPlayableOutput _audioPlayableOutput = AudioPlayableOutput.Create(_playableGraph, "Audio", _audioSource);
 
-    // Get or set playback time
-    public override float GetDuration()
-    {
-        return (float)_audioPlayable.GetDuration();
-    }
+            // Create an AudioPlayable that this Track controls
+            AudioClipPlayable _audioPlayable = AudioClipPlayable.Create(_playableGraph, _audioSource.clip, false);
 
-    public void SetTime(double time)
-    {
-        _audioPlayable.SetTime(time);
-        _audioSource.time = (float)time;
-    }
+            // Link the PlayableOutput to the Playable
+            _audioPlayableOutput.SetSourcePlayable(_audioPlayable);
 
-    // Check if the track is done
-    public bool IsDone()
-    {
-        return _audioPlayable.IsDone();
-    }
+            _playableHandle = _audioPlayable.GetHandle();
+        }
 
+        public override string ToString()
+        {
+            return $"{_trackProperties.GetProperty("Title")} - {_trackProperties.GetProperty("Artist")}";
+        }
+
+        // Play the track
+        public override void Play()
+        {
+            _playableGraph.Play();
+            _audioSource.Play();
+        }
+
+        // Pause the track
+        public override void Pause()
+        {
+            _playableGraph.Stop();
+            _audioSource.Pause();
+        }
+
+        // Stop the track
+        public override void Stop()
+        {
+            _playableGraph.Stop();
+            _audioSource.Stop();
+        }
+
+        // Get or set playback time
+        public override float GetDuration()
+        {
+            return (float)_audioPlayable.GetDuration();
+        }
+
+        public void SetTime(double time)
+        {
+            _audioPlayable.SetTime(time);
+            _audioSource.time = (float)time;
+        }
+
+        // Check if the track is done
+        public bool IsDone()
+        {
+            return _audioPlayable.IsDone();
+        }
+
+    }
 }
 
 /*public class Track : ITrack<Track>
