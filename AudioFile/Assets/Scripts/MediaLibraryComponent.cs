@@ -7,10 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Playables;
+using AudioFile.ObserverManager;
 
 namespace AudioFile.Model
 {
-    public abstract class MediaLibraryComponent : IPlayable
+    public abstract class MediaLibraryComponent : MonoBehaviour, IPlayable
     {
         protected PlayableGraph _playableGraph;
         protected PlayableHandle _playableHandle;
@@ -46,7 +47,7 @@ namespace AudioFile.Model
         }
 
         #endregion
-        #region Playback methods
+        #region Playback methods for tracks/visualizers
         public virtual void Play()
         {
             throw new NotImplementedException();
@@ -64,11 +65,12 @@ namespace AudioFile.Model
             throw new NotImplementedException();
         }
 
-        public virtual void SetTime(float duration)
+        public virtual void SetTime(float time)
         {
             throw new NotImplementedException();
         }
-
+        #endregion
+        #region Playback methods for TrackLibrary
         public virtual void Skip()
         {
             throw new NotImplementedException();
@@ -84,7 +86,7 @@ namespace AudioFile.Model
             throw new NotImplementedException();
         }
         #endregion
-        #region Model control
+        #region Model control methods
         public virtual void LoadItem()
         {
             throw new NotImplementedException();

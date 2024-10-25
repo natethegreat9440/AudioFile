@@ -1,9 +1,85 @@
-﻿//Create a concrete class called TrackLibrary that implements the ILibrary interface. Make this class a singleton.
-/*
+﻿using AudioFile.Model;
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using AudioFile.ObserverManager;
 
+namespace AudioFile.Model
+{
+    public class TrackLibrary : MediaLibraryComponent, IAudioFileObserver
+    {
+        //protected override string _name = "Track Library";
+        protected List<Track> trackList = new List<Track>();
+        private int currentTrackIndex = 0;
+
+        public TrackLibrary(string name = "Track Library") : base(name)
+        {
+        }
+
+        public override string ToString()
+        {
+            return $"{_name}";
+        }
+
+        #region Playback method implementations
+
+        public override void Skip()
+        {
+            try
+            {
+                trackList[currentTrackIndex].Play();
+            }
+            catch (Exception)
+            {
+                NextItem();
+            }
+        }
+
+        public override void NextItem()
+        {
+            if (currentTrackIndex < trackList.Count - 1)
+            {
+                currentTrackIndex++;
+                trackList[currentTrackIndex].Play();
+            }
+        }
+
+        public override void PreviousItem()
+        {
+            if (currentTrackIndex > 0)
+            {
+                currentTrackIndex--;
+                trackList[currentTrackIndex].Play();
+            }
+        }
+
+        public void AudioFileUpdate(string observationType, object data)
+        {
+            if (observationType == "OnCurrentTrackIsDone")
+            {
+                NextItem();
+            }
+        }
+        #endregion
+        #region Model control methods
+
+        public override void LoadItem()
+        {
+            base.LoadItem();
+        }
+        public override void AddItem()
+        { 
+            base.AddItem(); 
+        }
+        public override void RemoveItem()
+        {
+            base.RemoveItem();
+        }
+        #endregion
+    }
+}
+/*
 public class TrackLibrary : ILibrary<Track>
 {
     #region Singleton pattern with Lazy<T> implementation (thread-safe)
