@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using AudioFile.ObserverManager;
 using System.IO;
 using UnityEngine.Networking;
+using SFB;
+
 
 namespace AudioFile.Model
 {
@@ -68,7 +70,7 @@ namespace AudioFile.Model
 
         public override void LoadItem()
         {
-            string path = OpenFileDialog(); // Call a native file dialog to get the path to an mp3 file
+            string path = OpenFileDialog(); 
             if (!string.IsNullOrEmpty(path) && File.Exists(path))
             {
                 StartCoroutine(LoadAudioClipFromFile(path));
@@ -97,36 +99,47 @@ namespace AudioFile.Model
                     if (audioClip != null)
                     {
                         Debug.Log("Successfully loaded audio clip!");
-                        CreateTrack(audioClip);
+                        Track newTrack = CreateTrack(audioClip);
+                        AddItem(newTrack);
                     }
                 }
             }
         }
 
-        // Function to create a track with the loaded AudioClip
-        private void CreateTrack(AudioClip audioClip)
+        private Track CreateTrack(AudioClip audioClip) // Function to create a track with the loaded AudioClip
         {
             Track newTrack = new Track(audioClip);
+            return newTrack;
             // Add newTrack to your media library collection, etc.
-            Debug.Log($"Track '{newTrack}' has been added to the media library.");
         }
 
         // Function to open a file dialog (example, would need a third-party library)
         private string OpenFileDialog()
         {
             //TODO:Find the standalone file browser (SFB) library on Github and use that to open a file dialog for selecting MP3 files
-            
-            // Use a file dialog to select an mp3 file (you'll need a package like StandaloneFileBrowser)
-            // For now, let's just hardcode a file path for this example:
-            return "/path/to/your/audiofile.mp3"; // Replace with actual file dialog implementation.
+            string[] paths = StandaloneFileBrowser.OpenFilePanel("Select an MP3 file", "", "mp3", false);
+            if (paths.Length > 0)
+            {
+                string selectedFilePath = paths[0];
+                Debug.Log("Selected file: " + selectedFilePath);
+                // Use the selected file path in your project
+                return selectedFilePath;
+            }
+            else
+            {
+                Debug.LogError("No file selected.");
+                return string.Empty;
+            }
         }
-        public override void AddItem()
-        { 
-            base.AddItem(); 
-        }
-        public override void RemoveItem()
+        public override void AddItem(MediaLibraryComponent newTrack)
         {
-            base.RemoveItem();
+            trackList.Add((Track)newTrack);
+            Debug.Log($"Track '{newTrack}' has been added to the media library.");
+        }
+        public override void RemoveItem(MediaLibraryComponent providedTrack)
+        {
+            trackList.Remove((Track)providedTrack);
+            Debug.Log($"Track '{providedTrack}' has been removed from the media library.");
         }
         #endregion
     }

@@ -91,12 +91,12 @@ namespace AudioFile.Model
         {
             throw new NotImplementedException();
         }
-        public virtual void AddItem()
+        public virtual void AddItem(MediaLibraryComponent mediaLibraryComponent)
         {
             throw new NotImplementedException();
         }
 
-        public virtual void RemoveItem()
+        public virtual void RemoveItem(MediaLibraryComponent mediaLibraryComponent)
         {
             throw new NotImplementedException();
         }
