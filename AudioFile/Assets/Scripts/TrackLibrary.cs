@@ -85,7 +85,8 @@ namespace AudioFile.Model
         // Coroutine to load the mp3 file as an AudioClip
         private IEnumerator LoadAudioClipFromFile(string filePath)
         {
-             
+            //TODO: Move metadata extraction to a separate method that can be delegated by this method or called seperately with
+            //different arguments for whether we want full extraction or just basic extraction
             string trackTitle = "Untitled Track";
             string trackAlbum = "Unknown Album";
             string contributingArtists = "Unknown Artist";
