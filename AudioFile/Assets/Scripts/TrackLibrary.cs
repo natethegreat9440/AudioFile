@@ -7,6 +7,7 @@ using AudioFile.ObserverManager;
 using System.IO;
 using UnityEngine.Networking;
 using SFB;
+using TagLib;
 
 
 namespace AudioFile.Model
@@ -71,7 +72,7 @@ namespace AudioFile.Model
         public override void LoadItem()
         {
             string path = OpenFileDialog(); 
-            if (!string.IsNullOrEmpty(path) && File.Exists(path))
+            if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
             {
                 StartCoroutine(LoadAudioClipFromFile(path));
             }
@@ -84,7 +85,25 @@ namespace AudioFile.Model
         // Coroutine to load the mp3 file as an AudioClip
         private IEnumerator LoadAudioClipFromFile(string filePath)
         {
-            //TODO: Download the TagLib# library from Github and use that to read the Tags for the MP3 file to grab the "metadata" for the file
+             
+            string trackTitle = "Untitled Track";
+            string trackAlbum = "Unknown Album";
+            string contributingArtists = "Unknown Artist";
+
+            try
+            {
+                var file = TagLib.File.Create(filePath);
+                trackTitle = !string.IsNullOrEmpty(file.Tag.Title) ? file.Tag.Title : Path.GetFileName(filePath);
+                trackAlbum = !string.IsNullOrEmpty(file.Tag.Album) ? file.Tag.Album : "Unknown Album";
+                contributingArtists = !string.IsNullOrEmpty(string.Join(", ", file.Tag.Performers)) ? string.Join(", ", file.Tag.Performers) //Wrapping around next line since its so goddamn long
+                    : !string.IsNullOrEmpty(string.Join(", ", file.Tag.AlbumArtists)) ? string.Join(", ", file.Tag.AlbumArtists) : "Unknown Artist";
+                //Looks for Tag.Performers first (this translates to the Contributing Artists property in File Explorer), then AlbumArtists, then finally Unknown Artist if nothing found
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("Error reading metadata: " + e.Message);
+            }
+            
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
             {
                 yield return www.SendWebRequest();
@@ -99,24 +118,26 @@ namespace AudioFile.Model
                     if (audioClip != null)
                     {
                         Debug.Log("Successfully loaded audio clip!");
-                        Track newTrack = CreateTrack(audioClip);
+                        Track newTrack = new Track(audioClip, trackTitle, contributingArtists, trackAlbum);
                         AddItem(newTrack);
                     }
                 }
             }
         }
 
+        /* Redundant method. Might keep it around for now in case we need it later for a specific situation
         private Track CreateTrack(AudioClip audioClip) // Function to create a track with the loaded AudioClip
         {
             Track newTrack = new Track(audioClip);
             return newTrack;
             // Add newTrack to your media library collection, etc.
-        }
+        }*/
 
         // Function to open a file dialog (example, would need a third-party library)
         private string OpenFileDialog()
         {
-            //TODO:Find the standalone file browser (SFB) library on Github and use that to open a file dialog for selecting MP3 files
+            //TODO: Move this method to controller class later
+            //Uses the standalone file browser (SFB) library on Github and use that to open a file dialog for selecting MP3 files
             string[] paths = StandaloneFileBrowser.OpenFilePanel("Select an MP3 file", "", "mp3", false);
             if (paths.Length > 0)
             {
