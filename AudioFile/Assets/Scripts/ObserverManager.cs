@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AudioFile.ObserverManager;
 using AudioFile.Model;
 using AudioFile.View;
+using AudioFile.Controller;
 
 namespace AudioFile.ObserverManager
 {

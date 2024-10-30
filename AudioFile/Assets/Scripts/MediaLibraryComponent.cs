@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Playables;
 using AudioFile.ObserverManager;
+using AudioFile.Controller;
 
 namespace AudioFile.Model
 {

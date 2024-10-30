@@ -9,6 +9,7 @@ using AudioFile.Model;
 using AudioFile.ObserverManager;
 using System.Collections;
 using System.ComponentModel;
+using AudioFile.Controller;
 
 namespace AudioFile.View
 {

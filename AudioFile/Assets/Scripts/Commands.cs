@@ -7,6 +7,9 @@ using System.Threading;
 using System.Xml.Linq;
 using Unity.VisualScripting;
 using UnityEngine.EventSystems;
+using AudioFile.Controller;
+using AudioFile.Model;
+
 
 namespace AudioFile.View
 {
@@ -18,18 +21,16 @@ namespace AudioFile.View
 
     public class AddTrackCommand : ICommand
     {
-        /* TODO: Implement this later once Controller is implemented
         private IController controller;
         public AddTrackCommand(IController controller)
         {
             this.controller = controller;
         }
-        */
+        
         public void Execute()
         {
-            //controller.AddTrack();
+            controller.LoadItem();
             Debug.Log("New Track Command executed");
-            throw new NotImplementedException();
         }
     }
 

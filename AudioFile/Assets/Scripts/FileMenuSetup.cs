@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AudioFile.Controller;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,14 +8,16 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 namespace AudioFile.View
 {
     public class FileMenuSetup : MonoBehaviour
     {
-        void Start()
+        public void Initialize()
         {
             #region Commands
-            AddTrackCommand addTrackCommand = new AddTrackCommand();
+            IController controller = AudioFile.Controller.Controller.Instance;
+            AddTrackCommand addTrackCommand = new AddTrackCommand(controller);
             ExitProgramCommand exitProgramCommand = new ExitProgramCommand();
             AddPlaylistCommand addPlaylistCommand = new AddPlaylistCommand();
             AddPlaylistFolderCommand addPlaylistFolderCommand = new AddPlaylistFolderCommand();

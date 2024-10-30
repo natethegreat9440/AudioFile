@@ -1,9 +1,105 @@
-/*using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using AudioFile;
+using AudioFile.Model;
+using AudioFile.View;
+using AudioFile.ObserverManager;
+using System;
+
+namespace AudioFile.Controller
+{
+    public interface IController
+    {
+        void Play();
+        void Pause();
+        void Stop();
+        void NextItem();
+        void PreviousItem();
+
+        void LoadItem();
+        //void AddItem(MediaLibraryComponent mediaLibraryComponent);
+        void RemoveItem(MediaLibraryComponent mediaLibraryComponent);
+
+        void ExitProgram();
+    }
+    public class Controller : MonoBehaviour, IController
+    {
+        // Lazy<T> ensures that the instance is created in a thread-safe manner
+        private static readonly Lazy<Controller> _instance = new Lazy<Controller>(() => new Controller());
+
+        // Private constructor to prevent instantiation
+        private Controller() { } //Unity objects should not use constructors with parameters as Unity uses its own lifecycle methods to manage these objects
+
+        public static Controller Instance => _instance.Value;
+
+        private TrackLibrary trackLibrary;
+        private FileMenuSetup fileMenuSetup;
+
+        public void Awake()
+        {
+            DontDestroyOnLoad(this.gameObject);
+        }
+
+        public void Start()
+        {
+            trackLibrary = new TrackLibrary();
+            SetupFileMenu();
+        }
+        private void SetupFileMenu()
+        {
+            GameObject fileMenuSetupObject = new GameObject("FileMenuSetup");
+            fileMenuSetup = fileMenuSetupObject.AddComponent<FileMenuSetup>();
+            fileMenuSetup.Initialize();
+        }
+        public void Play()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Pause()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Stop()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void NextItem()
+        {
+            throw new System.NotImplementedException();
+        }
+        public void PreviousItem()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void LoadItem()
+        {
+            trackLibrary.LoadItem();
+        }
+        /*public void AddItem(MediaLibraryComponent mediaLibraryComponent)
+        {
+            throw new System.NotImplementedException();
+        }*/
+
+        public void ExitProgram()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void RemoveItem(MediaLibraryComponent mediaLibraryComponent)
+        {
+            throw new System.NotImplementedException();
+        }
+
+    }
+}
 
 
-public enum PlayMode { Consecutive, RecommendedRandom, TrueRandom, }
+/*public enum PlayMode { Consecutive, RecommendedRandom, TrueRandom, }
 
 public class MediaPlayerManager : MonoBehaviour
 {
