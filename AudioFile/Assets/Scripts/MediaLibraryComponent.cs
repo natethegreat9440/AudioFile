@@ -18,7 +18,7 @@ namespace AudioFile.Model
         protected PlayableHandle _playableHandle;
         protected string _name; //_name primarily to identify the TrackLibrary and other composites. _name for a Track is just "A track"
         //private IController controller;
-        public MediaLibraryComponent(string name)
+        public MediaLibraryComponent(string name="A Media Library Component")
         {
             _name = name;
         }

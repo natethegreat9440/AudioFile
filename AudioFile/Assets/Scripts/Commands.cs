@@ -9,28 +9,38 @@ using Unity.VisualScripting;
 using UnityEngine.EventSystems;
 using AudioFile.Controller;
 using AudioFile.Model;
+using UnityEditor;
 
 
 namespace AudioFile.View
 {
-    //TODO:Implement undo and redo commands
+    //TODO:Implement undo and redo commands (redo might be handled by a command controller keeping a fixed stack of commands)
     public interface ICommand
     {
         void Execute();
+        void Undo();
     }
 
     public class AddTrackCommand : ICommand
     {
-        private IController controller;
-        public AddTrackCommand(IController controller)
+        private TrackLibraryController controller;
+
+        bool isUndo = false;
+        
+        public AddTrackCommand(TrackLibraryController controller)
         {
             this.controller = controller;
         }
-        
         public void Execute()
         {
-            controller.LoadItem();
+            controller.HandleRequest(this, isUndo);
             Debug.Log("New Track Command executed");
+        }
+
+        public void Undo()
+        {
+            controller.HandleRequest(this, isUndo=true);
+            Debug.Log("New Track Command undone");
         }
     }
 
@@ -49,6 +59,13 @@ namespace AudioFile.View
             Debug.Log("New Playlist Command executed");
             throw new NotImplementedException();
         }
+
+        public void Undo()
+        {
+            throw new NotImplementedException();
+            //controller.HandleRequest(this, isUndo = true);
+            //Debug.Log("New Playlist Command undone");
+        }
     }
 
     public class AddPlaylistFolderCommand : ICommand
@@ -65,6 +82,13 @@ namespace AudioFile.View
             //controller.AddEmptyPlaylistFolder();
             Debug.Log("New Playlist Folder Command executed");
             throw new NotImplementedException();
+        }
+
+        public void Undo()
+        {
+            throw new NotImplementedException();
+            //controller.HandleRequest(this, isUndo = true);
+            //Debug.Log("New Playlist Folder Command undone");
         }
     }
 
@@ -83,6 +107,12 @@ namespace AudioFile.View
             //controller.ExitProgram();
             Debug.Log("Exit Program Command executed");
             throw new NotImplementedException();
+        }
+
+        public void Undo()
+        {
+            throw new NotImplementedException();
+            //this command will have no undo action, perhaps does't need to be setup as a command
         }
     }
 }

@@ -13,19 +13,51 @@ namespace AudioFile.Model
 {
     public class Track : MediaLibraryComponent, IPlayable
     {
-        //_playableGraph and _playableHandle are declared in the base class
         AudioSource _audioSource;
-        //AudioClip _audioClip;
         AudioPlayableOutput _audioPlayableOutput;
         AudioClipPlayable _audioPlayable;
         public TrackProperties TrackProperties;
-        TrackLibrary _trackLibrary;
+        //TrackLibrary _trackLibrary;
         private bool _isCurrentTrack;
         private string _trackDuration;
 
-        public Track(AudioClip loadedClip, string trackTitle = "Untitled Track", string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string name = "A track") : base(name)
+        //TODO: reset-up Track since it is a MonoBehaviour item
+
+        // Static factory method to create and initialize Track
+        public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
+                                        string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string name = "A track")
         {
-            //_audioSource = source; // Set the AudioSource's clip and spaud
+            // Create a new GameObject and attach Track as a component
+            GameObject trackObject = new GameObject("Track_" + trackTitle);
+            Track track = trackObject.AddComponent<Track>();
+            track.Initialize(loadedClip, trackTitle, trackArtist, trackAlbum);
+            return track;
+        }
+
+        // Initialize method to set up properties
+        private void Initialize(AudioClip loadedClip, string trackTitle, string trackArtist, string trackAlbum)
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.clip = loadedClip;
+            TrackProperties = new TrackProperties();
+            TrackProperties.SetProperty("Title", trackTitle);
+            TrackProperties.SetProperty("Artist", trackArtist);
+            TrackProperties.SetProperty("Album", trackAlbum);
+
+            _playableGraph = PlayableGraph.Create();
+            _audioPlayableOutput = AudioPlayableOutput.Create(_playableGraph, "Audio", _audioSource);
+            _audioPlayable = AudioClipPlayable.Create(_playableGraph, _audioSource.clip, false);
+            _audioPlayableOutput.SetSourcePlayable(_audioPlayable);
+            _playableHandle = _audioPlayable.GetHandle();
+            _isCurrentTrack = false;
+
+            _trackDuration = FormatTime(GetDuration());
+            TrackProperties.SetProperty("Duration", _trackDuration);
+
+        }
+        /*public Track(AudioClip loadedClip, string trackTitle = "Untitled Track", string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string name = "A track") : base(name)
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
             _audioSource.clip = loadedClip;
             TrackProperties = new TrackProperties();
             TrackProperties.SetProperty("Title", trackTitle);
@@ -38,17 +70,17 @@ namespace AudioFile.Model
             _playableGraph = PlayableGraph.Create();
 
             // Create an AudioPlayableOutput linked to this track's AudioSource
-            AudioPlayableOutput _audioPlayableOutput = AudioPlayableOutput.Create(_playableGraph, "Audio", _audioSource);
+            _audioPlayableOutput = AudioPlayableOutput.Create(_playableGraph, "Audio", _audioSource);
 
             // Create an AudioPlayable that this Track controls
-            AudioClipPlayable _audioPlayable = AudioClipPlayable.Create(_playableGraph, _audioSource.clip, false);
+            _audioPlayable = AudioClipPlayable.Create(_playableGraph, _audioSource.clip, false);
 
             // Link the PlayableOutput to the Playable
             _audioPlayableOutput.SetSourcePlayable(_audioPlayable);
 
             _playableHandle = _audioPlayable.GetHandle();
             _isCurrentTrack = false;
-        }
+        }*/
 
         public override string ToString()
         {
@@ -62,16 +94,7 @@ namespace AudioFile.Model
             int secs = Mathf.FloorToInt(seconds % 60);
             return string.Format("{0:0}:{1:00}", minutes, secs);
         }
-        private void Update()
-        {
-            // Assuming 'track' is an instance of the Track class
-            if (this.IsDone())
-            {
-                Debug.Log("Track has finished playing.");
-                // Access the singleton instance and call NotifyObservers
-                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackIsDone", null);
-            }
-        }
+
         public override void Play()
         {
             _isCurrentTrack = true;

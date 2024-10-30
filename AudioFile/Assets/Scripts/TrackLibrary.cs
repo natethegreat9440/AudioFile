@@ -8,23 +8,32 @@ using System.IO;
 using UnityEngine.Networking;
 using SFB;
 using TagLib;
+using AudioFile.Controller;
 
 
 namespace AudioFile.Model
 {
     public class TrackLibrary : MediaLibraryComponent, IAudioFileObserver
     {
-        //protected override string _name = "Track Library";
-        protected List<Track> trackList = new List<Track>();
-        private int currentTrackIndex = 0;
+        protected List<Track> trackList;
+        private int currentTrackIndex;
 
-        public TrackLibrary(string name = "Track Library") : base(name)
+        private TrackLibraryController _trackLibraryController;
+
+        public TrackLibrary(TrackLibraryController trackLibraryController, string name = "Track Library") : base(name)
         {
+            _trackLibraryController = trackLibraryController;
         }
 
         public void Start()
         {
             AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackIsDone", this);
+        }
+
+        public void Initialize()
+        {
+            trackList = new List<Track>();
+            currentTrackIndex = 0;
         }
 
         public override string ToString()
@@ -124,7 +133,7 @@ namespace AudioFile.Model
                     if (audioClip != null)
                     {
                         Debug.Log("Successfully loaded audio clip!");
-                        Track newTrack = new Track(audioClip, trackTitle, contributingArtists, trackAlbum);
+                        Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum);
                         AddItem(newTrack);
                     }
                 }
@@ -160,9 +169,17 @@ namespace AudioFile.Model
         }
         public override void AddItem(MediaLibraryComponent newTrack)
         {
-            trackList.Add((Track)newTrack);
-            Debug.Log($"Track '{newTrack}' has been added to the media library.");
-            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackAdded", newTrack);
+            
+            if (newTrack is Track track)
+            {
+                trackList.Add(track);
+                Debug.Log($"Track '{track}' has been added to the media library.");
+                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackAdded", track);
+            }
+            else
+            {
+                Debug.LogError("The provided item is not a Track.");
+            }
 
         }
         public override void RemoveItem(MediaLibraryComponent providedTrack)

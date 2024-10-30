@@ -42,8 +42,6 @@ namespace AudioFile.View
 
         private IEnumerator AddTrackOnUpdate(object data)
         {
-            //Quite a long coroutine method but I would like to have Unity be able to process these updates over multiple frames
-            //Especially if the coroutine is part of a sequence of many UI updates such as adding multiple tracks in quick succession
             if (data == null)
             {
                 yield break;  // Exit early if data is null
@@ -57,35 +55,54 @@ namespace AudioFile.View
 
             GameObject newTrackDisplay = Instantiate(UI_Track_DisplayPrefab, Track_List_DisplayViewportContent);
 
-            // Set the title text
-            var titleText = newTrackDisplay.transform.Find("UI_Track_Display/UI_Track_Title_Button/UI_Track_Title_Button_Text")?.GetComponent<Text>();
-            if (titleText != null)
+            //Debug.Log(newTrackDisplay.transform.Find("UI_Track_Title_Button/UI_Track_Title_Button_Text") != null ? "Title Button and text found" : "Title Button not found");
+
+            // Set the title text GUI_Canvas/Track_List_Display/Viewport/Content/UI_Track_Display(Clone)/
+            var titleTextTransform = newTrackDisplay.transform.Find("UI_Track_Title_Button/UI_Track_Title_Button_Text");
+            if (titleTextTransform != null)
             {
-                titleText.text = providedTrack.TrackProperties.GetProperty("Title");
+                var titleText = titleTextTransform.GetComponent<Text>();
+                if (titleText != null)
+                {
+                    //Blank space precedes the text property as I don't like how close it puts the text to the edge of the button when left justified
+                    titleText.text = "  " + providedTrack.TrackProperties.GetProperty("Title");
+                }
             }
             yield return null;  // Pause to let Unity process the instantiation and text update
 
             // Set the artist text
-            var artistText = newTrackDisplay.transform.Find("UI_Track_Display/UI_Track_Artist_Button/UI_Track_Artist_Button_Text")?.GetComponent<Text>();
-            if (artistText != null)
+            var artistTextTransform = newTrackDisplay.transform.Find("UI_Track_Artist_Button/UI_Track_Artist_Button_Text");
+            if (artistTextTransform != null)
             {
-                artistText.text = providedTrack.TrackProperties.GetProperty("Artist");
+                var artistText = artistTextTransform.GetComponent<Text>();
+                if (artistText != null)
+                {
+                    artistText.text = "  " + providedTrack.TrackProperties.GetProperty("Artist");
+                }
             }
             yield return null;
 
             // Set the album text
-            var albumText = newTrackDisplay.transform.Find("UI_Track_Display/UI_Track_Album_Button/UI_Track_Album_Button_Text")?.GetComponent<Text>();
-            if (albumText != null)
+            var albumTextTransform = newTrackDisplay.transform.Find("UI_Track_Album_Button/UI_Track_Album_Button_Text");
+            if (albumTextTransform != null)
             {
-                albumText.text = providedTrack.TrackProperties.GetProperty("Album");
+                var albumText = albumTextTransform.GetComponent<Text>();
+                if (albumText != null)
+                {
+                    albumText.text = "  " + providedTrack.TrackProperties.GetProperty("Album");
+                }
             }
             yield return null;
 
             // Set the duration text
-            var durationText = newTrackDisplay.transform.Find("UI_Track_Display/UI_Track_Duration_Button/UI_Track_Duration_Button_Text")?.GetComponent<Text>();
-            if (durationText != null)
+            var durationTextTransform = newTrackDisplay.transform.Find("UI_Track_Duration_Button/UI_Track_Duration_Button_Text");
+            if (durationTextTransform != null)
             {
-                durationText.text = providedTrack.TrackProperties.GetProperty("Duration");
+                var durationText = durationTextTransform.GetComponent<Text>();
+                if (durationText != null)
+                {
+                    durationText.text = "  " + providedTrack.TrackProperties.GetProperty("Duration");
+                }
             }
             yield return null; // Final yield to complete the coroutine
         }
@@ -113,15 +130,23 @@ namespace AudioFile.View
             // Iterate through children of Track_List_DisplayViewportContent to find the matching GameObject
             foreach (Transform child in Track_List_DisplayViewportContent)
             {
-                Text titleText = child.Find("UI_Track_Display/UI_Track_Title_Button/UI_Track_Title_Button_Text")?.GetComponent<Text>();
-                Text artistText = child.Find("UI_Track_Display/UI_Track_Artist_Button/UI_Track_Artist_Button_Text")?.GetComponent<Text>();
-                Text albumText = child.Find("UI_Track_Display/UI_Track_Album_Button/UI_Track_Album_Button_Text")?.GetComponent<Text>();
-                Text durationText = child.Find("UI_Track_Display/UI_Track_Duration_Button/UI_Track_Duration_Button_Text")?.GetComponent<Text>();
+                var titleTextTransform = child.Find("UI_Track_Display/UI_Track_Title_Button/UI_Track_Title_Button_Text");
+                var artistTextTransform = child.Find("UI_Track_Display/UI_Track_Artist_Button/UI_Track_Artist_Button_Text");
+                var albumTextTransform = child.Find("UI_Track_Display/UI_Track_Album_Button/UI_Track_Album_Button_Text");
+                var durationTextTransform = child.Find("UI_Track_Display/UI_Track_Duration_Button/UI_Track_Duration_Button_Text");
 
-                if (titleText != null && titleText.text == trackTitleIdentifier && artistText.text == trackArtistIdentifier && albumText.text == trackAlbumIdentifier && durationText.text == trackDurationIdentifier)
+                if (titleTextTransform != null && artistTextTransform != null && albumTextTransform != null && durationTextTransform != null)
                 {
-                    trackDisplayToRemove = child;
-                    break;
+                    var titleText = titleTextTransform.GetComponent<Text>();
+                    var artistText = artistTextTransform.GetComponent<Text>();
+                    var albumText = albumTextTransform.GetComponent<Text>();
+                    var durationText = durationTextTransform.GetComponent<Text>();
+
+                    if (titleText != null && titleText.text == trackTitleIdentifier && artistText != null && artistText.text == trackArtistIdentifier && albumText != null && albumText.text == trackAlbumIdentifier && durationText != null && durationText.text == trackDurationIdentifier)
+                    {
+                        trackDisplayToRemove = child;
+                        break;
+                    }
                 }
                 yield return null;  // Yield to distribute the workload over multiple frames
             }
