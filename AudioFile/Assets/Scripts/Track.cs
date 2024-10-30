@@ -20,8 +20,10 @@ namespace AudioFile.Model
         AudioClipPlayable _audioPlayable;
         public TrackProperties TrackProperties;
         TrackLibrary _trackLibrary;
+        private bool _isCurrentTrack;
+        private string _trackDuration;
 
-        public Track(AudioClip loadedClip, string trackTitle= "Untitled Track", string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string trackDuration = "--:--", string name = "A track") : base(name)
+        public Track(AudioClip loadedClip, string trackTitle = "Untitled Track", string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string name = "A track") : base(name)
         {
             //_audioSource = source; // Set the AudioSource's clip and spaud
             _audioSource.clip = loadedClip;
@@ -29,7 +31,9 @@ namespace AudioFile.Model
             TrackProperties.SetProperty("Title", trackTitle);
             TrackProperties.SetProperty("Artist", trackArtist);
             TrackProperties.SetProperty("Album", trackAlbum);
-            TrackProperties.SetProperty("Duration", trackDuration);
+
+            _trackDuration = this.FormatTime(this.GetDuration());
+            TrackProperties.SetProperty("Duration", _trackDuration);
 
             _playableGraph = PlayableGraph.Create();
 
@@ -43,6 +47,7 @@ namespace AudioFile.Model
             _audioPlayableOutput.SetSourcePlayable(_audioPlayable);
 
             _playableHandle = _audioPlayable.GetHandle();
+            _isCurrentTrack = false;
         }
 
         public override string ToString()
@@ -51,7 +56,12 @@ namespace AudioFile.Model
         }
         #region Playback method implementations
         // Play the track
-
+        string FormatTime(float seconds)
+        {
+            int minutes = Mathf.FloorToInt(seconds / 60);
+            int secs = Mathf.FloorToInt(seconds % 60);
+            return string.Format("{0:0}:{1:00}", minutes, secs);
+        }
         private void Update()
         {
             // Assuming 'track' is an instance of the Track class
@@ -64,14 +74,15 @@ namespace AudioFile.Model
         }
         public override void Play()
         {
-             _playableGraph.Play();
+            _isCurrentTrack = true;
+            _playableGraph.Play();
             _audioSource.Play();
-           
         }
 
         // Pause the track
         public override void Pause()
         {
+            _isCurrentTrack = false;
             _playableGraph.Stop();
             _audioSource.Pause();
         }
@@ -79,6 +90,7 @@ namespace AudioFile.Model
         // Stop the track
         public override void Stop()
         {
+            _isCurrentTrack = false;
             _playableGraph.Stop();
             _audioSource.Stop();
         }
@@ -98,7 +110,7 @@ namespace AudioFile.Model
         // Check if the track is done
         public bool IsDone()
         {
-            return _audioPlayable.IsDone();
+            return _isCurrentTrack && _audioPlayable.IsDone();
         }
         #endregion
     }

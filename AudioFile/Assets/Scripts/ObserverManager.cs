@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AudioFile.ObserverManager;
 using AudioFile.Model;
+using AudioFile.View;
 
 namespace AudioFile.ObserverManager
 {
@@ -29,9 +30,10 @@ namespace AudioFile.ObserverManager
                 //If somethingn is uncommented out that just means I am doing initial debugging and testing
 
                 //{"OnProgramStart", new List<IAudioFileObserver>() { TrackListDisplay } }
-                //{"OnTrackLibraryUpdate", new List<IAudioFileObserver>() { TrackListDisplay } }
+                //{"OnTrackAdded", new List<IAudioFileObserver>() { _UITrackListDisplayManager } },
+                //{"OnTrackRemoved", new List<IAudioFileObserver>() { _UITrackListDisplayManager } },
                 //{"OnQueueUpdate", new List<IAudioFileObserver>() { QueueDisplay } }
-                {"OnCurrentTrackIsDone", new List<IAudioFileObserver>() {  new TrackLibrary() } } //, NowPlayingDisplay, QueueDisplay} }
+                //{"OnCurrentTrackIsDone", new List<IAudioFileObserver>() {  new TrackLibrary() } } //, NowPlayingDisplay, QueueDisplay} }
                 //{"OnTrackPropertyUpdate", new List<IAudioFileObserver>() { NowPlayingDisplay, TrackListDisplay, QueueDisplay, SampleDisplay, TabDisplay, LyricsDisplay } }
                 //{"OnTrackLibraryFilter", new List<IAudioFileObserver>() { TrackListDisplay } }
             };

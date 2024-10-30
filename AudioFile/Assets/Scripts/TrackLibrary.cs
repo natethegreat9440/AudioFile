@@ -22,6 +22,11 @@ namespace AudioFile.Model
         {
         }
 
+        public void Start()
+        {
+            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackIsDone", this);
+        }
+
         public override string ToString()
         {
             return $"{_name}";
@@ -157,11 +162,15 @@ namespace AudioFile.Model
         {
             trackList.Add((Track)newTrack);
             Debug.Log($"Track '{newTrack}' has been added to the media library.");
+            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackAdded", newTrack);
+
         }
         public override void RemoveItem(MediaLibraryComponent providedTrack)
         {
             trackList.Remove((Track)providedTrack);
             Debug.Log($"Track '{providedTrack}' has been removed from the media library.");
+            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", providedTrack);
+
         }
         #endregion
     }
