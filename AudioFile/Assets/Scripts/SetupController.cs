@@ -23,6 +23,7 @@ namespace AudioFile.Controller
         private FileMenuSetup fileMenuSetup;
 
         //private TrackLibrary trackLibrary;
+        //No CreateSingleton() method for this controller as it is already attached to a GameObject in the scene
 
         public void Awake()
         {
@@ -31,8 +32,9 @@ namespace AudioFile.Controller
 
         public void Start()
         {
-            SetupFileMenu();
-            //SetupLibrary();
+            SetupFileMenu(); //This script also sets up TrackLibraryController
+            TrackLibrary trackLibrary = AudioFile.Model.TrackLibrary.Instance;
+
         }
         public void Initialize()
         {

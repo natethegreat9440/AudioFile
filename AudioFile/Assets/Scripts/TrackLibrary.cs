@@ -15,19 +15,31 @@ namespace AudioFile.Model
 {
     public class TrackLibrary : MediaLibraryComponent, IAudioFileObserver
     {
+        // Lazy<T> ensures that the instance is created in a thread-safe manner
+        private static readonly Lazy<TrackLibrary> _instance = new Lazy<TrackLibrary>(CreateSingleton);
+
+        // Private constructor to prevent instantiation
+        private TrackLibrary() { } //Unity objects should not use constructors with parameters as Unity uses its own lifecycle methods to manage these objects
+
+        public static TrackLibrary Instance => _instance.Value;
+
         protected List<Track> trackList;
         private int currentTrackIndex;
 
         private TrackLibraryController _trackLibraryController;
 
-        public TrackLibrary(TrackLibraryController trackLibraryController, string name = "Track Library") : base(name)
+        private static TrackLibrary CreateSingleton()
         {
-            _trackLibraryController = trackLibraryController;
+            // Create a new GameObject to hold the singleton instance if it doesn't already exist
+            GameObject singletonObject = new GameObject(typeof(TrackLibrary).Name);
+
+            // Add the TrackListController component to the GameObject
+            return singletonObject.AddComponent<TrackLibrary>();
         }
 
         public void Start()
         {
-            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackIsDone", this);
+
         }
 
         public void Initialize()
@@ -60,6 +72,7 @@ namespace AudioFile.Model
             if (currentTrackIndex < trackList.Count - 1)
             {
                 currentTrackIndex++;
+                AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
                 trackList[currentTrackIndex].Play();
             }
         }
@@ -69,15 +82,8 @@ namespace AudioFile.Model
             if (currentTrackIndex > 0)
             {
                 currentTrackIndex--;
+                AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
                 trackList[currentTrackIndex].Play();
-            }
-        }
-
-        public void AudioFileUpdate(string observationType, object data)
-        {
-            if (observationType == "OnCurrentTrackIsDone")
-            {
-                NextItem();
             }
         }
         #endregion
@@ -188,6 +194,19 @@ namespace AudioFile.Model
             Debug.Log($"Track '{providedTrack}' has been removed from the media library.");
             AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", providedTrack);
 
+        }
+
+        public void AudioFileUpdate(string observationType, object data)
+        {
+            /*switch (observationType)
+            {
+                case "":
+                    break;
+                // Add more cases here if needed
+                default:
+                    Debug.LogWarning($"Unhandled observation type: {observationType}");
+                    break;
+            }*/
         }
         #endregion
     }

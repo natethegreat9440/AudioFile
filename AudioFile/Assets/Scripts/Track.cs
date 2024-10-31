@@ -18,7 +18,7 @@ namespace AudioFile.Model
         AudioClipPlayable _audioPlayable;
         public TrackProperties TrackProperties;
         //TrackLibrary _trackLibrary;
-        private bool _isCurrentTrack;
+        //private bool _isCurrentTrack;
         private string _trackDuration;
 
         //TODO: reset-up Track since it is a MonoBehaviour item
@@ -49,7 +49,7 @@ namespace AudioFile.Model
             _audioPlayable = AudioClipPlayable.Create(_playableGraph, _audioSource.clip, false);
             _audioPlayableOutput.SetSourcePlayable(_audioPlayable);
             _playableHandle = _audioPlayable.GetHandle();
-            _isCurrentTrack = false;
+            //_isCurrentTrack = false;
 
             _trackDuration = FormatTime(GetDuration());
             TrackProperties.SetProperty("Duration", _trackDuration);
@@ -87,7 +87,6 @@ namespace AudioFile.Model
             return $"{TrackProperties.GetProperty("Title")} - {TrackProperties.GetProperty("Artist")}";
         }
         #region Playback method implementations
-        // Play the track
         string FormatTime(float seconds)
         {
             int minutes = Mathf.FloorToInt(seconds / 60);
@@ -97,25 +96,26 @@ namespace AudioFile.Model
 
         public override void Play()
         {
-            _isCurrentTrack = true;
+            AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(this);
             _playableGraph.Play();
             _audioSource.Play();
+            Debug.Log($"Track {this} has been played");
         }
 
-        // Pause the track
         public override void Pause()
         {
-            _isCurrentTrack = false;
+            //Pausing does not affect which track is known as the current track by the PlaybackController
             _playableGraph.Stop();
             _audioSource.Pause();
-        }
+            Debug.Log($"Track {this} has been paused");
 
-        // Stop the track
+        }
         public override void Stop()
         {
-            _isCurrentTrack = false;
+            AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(null);
             _playableGraph.Stop();
             _audioSource.Stop();
+            Debug.Log($"Track {this} has been stopped");
         }
 
         // Get or set playback time
@@ -133,7 +133,7 @@ namespace AudioFile.Model
         // Check if the track is done
         public bool IsDone()
         {
-            return _isCurrentTrack && _audioPlayable.IsDone();
+            return _audioPlayable.IsDone();
         }
         #endregion
     }

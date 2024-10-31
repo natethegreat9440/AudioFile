@@ -10,10 +10,10 @@ using System.Windows.Forms;
 
 namespace AudioFile.Controller
 {
-    public class PlaybackController : MonoBehaviour, IController
+    public class PlaybackController : MonoBehaviour, IController, IAudioFileObserver
     {
         // Lazy<T> ensures that the instance is created in a thread-safe manner
-        private static readonly Lazy<PlaybackController> _instance = new Lazy<PlaybackController>(() => new PlaybackController());
+        private static readonly Lazy<PlaybackController> _instance = new Lazy<PlaybackController>(CreateSingleton);
 
         // Private constructor to prevent instantiation
         private PlaybackController() { } //Unity objects should not use constructors with parameters as Unity uses its own lifecycle methods to manage these objects
@@ -22,6 +22,15 @@ namespace AudioFile.Controller
 
         private Track _currentTrack;
 
+        private static PlaybackController CreateSingleton()
+        {
+            // Create a new GameObject to hold the singleton instance if it doesn't already exist
+            GameObject singletonObject = new GameObject(typeof(PlaybackController).Name);
+
+            // Add the TrackListController component to the GameObject
+            return singletonObject.AddComponent<PlaybackController>();
+        }
+
         public void Awake()
         {
             DontDestroyOnLoad(this.gameObject);
@@ -29,6 +38,7 @@ namespace AudioFile.Controller
 
         public void Start()
         {
+            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackIsDone", this);
 
         }
 
@@ -58,7 +68,16 @@ namespace AudioFile.Controller
 
         public void SetCurrentTrack(Track track)
         {
-            _currentTrack = track;
+            if (track != null)
+            {
+                _currentTrack = track;
+                Debug.Log($"Current track set to: {_currentTrack}");
+            }
+            else
+            {
+                Debug.Log("There is no current track.");
+            }
+            
         }
 
         public void Play()
@@ -78,11 +97,25 @@ namespace AudioFile.Controller
 
         public void NextItem()
         {
-            throw new System.NotImplementedException();
+            AudioFile.Model.TrackLibrary.Instance.NextItem();
         }
         public void PreviousItem()
         {
             throw new System.NotImplementedException();
+        }
+
+        public void AudioFileUpdate(string observationType, object data)
+        {
+            switch (observationType)
+            {
+                case "OnCurrentTrackIsDone":
+                    NextItem();
+                    break;
+                // Add more cases here if needed
+                default:
+                    Debug.LogWarning($"Unhandled observation type: {observationType}");
+                    break;
+            }
         }
 
         /* TODO: Move this to an exitprogram controller
