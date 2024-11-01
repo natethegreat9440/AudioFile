@@ -109,21 +109,32 @@ namespace AudioFile.View
             // Call different commands based on the button type
             switch (buttonType)
             {
-                case "Title":
-                    AudioFile.Controller.PlaybackController.Instance.Stop();
-                    AudioFile.Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex));
-                    break;
-                case "Artist":
-                    //Should filter view to all tracks by artist
-                    break;
-                case "Album":
-                    //Should filter view to all tracks on this album
-                    break;
                 case "Duration":
-                    //Will just play the current track for now until I can think of something cooler or just a way to disable clicking the button
-                    AudioFile.Controller.PlaybackController.Instance.Stop();
+                // Will just play the current track for now until I can think of something cooler
+                //Duration intentionally "falls through" here to save a few lines of code
+
+                case "Title":
+                    // Get the currently playing track index from the PlaybackController
+                    int currentlyPlayingIndex = AudioFile.Controller.PlaybackController.Instance.GetCurrentTrackIndex();
+
+                    // If a track is already playing, stop it first
+                    if (currentlyPlayingIndex != -1)
+                    {
+                        AudioFile.Controller.PlaybackController.Instance.HandleRequest(new StopCommand(currentlyPlayingIndex));
+                    }
+
+                    // Now play the new track
                     AudioFile.Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex));
                     break;
+
+                case "Artist":
+                    // Should filter view to all tracks by artist
+                    break;
+
+                case "Album":
+                    // Should filter view to all tracks on this album
+                    break;
+
                 default:
                     Debug.LogWarning("Unknown button type double-clicked.");
                     break;

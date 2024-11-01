@@ -56,6 +56,10 @@ namespace AudioFile.Controller
             throw new NotImplementedException();
         }
 
+        public int GetCurrentTrackIndex()
+        {
+            return _currentTrack != null ? AudioFile.Model.TrackLibrary.Instance.GetTrackIndex(_currentTrack) : -1;
+        }
         public void HandleRequest(object request, bool isUndo = false)
         {
             //Add methods to log these commands with the UndoController
@@ -74,8 +78,8 @@ namespace AudioFile.Controller
                         Pause(pauseCommand.Index);
                         break;
                     case "StopCommand":
-                        //StopCommand stopCommand = request as StopCommand;
-                        Stop(); 
+                        StopCommand stopCommand = request as StopCommand;
+                        Stop(stopCommand.Index);
                         break;
                     case "NextItemCommand":
                         NextItem();
@@ -134,6 +138,7 @@ namespace AudioFile.Controller
 
         public void Play(int index)
         {
+            //AudioFile.Model.TrackLibrary.Instance.Stop(index);
             AudioFile.Model.TrackLibrary.Instance.Play(index);
         }
 
@@ -142,9 +147,9 @@ namespace AudioFile.Controller
             AudioFile.Model.TrackLibrary.Instance.Pause(index);
         }
 
-        public void Stop()
+        public void Stop(int index)
         {
-            AudioFile.Model.TrackLibrary.Instance.Stop();
+            AudioFile.Model.TrackLibrary.Instance.Stop(index);
         }
 
         public void NextItem()

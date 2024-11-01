@@ -55,7 +55,10 @@ namespace AudioFile.Model
         }
 
         #region Playback method implementations
-        //Need a set current track index method that gets called whenever a track is selected by the user
+        public int GetTrackIndex(Track track)
+        {
+            return trackList.IndexOf(track);
+        }
         public override void Play(int index)
         {
             currentTrackIndex = index;
@@ -68,8 +71,9 @@ namespace AudioFile.Model
             trackList[currentTrackIndex].Pause();
         }
 
-        public override void Stop()
+        public override void Stop(int index)
         {
+            currentTrackIndex = index;
             trackList[currentTrackIndex].Stop();
         }
         public override void Skip(int index)
@@ -95,7 +99,7 @@ namespace AudioFile.Model
             else
             {
                 Debug.Log("Reached the end of the playlist.");
-                Stop();
+                Stop(trackList.Count);
             }
         }
 
@@ -104,7 +108,7 @@ namespace AudioFile.Model
             if (currentTrackIndex > 0)
             {
                 currentTrackIndex--;
-                AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
+                //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
                 trackList[currentTrackIndex].Play();
             }
         }

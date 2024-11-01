@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Playables;
 using AudioFile.ObserverManager;
+using UnityEditor;
 
 namespace AudioFile.Model
 {
@@ -18,6 +19,7 @@ namespace AudioFile.Model
         AudioClipPlayable _audioPlayable;
         public TrackProperties TrackProperties;
         private string _trackDuration;
+
 
         #region Setup/Unity methods
         // Static factory method to create and initialize Track
@@ -51,6 +53,17 @@ namespace AudioFile.Model
             TrackProperties.SetProperty("Duration", _trackDuration);
 
         }
+
+        void Update()
+        {
+            if (_playableGraph.IsValid() && _playableGraph.IsPlaying())
+            {
+                double currentTime = _audioPlayable.GetTime();
+                double clipLength = _audioPlayable.GetDuration();
+                float progress = (float)(currentTime / clipLength);
+                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackFrameUpdate", progress);
+            }
+        }
         void OnDestroy()
         {
             if (_playableGraph.IsValid())
@@ -73,7 +86,7 @@ namespace AudioFile.Model
 
         public override void Play(int index = 0)
         {
-            AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(this);
+            //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(this);
             _playableGraph.Play();
             _audioSource.Play();
             Debug.Log($"Track {this} has been played");
@@ -87,12 +100,14 @@ namespace AudioFile.Model
             Debug.Log($"Track {this} has been paused");
 
         }
-        public override void Stop()
+        public override void Stop(int index = 0)
         {
-            AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(null);
+            //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(null);
             _playableGraph.Stop();
             _audioSource.Stop();
             Debug.Log($"Track {this} has been stopped");
+            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackStopped");
+
         }
 
         // Get or set playback time

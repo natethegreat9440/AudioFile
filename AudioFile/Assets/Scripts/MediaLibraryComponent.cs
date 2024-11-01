@@ -57,7 +57,7 @@ namespace AudioFile.Model
         {
             throw new NotImplementedException();
         }
-        public virtual void Stop()
+        public virtual void Stop(int index = 0)
         {
             throw new NotImplementedException();
         }
