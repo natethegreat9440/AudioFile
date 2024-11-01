@@ -16,8 +16,8 @@ namespace AudioFile.View
         public void Initialize()
         {
             #region Commands
-            TrackLibraryController trackLibraryController = AudioFile.Controller.TrackLibraryController.Instance;
-            AddTrackCommand addTrackCommand = new AddTrackCommand(trackLibraryController);
+            //TrackLibraryController trackLibraryController = AudioFile.Controller.TrackLibraryController.Instance;
+            AddTrackCommand addTrackCommand = new AddTrackCommand();
             ExitProgramCommand exitProgramCommand = new ExitProgramCommand();
             AddPlaylistCommand addPlaylistCommand = new AddPlaylistCommand();
             AddPlaylistFolderCommand addPlaylistFolderCommand = new AddPlaylistFolderCommand();

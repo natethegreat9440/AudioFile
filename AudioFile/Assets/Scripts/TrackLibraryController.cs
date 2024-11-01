@@ -39,8 +39,7 @@ namespace AudioFile.Controller
         }
         public void Start()
         {
-            trackLibrary = gameObject.AddComponent<TrackLibrary>();
-            trackLibrary.Initialize();
+            AudioFile.Model.TrackLibrary.Instance.Initialize();
         }
 
         public void Initialize()
@@ -71,12 +70,12 @@ namespace AudioFile.Controller
 
         public void LoadTrack()
         {
-            trackLibrary.LoadItem();
+            AudioFile.Model.TrackLibrary.Instance.LoadItem();
         }
 
         public void RemoveTrack(Track track)
         {
-            trackLibrary.RemoveItem(track);
+            AudioFile.Model.TrackLibrary.Instance.RemoveItem(track);
         }
 
         //TODO: Move this method to a Playlist controller which will add the track to a playlist

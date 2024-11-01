@@ -19,6 +19,11 @@ namespace AudioFile.View
         public Transform Track_List_DisplayViewportContent;  // Drag the Unity Content GameObject of your ScrollView here
         private TrackLibrary trackLibrary;
 
+        // Define double-click time threshold
+        private const float doubleClickThreshold = 0.3f;
+        private float lastClickTime = 0f;
+        private string lastButtonClicked = "";
+
         public UITrackListDisplayManager(TrackLibrary trackLibrary)
         {
             this.trackLibrary = trackLibrary;
@@ -28,9 +33,9 @@ namespace AudioFile.View
         {
             AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackAdded", this);
             AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
+            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackIsDone", this);
 
         }
-
 
         /*public void PopulateOnLoad()
         {
@@ -39,7 +44,133 @@ namespace AudioFile.View
             //For now it will display the full track library, but later will augment this so it displays whatever the last view filter on the library was (i.e., which playlist, album, etc.)
         }
         */
+        #region Click interactions
+        private void TrackSelected(GameObject trackDisplay)
+        {
+            /*if (trackDisplay.GetComponent<Image>() != null)
+            {
+                Debug.Log("An image was found in the track display");
+            }
+            else
+            {
+                Debug.Log("No image was found in the track display");
+            }*/
 
+            DeselectAllTrackDisplays();
+            int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
+            trackDisplay.GetComponent<Image>().color = Color.blue;  // Set selected color
+        }
+
+        public int GetTrackDisplayIndex(GameObject trackDisplay)
+        {
+            // Get the Content GameObject's transform
+            Transform contentTransform = Track_List_DisplayViewportContent;
+
+            // Loop through each child of Content
+            for (int i = 0; i < contentTransform.childCount; i++)
+            {
+                // Check if the current child is the target TrackDisplay
+                if (contentTransform.GetChild(i).gameObject == trackDisplay)
+                {
+                    return i; // Return the index if found
+                }
+            }
+
+            // If not found, return -1 (or handle the "not found" case as desired)
+            return -1;
+        }
+
+        private void OnTrackDisplayButtonClick(GameObject trackDisplay, string buttonType)
+        {
+            float timeSinceLastClick = Time.time - lastClickTime;
+
+            // Check if this is a double-click on the same button type
+            if (timeSinceLastClick <= doubleClickThreshold && lastButtonClicked == buttonType)
+            {
+                // Handle double-click action with specific button type
+                OnTrackDisplayDoubleClick(trackDisplay, buttonType);
+            }
+            else
+            {
+                // Handle single-click action (selection)
+                TrackSelected(trackDisplay);
+            }
+
+            // Update last click time and button type
+            lastClickTime = Time.time;
+            lastButtonClicked = buttonType;
+        }
+
+        private void OnTrackDisplayDoubleClick(GameObject trackDisplay, string buttonType)
+        {
+            Debug.Log("Double-click detected on " + buttonType);
+            int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
+
+            // Call different commands based on the button type
+            switch (buttonType)
+            {
+                case "Title":
+                    AudioFile.Controller.PlaybackController.Instance.Stop();
+                    AudioFile.Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex));
+                    break;
+                case "Artist":
+                    //Should filter view to all tracks by artist
+                    break;
+                case "Album":
+                    //Should filter view to all tracks on this album
+                    break;
+                case "Duration":
+                    //Will just play the current track for now until I can think of something cooler or just a way to disable clicking the button
+                    AudioFile.Controller.PlaybackController.Instance.Stop();
+                    AudioFile.Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex));
+                    break;
+                default:
+                    Debug.LogWarning("Unknown button type double-clicked.");
+                    break;
+            }
+        }
+
+        private void DeselectAllTrackDisplays()
+        {
+            foreach (Transform child in Track_List_DisplayViewportContent)
+            {
+                var trackDisplay = child.GetComponent<Image>();
+                if (trackDisplay != null)
+                {
+                    trackDisplay.color = Color.white;  // Reset to default color
+                }
+            }
+        }
+
+        private void SelectNextTrackDisplay()
+        {
+            // Find the currently selected track display
+            int currentIndex = -1;
+            for (int i = 0; i < Track_List_DisplayViewportContent.childCount; i++)
+            {
+                var trackDisplay = Track_List_DisplayViewportContent.GetChild(i).GetComponent<Image>();
+                if (trackDisplay != null && trackDisplay.color == Color.blue) // Assuming blue is the selected color
+                {
+                    currentIndex = i;
+                    break;
+                }
+            }
+
+            // Deselect all track displays
+            DeselectAllTrackDisplays();
+
+            // Select the next track display if it exists
+            if (currentIndex >= 0 && currentIndex < Track_List_DisplayViewportContent.childCount - 1)
+            {
+                var nextTrackDisplay = Track_List_DisplayViewportContent.GetChild(currentIndex + 1).GetComponent<Image>();
+                if (nextTrackDisplay != null)
+                {
+                    nextTrackDisplay.color = Color.blue; // Set selected color
+                }
+            }
+        }
+        #endregion
+        #region Adding and Removing track based on updates
         private IEnumerator AddTrackOnUpdate(object data)
         {
             if (data == null)
@@ -104,7 +235,29 @@ namespace AudioFile.View
                     durationText.text = "  " + providedTrack.TrackProperties.GetProperty("Duration");
                 }
             }
-            yield return null; // Final yield to complete the coroutine
+            yield return null;
+            // Instantiate and setup track display as in your code
+
+            Button titleButton = newTrackDisplay.transform.Find("UI_Track_Title_Button").GetComponent<Button>();
+            Button artistButton = newTrackDisplay.transform.Find("UI_Track_Artist_Button").GetComponent<Button>();
+            Button albumButton = newTrackDisplay.transform.Find("UI_Track_Album_Button").GetComponent<Button>();
+            Button durationButton = newTrackDisplay.transform.Find("UI_Track_Duration_Button").GetComponent<Button>();
+
+            /* Disable the duration button so it cannot be clicked. 
+             Uncomment out later in case I want this functionality (or lack thereof)
+            if (durationButton != null)
+            {
+                durationButton.interactable = false;
+            }*/
+
+            // Pass a unique identifier for each button
+            titleButton.onClick.AddListener(() => OnTrackDisplayButtonClick(newTrackDisplay, "Title"));
+            artistButton.onClick.AddListener(() => OnTrackDisplayButtonClick(newTrackDisplay, "Artist"));
+            albumButton.onClick.AddListener(() => OnTrackDisplayButtonClick(newTrackDisplay, "Album"));
+            durationButton.onClick.AddListener(() => OnTrackDisplayButtonClick(newTrackDisplay, "Duration"));
+
+            yield return null;
+
         }
         private IEnumerator RemoveTrackOnUpdate(object data)
         {
@@ -130,10 +283,10 @@ namespace AudioFile.View
             // Iterate through children of Track_List_DisplayViewportContent to find the matching GameObject
             foreach (Transform child in Track_List_DisplayViewportContent)
             {
-                var titleTextTransform = child.Find("UI_Track_Display/UI_Track_Title_Button/UI_Track_Title_Button_Text");
-                var artistTextTransform = child.Find("UI_Track_Display/UI_Track_Artist_Button/UI_Track_Artist_Button_Text");
-                var albumTextTransform = child.Find("UI_Track_Display/UI_Track_Album_Button/UI_Track_Album_Button_Text");
-                var durationTextTransform = child.Find("UI_Track_Display/UI_Track_Duration_Button/UI_Track_Duration_Button_Text");
+                var titleTextTransform = child.Find("UI_Track_Title_Button/UI_Track_Title_Button_Text");
+                var artistTextTransform = child.Find("UI_Track_Artist_Button/UI_Track_Artist_Button_Text");
+                var albumTextTransform = child.Find("UI_Track_Album_Button/UI_Track_Album_Button_Text");
+                var durationTextTransform = child.Find("UI_Track_Duration_Button/UI_Track_Duration_Button_Text");
 
                 if (titleTextTransform != null && artistTextTransform != null && albumTextTransform != null && durationTextTransform != null)
                 {
@@ -157,7 +310,7 @@ namespace AudioFile.View
                 Destroy(trackDisplayToRemove.gameObject);
             }
         }
-
+#endregion
         public void AudioFileUpdate(string observationType, object data)
         {
             if (observationType == "OnTrackAdded")
@@ -168,6 +321,11 @@ namespace AudioFile.View
             {
                 StartCoroutine(RemoveTrackOnUpdate(data));
             }
+            else if (observationType == "OnCurrentTrackIsDone")
+            {
+                SelectNextTrackDisplay();
+            }
         }
+
     }
 }

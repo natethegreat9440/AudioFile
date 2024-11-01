@@ -32,7 +32,6 @@ namespace AudioFile.Model
         {
             // Create a new GameObject to hold the singleton instance if it doesn't already exist
             GameObject singletonObject = new GameObject(typeof(TrackLibrary).Name);
-
             // Add the TrackListController component to the GameObject
             return singletonObject.AddComponent<TrackLibrary>();
         }
@@ -44,6 +43,8 @@ namespace AudioFile.Model
 
         public void Initialize()
         {
+            //TODO: Change this method later so it initializes to what is in memory
+            //and set the current track index to whatever the last played track is
             trackList = new List<Track>();
             currentTrackIndex = 0;
         }
@@ -54,8 +55,24 @@ namespace AudioFile.Model
         }
 
         #region Playback method implementations
+        //Need a set current track index method that gets called whenever a track is selected by the user
+        public override void Play(int index)
+        {
+            currentTrackIndex = index;
+            trackList[currentTrackIndex].Play();
+        }
 
-        public override void Skip()
+        public override void Pause(int index)
+        {
+            currentTrackIndex = index;
+            trackList[currentTrackIndex].Pause();
+        }
+
+        public override void Stop()
+        {
+            trackList[currentTrackIndex].Stop();
+        }
+        public override void Skip(int index)
         {
             try
             {
@@ -72,8 +89,13 @@ namespace AudioFile.Model
             if (currentTrackIndex < trackList.Count - 1)
             {
                 currentTrackIndex++;
-                AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
+                //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
                 trackList[currentTrackIndex].Play();
+            }
+            else
+            {
+                Debug.Log("Reached the end of the playlist.");
+                Stop();
             }
         }
 

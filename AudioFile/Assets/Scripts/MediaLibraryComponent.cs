@@ -49,11 +49,11 @@ namespace AudioFile.Model
 
         #endregion
         #region Playback methods for tracks/visualizers
-        public virtual void Play()
+        public virtual void Play(int index = 0)
         {
             throw new NotImplementedException();
         }
-        public virtual void Pause()
+        public virtual void Pause(int index = 0)
         {
             throw new NotImplementedException();
         }
@@ -72,7 +72,7 @@ namespace AudioFile.Model
         }
         #endregion
         #region Playback methods for TrackLibrary
-        public virtual void Skip()
+        public virtual void Skip(int index = 0)
         {
             throw new NotImplementedException();
         }

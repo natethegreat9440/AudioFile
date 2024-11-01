@@ -56,9 +56,61 @@ namespace AudioFile.Controller
             throw new NotImplementedException();
         }
 
-        public void HandleRequest(object request, bool isUndo)
+        public void HandleRequest(object request, bool isUndo = false)
         {
-            throw new NotImplementedException();
+            //Add methods to log these commands with the UndoController
+            string command = request.GetType().Name;
+
+            if (isUndo == false)
+            {
+                switch (command)
+                {
+                    case "PlayCommand":
+                        PlayCommand playCommand = request as PlayCommand;
+                        Play(playCommand.Index);
+                        break;
+                    case "PauseCommand":
+                        PauseCommand pauseCommand = request as PauseCommand;
+                        Pause(pauseCommand.Index);
+                        break;
+                    case "StopCommand":
+                        //StopCommand stopCommand = request as StopCommand;
+                        Stop(); 
+                        break;
+                    case "NextItemCommand":
+                        NextItem();
+                        break;
+                    case "PreviousItemCommand":
+                        PreviousItem();
+                        break;
+                    default:
+                        Debug.LogWarning($"Unhandled command: {request}");
+                        break;
+                }
+            }
+            else
+            {
+                switch (command)
+                {
+                    case "PlayCommand":
+                        PlayCommand undoPlayCommand = request as PlayCommand;
+                        Pause(undoPlayCommand.Index);
+                        break;
+                    case "PauseCommand":
+                        PauseCommand undoPauseCommand = request as PauseCommand;
+                        Play(undoPauseCommand.Index);
+                        break;
+                    case "NextItemCommand":
+                        PreviousItem();
+                        break;
+                    case "PreviousItemCommand":
+                        NextItem();
+                        break;
+                    default:
+                        Debug.LogWarning($"Unhandled undo command: {request}");
+                        break;
+                }
+            }
         }
 
         public void Dispose()
@@ -80,19 +132,19 @@ namespace AudioFile.Controller
             
         }
 
-        public void Play()
+        public void Play(int index)
         {
-            throw new System.NotImplementedException();
+            AudioFile.Model.TrackLibrary.Instance.Play(index);
         }
 
-        public void Pause()
+        public void Pause(int index)
         {
-            throw new System.NotImplementedException();
+            AudioFile.Model.TrackLibrary.Instance.Pause(index);
         }
 
         public void Stop()
         {
-            throw new System.NotImplementedException();
+            AudioFile.Model.TrackLibrary.Instance.Stop();
         }
 
         public void NextItem()
@@ -101,7 +153,7 @@ namespace AudioFile.Controller
         }
         public void PreviousItem()
         {
-            throw new System.NotImplementedException();
+            AudioFile.Model.TrackLibrary.Instance.PreviousItem();
         }
 
         public void AudioFileUpdate(string observationType, object data)

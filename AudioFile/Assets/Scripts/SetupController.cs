@@ -33,7 +33,7 @@ namespace AudioFile.Controller
         public void Start()
         {
             SetupFileMenu(); //This script also sets up TrackLibraryController
-            TrackLibrary trackLibrary = AudioFile.Model.TrackLibrary.Instance;
+            //TrackLibrary trackLibrary = AudioFile.Model.TrackLibrary.Instance;
 
         }
         public void Initialize()
