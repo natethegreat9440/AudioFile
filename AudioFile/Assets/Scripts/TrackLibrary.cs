@@ -55,6 +55,10 @@ namespace AudioFile.Model
         }
 
         #region Playback method implementations
+        public Track GetTrackAtIndex(int index)
+        {
+            return trackList[index];
+        }
         public int GetTrackIndex(Track track)
         {
             return trackList.IndexOf(track);
@@ -93,13 +97,15 @@ namespace AudioFile.Model
             if (currentTrackIndex < trackList.Count - 1)
             {
                 currentTrackIndex++;
-                //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
+                AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
+                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", currentTrackIndex);
                 trackList[currentTrackIndex].Play();
             }
             else
             {
                 Debug.Log("Reached the end of the playlist.");
-                Stop(trackList.Count);
+                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", currentTrackIndex);
+                Stop(trackList.Count - 1);
             }
         }
 
@@ -108,7 +114,8 @@ namespace AudioFile.Model
             if (currentTrackIndex > 0)
             {
                 currentTrackIndex--;
-                //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
+                AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
+                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackCycled", currentTrackIndex);
                 trackList[currentTrackIndex].Play();
             }
         }

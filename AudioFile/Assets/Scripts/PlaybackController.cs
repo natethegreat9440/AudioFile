@@ -20,7 +20,7 @@ namespace AudioFile.Controller
 
         public static PlaybackController Instance => _instance.Value;
 
-        private Track _currentTrack;
+        public Track CurrentTrack { get; private set; }
 
         private static PlaybackController CreateSingleton()
         {
@@ -44,7 +44,7 @@ namespace AudioFile.Controller
 
         void Update()
         {
-            if (_currentTrack != null && _currentTrack.IsDone())
+            if (CurrentTrack != null && CurrentTrack.IsDone())
             {
                 Debug.Log("Track has finished playing.");
                 AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackIsDone", null);
@@ -58,7 +58,7 @@ namespace AudioFile.Controller
 
         public int GetCurrentTrackIndex()
         {
-            return _currentTrack != null ? AudioFile.Model.TrackLibrary.Instance.GetTrackIndex(_currentTrack) : -1;
+            return CurrentTrack != null ? AudioFile.Model.TrackLibrary.Instance.GetTrackIndex(CurrentTrack) : -1;
         }
         public void HandleRequest(object request, bool isUndo = false)
         {
@@ -126,8 +126,8 @@ namespace AudioFile.Controller
         {
             if (track != null)
             {
-                _currentTrack = track;
-                Debug.Log($"Current track set to: {_currentTrack}");
+                CurrentTrack = track;
+                Debug.Log($"Current track set to: {CurrentTrack}");
             }
             else
             {
@@ -138,7 +138,7 @@ namespace AudioFile.Controller
 
         public void Play(int index)
         {
-            //AudioFile.Model.TrackLibrary.Instance.Stop(index);
+            SetCurrentTrack(AudioFile.Model.TrackLibrary.Instance.GetTrackAtIndex(index));
             AudioFile.Model.TrackLibrary.Instance.Play(index);
         }
 

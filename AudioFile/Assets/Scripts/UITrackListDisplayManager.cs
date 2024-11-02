@@ -33,7 +33,7 @@ namespace AudioFile.View
         {
             AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackAdded", this);
             AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
-            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackIsDone", this);
+            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackCycled", this);
 
         }
 
@@ -105,6 +105,7 @@ namespace AudioFile.View
         {
             Debug.Log("Double-click detected on " + buttonType);
             int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
+            int currentTrackIndex = AudioFile.Controller.PlaybackController.Instance.GetCurrentTrackIndex();
 
             // Call different commands based on the button type
             switch (buttonType)
@@ -114,13 +115,10 @@ namespace AudioFile.View
                 //Duration intentionally "falls through" here to save a few lines of code
 
                 case "Title":
-                    // Get the currently playing track index from the PlaybackController
-                    int currentlyPlayingIndex = AudioFile.Controller.PlaybackController.Instance.GetCurrentTrackIndex();
-
-                    // If a track is already playing, stop it first
-                    if (currentlyPlayingIndex != -1)
+                    // Stop the current track before playing a new one
+                    if (PlaybackController.Instance.CurrentTrack != null)  // Assuming you add a getter for the current track
                     {
-                        AudioFile.Controller.PlaybackController.Instance.HandleRequest(new StopCommand(currentlyPlayingIndex));
+                        PlaybackController.Instance.Stop(currentTrackIndex);
                     }
 
                     // Now play the new track
@@ -153,7 +151,7 @@ namespace AudioFile.View
             }
         }
 
-        private void SelectNextTrackDisplay()
+        /*private void SelectNextTrackDisplay()
         {
             // Find the currently selected track display
             int currentIndex = -1;
@@ -179,7 +177,7 @@ namespace AudioFile.View
                     nextTrackDisplay.color = Color.blue; // Set selected color
                 }
             }
-        }
+        }*/
         #endregion
         #region Adding and Removing track based on updates
         private IEnumerator AddTrackOnUpdate(object data)
@@ -332,9 +330,13 @@ namespace AudioFile.View
             {
                 StartCoroutine(RemoveTrackOnUpdate(data));
             }
-            else if (observationType == "OnCurrentTrackIsDone")
+            else if (observationType == "OnCurrentTrackCycled")
             {
-                SelectNextTrackDisplay();
+                if (data is int currentTrackIndex)
+                {
+                    GameObject currentTrackDisplay = Track_List_DisplayViewportContent.GetChild(currentTrackIndex).gameObject;
+                    TrackSelected(currentTrackDisplay);
+                }
             }
         }
 

@@ -56,10 +56,10 @@ namespace AudioFile.Model
 
         void Update()
         {
-            if (_playableGraph.IsValid() && _playableGraph.IsPlaying())
+            if (_audioSource != null && _audioSource.isPlaying)
             {
-                double currentTime = _audioPlayable.GetTime();
-                double clipLength = _audioPlayable.GetDuration();
+                double currentTime = _audioSource.time;
+                double clipLength = _audioSource.clip.length;
                 float progress = (float)(currentTime / clipLength);
                 AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackFrameUpdate", progress);
             }
@@ -70,6 +70,12 @@ namespace AudioFile.Model
             {
                 _playableGraph.Destroy();
             }
+
+            if (_audioSource != null)
+            {
+                Destroy(_audioSource);
+            }
+
         }
         public override string ToString()
         {
@@ -84,28 +90,37 @@ namespace AudioFile.Model
             return string.Format("{0:0}:{1:00}", minutes, secs);
         }
 
-        public override void Play(int index = 0)
+        public override void Play(int index = -1)
         {
             //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(this);
-            _playableGraph.Play();
+            //_playableGraph.Play(); Doesn't affect playback. This kind of object just offers more advanced 
+            // functionality than AudioSource does, but for now it might be overkill
+
             _audioSource.Play();
             Debug.Log($"Track {this} has been played");
         }
 
-        public override void Pause(int index = 0)
+        public override void Pause(int index = -1)
         {
             //Pausing does not affect which track is known as the current track by the PlaybackController
-            _playableGraph.Stop();
+            //_playableGraph.Stop();
             _audioSource.Pause();
             Debug.Log($"Track {this} has been paused");
 
         }
-        public override void Stop(int index = 0)
+        public override void Stop(int index = -1)
         {
             //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(null);
-            _playableGraph.Stop();
+
+            //Stopping a PlayableGraph essentially just pauses it. Need to manually set to zero
+            //using AudioPlayable.SetTime(0.0) if using PlayableGraph
+            //_playableGraph.Stop();
             _audioSource.Stop();
             Debug.Log($"Track {this} has been stopped");
+
+            //Debug.Log($"AudioPlayable time: { FormatTime((float)_audioPlayable.GetTime())}");
+            //Debug.Log($"AudioSource time: {FormatTime((float)_audioSource.time)}");
+
             AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackStopped");
 
         }
@@ -113,23 +128,28 @@ namespace AudioFile.Model
         // Get or set playback time
         public override float GetDuration()
         {
-            return (float)_audioPlayable.GetDuration();
+            //return (float)_audioPlayable.GetDuration();
+            return (float)_audioSource.clip.length;
         }
 
         public override void SetTime(float time)
         {
-            _audioPlayable.SetTime(time);
+            //_audioPlayable.SetTime(time);
             _audioSource.time = (float)time;
         }
 
         // Check if the track is done
         public bool IsDone()
         {
-            if (_audioPlayable.IsValid())
+            if (_audioSource != null)
             {
-                return _audioPlayable.IsDone();
+                return !_audioSource.isPlaying;
             }
-            else return false;
+            else
+            {
+                return false;
+            }
+
         }
         #endregion
     }
