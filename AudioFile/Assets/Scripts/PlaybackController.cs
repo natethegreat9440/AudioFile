@@ -128,6 +128,7 @@ namespace AudioFile.Controller
             {
                 CurrentTrack = track;
                 Debug.Log($"Current track set to: {CurrentTrack}");
+                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackChanged", null);
             }
             else
             {
