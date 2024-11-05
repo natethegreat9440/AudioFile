@@ -96,6 +96,8 @@ namespace AudioFile.Model
         {
             if (currentTrackIndex < trackList.Count - 1)
             {
+                trackList[currentTrackIndex].Stop();
+
                 currentTrackIndex++;
                 AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
                 AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", currentTrackIndex);
@@ -113,6 +115,8 @@ namespace AudioFile.Model
         {
             if (currentTrackIndex > 0)
             {
+                trackList[currentTrackIndex].Stop();
+
                 currentTrackIndex--;
                 AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
                 AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackCycled", currentTrackIndex);

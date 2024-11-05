@@ -59,6 +59,7 @@ namespace AudioFile.View
             DeselectAllTrackDisplays();
             int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
             trackDisplay.GetComponent<Image>().color = Color.blue;  // Set selected color
+            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayIndex);
         }
 
         public int GetTrackDisplayIndex(GameObject trackDisplay)
@@ -105,7 +106,7 @@ namespace AudioFile.View
         {
             Debug.Log("Double-click detected on " + buttonType);
             int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
-            int currentTrackIndex = AudioFile.Controller.PlaybackController.Instance.GetCurrentTrackIndex();
+            //int currentTrackIndex = AudioFile.Controller.PlaybackController.Instance.GetCurrentTrackIndex();
 
             // Call different commands based on the button type
             switch (buttonType)
@@ -116,10 +117,10 @@ namespace AudioFile.View
 
                 case "Title":
                     // Stop the current track before playing a new one
-                    if (PlaybackController.Instance.CurrentTrack != null)  // Assuming you add a getter for the current track
+                    /*if (PlaybackController.Instance.CurrentTrack != null)  // Assuming you add a getter for the current track
                     {
                         PlaybackController.Instance.Stop(currentTrackIndex);
-                    }
+                    }*/
 
                     // Now play the new track
                     AudioFile.Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex));
@@ -151,33 +152,6 @@ namespace AudioFile.View
             }
         }
 
-        /*private void SelectNextTrackDisplay()
-        {
-            // Find the currently selected track display
-            int currentIndex = -1;
-            for (int i = 0; i < Track_List_DisplayViewportContent.childCount; i++)
-            {
-                var trackDisplay = Track_List_DisplayViewportContent.GetChild(i).GetComponent<Image>();
-                if (trackDisplay != null && trackDisplay.color == Color.blue) // Assuming blue is the selected color
-                {
-                    currentIndex = i;
-                    break;
-                }
-            }
-
-            // Deselect all track displays
-            DeselectAllTrackDisplays();
-
-            // Select the next track display if it exists
-            if (currentIndex >= 0 && currentIndex < Track_List_DisplayViewportContent.childCount - 1)
-            {
-                var nextTrackDisplay = Track_List_DisplayViewportContent.GetChild(currentIndex + 1).GetComponent<Image>();
-                if (nextTrackDisplay != null)
-                {
-                    nextTrackDisplay.color = Color.blue; // Set selected color
-                }
-            }
-        }*/
         #endregion
         #region Adding and Removing track based on updates
         private IEnumerator AddTrackOnUpdate(object data)

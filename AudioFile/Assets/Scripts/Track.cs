@@ -20,6 +20,11 @@ namespace AudioFile.Model
         public TrackProperties TrackProperties;
         private string _trackDuration;
 
+        bool _isPlaying = false;
+        public bool IsPlaying { get { return _isPlaying; } private set { _isPlaying = value; } }
+
+        bool _isPaused = false;
+        public bool IsPaused { get { return _isPaused; } private set { _isPaused = value; } }
 
         #region Setup/Unity methods
         // Static factory method to create and initialize Track
@@ -95,9 +100,20 @@ namespace AudioFile.Model
             //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(this);
             //_playableGraph.Play(); Doesn't affect playback. This kind of object just offers more advanced 
             // functionality than AudioSource does, but for now it might be overkill
+            Debug.Log($"_audioSource.time: {FormatTime((float)_audioSource.time)}");
 
-            _audioSource.Play();
-            Debug.Log($"Track {this} has been played");
+            if (_audioSource.time > 0)
+            {
+                _audioSource.UnPause();
+                Debug.Log($"Track {this} has been resumed at {FormatTime((float)_audioSource.time)}");
+            }
+            else
+            {
+                _audioSource.Play();
+                Debug.Log($"Track {this} has been played");
+            }
+            IsPlaying = true;
+            IsPaused = false;
         }
 
         public override void Pause(int index = -1)
@@ -105,8 +121,8 @@ namespace AudioFile.Model
             //Pausing does not affect which track is known as the current track by the PlaybackController
             //_playableGraph.Stop();
             _audioSource.Pause();
-            Debug.Log($"Track {this} has been paused");
-
+            Debug.Log($"Track {this} has been paused at {FormatTime((float)_audioSource.time)}");
+            IsPaused = true;
         }
         public override void Stop(int index = -1)
         {
@@ -117,7 +133,8 @@ namespace AudioFile.Model
             //_playableGraph.Stop();
             _audioSource.Stop();
             Debug.Log($"Track {this} has been stopped");
-
+            IsPlaying = false;
+            IsPaused = false;
             //Debug.Log($"AudioPlayable time: { FormatTime((float)_audioPlayable.GetTime())}");
             //Debug.Log($"AudioSource time: {FormatTime((float)_audioSource.time)}");
 
@@ -141,8 +158,9 @@ namespace AudioFile.Model
         // Check if the track is done
         public bool IsDone()
         {
-            if (_audioSource != null)
+            if (_audioSource != null && !this.IsPlaying)
             {
+                Debug.Log($"{this} is done");
                 return !_audioSource.isPlaying;
             }
             else

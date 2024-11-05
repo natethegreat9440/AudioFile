@@ -22,6 +22,8 @@ namespace AudioFile.Controller
 
         public Track CurrentTrack { get; private set; }
 
+        public bool isPlaying = false;
+
         private static PlaybackController CreateSingleton()
         {
             // Create a new GameObject to hold the singleton instance if it doesn't already exist
@@ -70,23 +72,33 @@ namespace AudioFile.Controller
                 switch (command)
                 {
                     case "PlayCommand":
+                        int currentTrackIndex = GetCurrentTrackIndex();
+                        if (CurrentTrack != null && !CurrentTrack.IsPlaying)
+                        {
+                            Stop(currentTrackIndex);
+                        }
                         PlayCommand playCommand = request as PlayCommand;
                         Play(playCommand.Index);
                         break;
+
                     case "PauseCommand":
                         PauseCommand pauseCommand = request as PauseCommand;
                         Pause(pauseCommand.Index);
                         break;
+
                     case "StopCommand":
                         StopCommand stopCommand = request as StopCommand;
                         Stop(stopCommand.Index);
                         break;
+
                     case "NextItemCommand":
                         NextItem();
                         break;
+
                     case "PreviousItemCommand":
                         PreviousItem();
                         break;
+
                     default:
                         Debug.LogWarning($"Unhandled command: {request}");
                         break;
@@ -141,25 +153,30 @@ namespace AudioFile.Controller
         {
             SetCurrentTrack(AudioFile.Model.TrackLibrary.Instance.GetTrackAtIndex(index));
             AudioFile.Model.TrackLibrary.Instance.Play(index);
+            //isPlaying = true;
         }
 
         public void Pause(int index)
         {
             AudioFile.Model.TrackLibrary.Instance.Pause(index);
+            //isPlaying = false;
         }
 
         public void Stop(int index)
         {
             AudioFile.Model.TrackLibrary.Instance.Stop(index);
+            //isPlaying = false;
         }
 
         public void NextItem()
         {
             AudioFile.Model.TrackLibrary.Instance.NextItem();
+            //isPlaying = true;
         }
         public void PreviousItem()
         {
             AudioFile.Model.TrackLibrary.Instance.PreviousItem();
+            //isPlaying = true;
         }
 
         public void AudioFileUpdate(string observationType, object data)
