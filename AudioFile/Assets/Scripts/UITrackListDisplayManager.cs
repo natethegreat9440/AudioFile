@@ -60,6 +60,8 @@ namespace AudioFile.View
             int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
             trackDisplay.GetComponent<Image>().color = Color.blue;  // Set selected color
             AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayIndex);
+            Debug.Log($"Track selected is : {Track_List_DisplayViewportContent.GetChild(trackDisplayIndex).gameObject} at index {trackDisplayIndex}");
+
         }
 
         public int GetTrackDisplayIndex(GameObject trackDisplay)
@@ -116,13 +118,7 @@ namespace AudioFile.View
                 //Duration intentionally "falls through" here to save a few lines of code
 
                 case "Title":
-                    // Stop the current track before playing a new one
-                    /*if (PlaybackController.Instance.CurrentTrack != null)  // Assuming you add a getter for the current track
-                    {
-                        PlaybackController.Instance.Stop(currentTrackIndex);
-                    }*/
 
-                    // Now play the new track
                     AudioFile.Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex));
                     break;
 

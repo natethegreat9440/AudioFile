@@ -100,7 +100,7 @@ namespace AudioFile.Model
             //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(this);
             //_playableGraph.Play(); Doesn't affect playback. This kind of object just offers more advanced 
             // functionality than AudioSource does, but for now it might be overkill
-            Debug.Log($"_audioSource.time: {FormatTime((float)_audioSource.time)}");
+            Debug.Log($"{this}_audioSource.time: {FormatTime((float)_audioSource.time)}");
 
             if (_audioSource.time > 0)
             {
@@ -123,6 +123,7 @@ namespace AudioFile.Model
             _audioSource.Pause();
             Debug.Log($"Track {this} has been paused at {FormatTime((float)_audioSource.time)}");
             IsPaused = true;
+            IsPlaying = false;
         }
         public override void Stop(int index = -1)
         {
@@ -132,7 +133,7 @@ namespace AudioFile.Model
             //using AudioPlayable.SetTime(0.0) if using PlayableGraph
             //_playableGraph.Stop();
             _audioSource.Stop();
-            Debug.Log($"Track {this} has been stopped");
+            Debug.Log($"Track {this} has been stopped. Time is now {FormatTime((float)_audioSource.time)}");
             IsPlaying = false;
             IsPaused = false;
             //Debug.Log($"AudioPlayable time: { FormatTime((float)_audioPlayable.GetTime())}");
@@ -158,7 +159,12 @@ namespace AudioFile.Model
         // Check if the track is done
         public bool IsDone()
         {
-            if (_audioSource != null && !this.IsPlaying)
+            /*if (_audioSource != null && this.IsPlaying && !this.IsPaused)
+            {
+                Debug.Log($"{this} is done");
+                return !_audioSource.isPlaying;
+            }*/
+            if (_audioSource.time >= _audioSource.clip.length)
             {
                 Debug.Log($"{this} is done");
                 return !_audioSource.isPlaying;

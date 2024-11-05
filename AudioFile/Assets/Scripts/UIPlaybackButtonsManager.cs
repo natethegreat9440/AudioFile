@@ -50,7 +50,7 @@ namespace AudioFile.View
                         // Play the selected track
                         PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex));
                     }
-                    else if (PlaybackController.Instance.CurrentTrack != null && !PlaybackController.Instance.CurrentTrack.IsPaused)
+                    else if (PlaybackController.Instance.CurrentTrack != null && PlaybackController.Instance.GetCurrentTrackIndex() == trackDisplayIndex && PlaybackController.Instance.CurrentTrack.IsPlaying)
                     {
                         // Pause the current track
                         PlaybackController.Instance.HandleRequest(new PauseCommand(trackDisplayIndex));

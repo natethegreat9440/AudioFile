@@ -46,6 +46,7 @@ namespace AudioFile.Controller
 
         void Update()
         {
+            //Should this be coroutine?
             if (CurrentTrack != null && CurrentTrack.IsDone())
             {
                 Debug.Log("Track has finished playing.");
@@ -73,11 +74,11 @@ namespace AudioFile.Controller
                 {
                     case "PlayCommand":
                         int currentTrackIndex = GetCurrentTrackIndex();
-                        if (CurrentTrack != null && !CurrentTrack.IsPlaying)
+                        PlayCommand playCommand = request as PlayCommand;
+                        if (CurrentTrack != null && currentTrackIndex != playCommand.Index)//(CurrentTrack.IsPlaying || CurrentTrack.IsPaused))
                         {
                             Stop(currentTrackIndex);
                         }
-                        PlayCommand playCommand = request as PlayCommand;
                         Play(playCommand.Index);
                         break;
 
