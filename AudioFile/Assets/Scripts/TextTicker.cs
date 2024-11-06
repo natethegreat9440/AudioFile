@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,11 +8,12 @@ using UnityEngine;
 using TMPro;
 using TagLib;
 using AudioFile.ObserverManager;
+//using UnityEngine.Playables;
 
 namespace AudioFile.View
 {
     //TODO: Make this into an interface if I find myself with the need for mutliple text tickers beyond for "Now Playing"
-    public class TextTicker : MonoBehaviour, IAudioFileObserver
+    public class TextTicker : MonoBehaviour, IAudioFileObserver//, IPlayable
     {
         public float scrollSpeed = 50f; // Adjust speed here
         private RectTransform textRect;
@@ -63,6 +65,10 @@ namespace AudioFile.View
                     textRect.localPosition = new Vector3(resetPositionX, textRect.localPosition.y, 0);
                 }
             }
+            else
+            {
+                textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
+            }
         }
 
         // Helper method to get the world space Rect of a RectTransform
@@ -73,18 +79,35 @@ namespace AudioFile.View
             return new Rect(corners[0].x, corners[0].y, corners[2].x - corners[0].x, corners[2].y - corners[0].y);
         }
 
+        private IEnumerator QuickMessage(float waitTime, string message)
+        {
+            textRect.GetComponent<TextMeshProUGUI>().text = message;
+            isScrolling = false;
+            yield return new WaitForSeconds(waitTime);
+            textRect.GetComponent<TextMeshProUGUI>().text = AudioFile.Controller.PlaybackController.Instance.CurrentTrack.ToString();
+            isScrolling = true;
+        }
+
         public void AudioFileUpdate(string observationType, object data)
         {
             switch (observationType)
             {
                 case "OnCurrentTrackChanged":
+                    textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
                     textRect.GetComponent<TextMeshProUGUI>().text = AudioFile.Controller.PlaybackController.Instance.CurrentTrack.ToString();
                     isScrolling = true;
                     break;
                 case "OnTrackListEnd":
-                    textRect.GetComponent<TextMeshProUGUI>().text = "End of playlist";
-                    isScrolling = false;
-                    break;
+                    if (AudioFile.Controller.PlaybackController.Instance.GetCurrentTrackIndex() == 0)
+                    {
+                        StartCoroutine(QuickMessage(1f, "Front of playlist"));
+                        break;
+                    }
+                    else
+                    {
+                        StartCoroutine(QuickMessage(1f, "End of playlist"));
+                        break;
+                    }
             }
         }
 

@@ -107,7 +107,7 @@ namespace AudioFile.Model
             {
                 Debug.Log("Reached the end of the playlist.");
                 AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", currentTrackIndex);
-                Stop(trackList.Count - 1);
+                //Stop(trackList.Count - 1);
             }
         }
 
@@ -119,8 +119,16 @@ namespace AudioFile.Model
 
                 currentTrackIndex--;
                 AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
-                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackCycled", currentTrackIndex);
+                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", currentTrackIndex);
                 trackList[currentTrackIndex].Play();
+            }
+
+            else
+            {
+                Debug.Log("Reached the front of the playlist.");
+                //Same event type as NextItem(), may want to change this later
+                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", currentTrackIndex);
+                //Stop(trackList.Count - 1);
             }
         }
         #endregion
