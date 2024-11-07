@@ -11,7 +11,14 @@ using UnityEngine.UI;
 
 namespace AudioFile.View
 {
-    public class FileMenuSetup : MonoBehaviour
+    /// <summary>
+    /// Concrete class called by the SetupController to Initialize the File Menu.
+    /// <remarks>
+    /// Members: Single member. Implements Initialize() from MonoBehaviour.
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// </summary>
+    public class UIFileMenuSetup : MonoBehaviour
     {
         public void Initialize()
         {

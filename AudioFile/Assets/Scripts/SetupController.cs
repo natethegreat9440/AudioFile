@@ -20,7 +20,7 @@ namespace AudioFile.Controller
 
         public static SetupController Instance => _instance.Value;
 
-        private FileMenuSetup fileMenuSetup;
+        private UIFileMenuSetup fileMenuSetup;
 
         //private TrackLibrary trackLibrary;
         //No CreateSingleton() method for this controller as it is already attached to a GameObject in the scene
@@ -53,7 +53,7 @@ namespace AudioFile.Controller
         private void SetupFileMenu()
         {
             GameObject fileMenuSetupObject = new GameObject("FileMenuSetup");
-            fileMenuSetup = fileMenuSetupObject.AddComponent<FileMenuSetup>();
+            fileMenuSetup = fileMenuSetupObject.AddComponent<UIFileMenuSetup>();
             fileMenuSetup.Initialize();
         }
 

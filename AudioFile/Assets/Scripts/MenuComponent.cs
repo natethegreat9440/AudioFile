@@ -1,13 +1,13 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
-using System;
+﻿using TMPro;
 using System.Collections.Generic;
 using System.Threading;
 using System.Xml.Linq;
 using Unity.VisualScripting;
 using UnityEngine.EventSystems;
 using AudioFile.Controller;
+using System;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace AudioFile.View
 {
@@ -17,7 +17,7 @@ namespace AudioFile.View
     /// <param name="description">Has a string description as a parameter.</param>
     /// <remarks>
     /// Part of a Composite design pattern implementation. Menu and MenuItems are nodes in the tree. Members:
-    /// Add(MenuComponent), Remove(MenuComponent), GetChild(int i), GetName(), GetDescription(), Display(), Hide(),
+    /// Name, Description, _enabled, Add(MenuComponent), Remove(MenuComponent), GetChild(int i), Display(), Hide(),
     /// ExecuteAction(), MenuItem_Click(). Has default ToString() override and IsEnabled() and SetEnabled(bool enabled) implementations.
     /// </remarks>
     /// </summary>
@@ -25,20 +25,20 @@ namespace AudioFile.View
     {
         public Button button;
         public Text text;
-        protected string _name;
-        protected string _description;
+        protected string Name { get; set; }
+        protected string Description { get; set; }
         protected bool _enabled = true;
 
         public MenuComponent(Button button, string description)
         {
             this.button = button;
-            _name = button.GetComponentInChildren<Text>().text;
+            Name = button.GetComponentInChildren<Text>().text;
             text = button.GetComponentInChildren<Text>();
-            _description = description;
+            Description = description;
         }
         public override string ToString()
         {
-            return $"{_name} - {_description}";
+            return $"{Name} - {Description}";
         }
         public virtual void Add(MenuComponent menuComponent)
         {
@@ -51,16 +51,6 @@ namespace AudioFile.View
         }
 
         public virtual MenuComponent GetChild(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual string GetName()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual string GetDescription()
         {
             throw new NotImplementedException();
         }
@@ -92,6 +82,8 @@ namespace AudioFile.View
             throw new NotImplementedException();
         }
 
+        //Keeping this redundant method (may be redundant with ExecuteAction()) in for now in case we want to be able to add functionality later in order to 
+        //navigate the Menu's and execute commands with just the keyboard
         public virtual void MenuItem_Click()
         {
             throw new NotImplementedException();
