@@ -1,40 +1,57 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using AudioFile.Controller;
 using AudioFile.Model;
 using AudioFile.ObserverManager;
-using System.Collections;
-using System.ComponentModel;
-using AudioFile.Controller;
 
 namespace AudioFile.View
 {
+    /// <summary>
+    /// Concrete class for updating the UI Track List display area and managing individual TrackDisplay objects.
+    /// <remarks>
+    /// Needs method to instantiate the display with all tracks saved to PC memory down the road.
+    /// Members: AddTrackOnUpdate() and RemoveTrackOnUpdate() coroutines. Has HandleTrackButtonClick(), and OnTrackDisplayDoubleClick().
+    /// Has GetTrackDisplayIndex(), TrackSelected(), DeselectAllTrackDisplays() methods. Click interaction methods 
+    /// Implements Start() from MonoBehaviour. Implements AudioFileUpdate() from IAudioFileObserver. 
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// <seealso cref="IAudioFileObserver"/>
+    /// </summary>
     public class UITrackListDisplayManager : MonoBehaviour, IAudioFileObserver
     {
-        public GameObject UI_Track_DisplayPrefab;  // Drag your Unity song entry prefab here in the Inspector
-        public Transform Track_List_DisplayViewportContent;  // Drag the Unity Content GameObject of your ScrollView here
-        private TrackLibrary trackLibrary;
+        private static readonly Lazy<UITrackListDisplayManager> _instance = new Lazy<UITrackListDisplayManager>(() => new UITrackListDisplayManager());
+        public static UITrackListDisplayManager Instance => _instance.Value;
 
-        // Define double-click time threshold
+        public GameObject UI_Track_DisplayPrefab;
+        public Transform Track_List_DisplayViewportContent;
+
         private const float doubleClickThreshold = 0.3f;
         private float lastClickTime = 0f;
         private string lastButtonClicked = "";
 
-        public UITrackListDisplayManager(TrackLibrary trackLibrary)
+        public readonly string titleTextPath = "UI_Track_Title_Button/UI_Track_Title_Button_Text";
+        public readonly string artistTextPath = "UI_Track_Artist_Button/UI_Track_Artist_Button_Text";
+        public readonly string albumTextPath = "UI_Track_Album_Button/UI_Track_Album_Button_Text";
+        public readonly string durationTextPath = "UI_Track_Duration_Button/UI_Track_Duration_Button_Text";
+
+        // This class is assigned to a GameObject in scene so this method is not needed. Here it is anyway in case it is needed for future implementation
+        /*private static UITrackListDisplayManager CreateSingleton()
         {
-            this.trackLibrary = trackLibrary;
-        }
+            // Create a new GameObject to hold the singleton instance if it doesn't already exist
+            GameObject singletonObject = new GameObject(typeof(UITrackListDisplayManager).Name);
+
+            // Add the TrackListController component to the GameObject
+            return singletonObject.AddComponent<UITrackListDisplayManager>();
+        }*/
+
 
         public void Start()
         {
             AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackAdded", this);
             AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
             AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackCycled", this);
-
         }
 
         /*public void PopulateOnLoad()
@@ -44,96 +61,58 @@ namespace AudioFile.View
             //For now it will display the full track library, but later will augment this so it displays whatever the last view filter on the library was (i.e., which playlist, album, etc.)
         }
         */
-        #region Click interactions
-        private void TrackSelected(GameObject trackDisplay)
-        {
-            /*if (trackDisplay.GetComponent<Image>() != null)
-            {
-                Debug.Log("An image was found in the track display");
-            }
-            else
-            {
-                Debug.Log("No image was found in the track display");
-            }*/
 
-            DeselectAllTrackDisplays();
-            int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
-            trackDisplay.GetComponent<Image>().color = Color.blue;  // Set selected color
-            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayIndex);
-            Debug.Log($"Track selected is : {Track_List_DisplayViewportContent.GetChild(trackDisplayIndex).gameObject} at index {trackDisplayIndex}");
 
-        }
-
-        public int GetTrackDisplayIndex(GameObject trackDisplay)
-        {
-            // Get the Content GameObject's transform
-            Transform contentTransform = Track_List_DisplayViewportContent;
-
-            // Loop through each child of Content
-            for (int i = 0; i < contentTransform.childCount; i++)
-            {
-                // Check if the current child is the target TrackDisplay
-                if (contentTransform.GetChild(i).gameObject == trackDisplay)
-                {
-                    return i; // Return the index if found
-                }
-            }
-
-            // If not found, return -1 (or handle the "not found" case as desired)
-            return -1;
-        }
-
-        private void OnTrackDisplayButtonClick(GameObject trackDisplay, string buttonType)
+        public void HandleTrackButtonClick(UITrackDisplay trackDisplay, string buttonType)
         {
             float timeSinceLastClick = Time.time - lastClickTime;
 
-            // Check if this is a double-click on the same button type
             if (timeSinceLastClick <= doubleClickThreshold && lastButtonClicked == buttonType)
             {
-                // Handle double-click action with specific button type
                 OnTrackDisplayDoubleClick(trackDisplay, buttonType);
             }
             else
             {
-                // Handle single-click action (selection)
-                TrackSelected(trackDisplay);
+                TrackSelected(trackDisplay.TrackDisplayGameObject);
             }
 
-            // Update last click time and button type
             lastClickTime = Time.time;
             lastButtonClicked = buttonType;
         }
 
-        private void OnTrackDisplayDoubleClick(GameObject trackDisplay, string buttonType)
+        private void OnTrackDisplayDoubleClick(UITrackDisplay trackDisplay, string buttonType)
         {
             Debug.Log("Double-click detected on " + buttonType);
-            int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
-            //int currentTrackIndex = AudioFile.Controller.PlaybackController.Instance.GetCurrentTrackIndex();
+            int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay.TrackDisplayGameObject);
 
-            // Call different commands based on the button type
             switch (buttonType)
             {
                 case "Duration":
-                // Will just play the current track for now until I can think of something cooler
-                //Duration intentionally "falls through" here to save a few lines of code
-
                 case "Title":
-
                     AudioFile.Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex));
                     break;
 
                 case "Artist":
-                    // Should filter view to all tracks by artist
+                    // Filter by artist logic here
                     break;
 
                 case "Album":
-                    // Should filter view to all tracks on this album
+                    // Filter by album logic here
                     break;
 
                 default:
                     Debug.LogWarning("Unknown button type double-clicked.");
                     break;
             }
+        }
+
+        private void TrackSelected(GameObject trackDisplay)
+        {
+            DeselectAllTrackDisplays();
+
+            int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
+            trackDisplay.GetComponent<Image>().color = Color.blue;
+            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayIndex);
         }
 
         private void DeselectAllTrackDisplays()
@@ -143,102 +122,42 @@ namespace AudioFile.View
                 var trackDisplay = child.GetComponent<Image>();
                 if (trackDisplay != null)
                 {
-                    trackDisplay.color = Color.white;  // Reset to default color
+                    trackDisplay.color = Color.white;
                 }
             }
         }
 
-        #endregion
-        #region Adding and Removing track based on updates
+        public int GetTrackDisplayIndex(GameObject trackDisplay)
+        {
+            Transform contentTransform = Track_List_DisplayViewportContent;
+
+            for (int i = 0; i < contentTransform.childCount; i++)
+            {
+                if (contentTransform.GetChild(i).gameObject == trackDisplay)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
         private IEnumerator AddTrackOnUpdate(object data)
         {
-            if (data == null)
+            if (data is Track providedTrack && UI_Track_DisplayPrefab != null && Track_List_DisplayViewportContent != null)
             {
-                yield break;  // Exit early if data is null
-            }
+                GameObject newTrackDisplayObject = Instantiate(UI_Track_DisplayPrefab, Track_List_DisplayViewportContent);
+                UITrackDisplay trackDisplay = newTrackDisplayObject.GetComponent<UITrackDisplay>();
 
-            Track providedTrack = data as Track;
-            if (providedTrack == null || UI_Track_DisplayPrefab == null || Track_List_DisplayViewportContent == null)
-            {
-                yield break;  // Exit if there’s no track data or prefab reference
-            }
-
-            GameObject newTrackDisplay = Instantiate(UI_Track_DisplayPrefab, Track_List_DisplayViewportContent);
-
-            //Debug.Log(newTrackDisplay.transform.Find("UI_Track_Title_Button/UI_Track_Title_Button_Text") != null ? "Title Button and text found" : "Title Button not found");
-
-            // Set the title text GUI_Canvas/Track_List_Display/Viewport/Content/UI_Track_Display(Clone)/
-            var titleTextTransform = newTrackDisplay.transform.Find("UI_Track_Title_Button/UI_Track_Title_Button_Text");
-            if (titleTextTransform != null)
-            {
-                var titleText = titleTextTransform.GetComponent<Text>();
-                if (titleText != null)
+                if (trackDisplay != null)
                 {
-                    //Blank space precedes the text property as I don't like how close it puts the text to the edge of the button when left justified
-                    titleText.text = "  " + providedTrack.TrackProperties.GetProperty("Title");
+                    trackDisplay.Initialize(providedTrack, this);
                 }
+
+                yield return null;
             }
-            yield return null;  // Pause to let Unity process the instantiation and text update
-
-            // Set the artist text
-            var artistTextTransform = newTrackDisplay.transform.Find("UI_Track_Artist_Button/UI_Track_Artist_Button_Text");
-            if (artistTextTransform != null)
-            {
-                var artistText = artistTextTransform.GetComponent<Text>();
-                if (artistText != null)
-                {
-                    artistText.text = "  " + providedTrack.TrackProperties.GetProperty("Artist");
-                }
-            }
-            yield return null;
-
-            // Set the album text
-            var albumTextTransform = newTrackDisplay.transform.Find("UI_Track_Album_Button/UI_Track_Album_Button_Text");
-            if (albumTextTransform != null)
-            {
-                var albumText = albumTextTransform.GetComponent<Text>();
-                if (albumText != null)
-                {
-                    albumText.text = "  " + providedTrack.TrackProperties.GetProperty("Album");
-                }
-            }
-            yield return null;
-
-            // Set the duration text
-            var durationTextTransform = newTrackDisplay.transform.Find("UI_Track_Duration_Button/UI_Track_Duration_Button_Text");
-            if (durationTextTransform != null)
-            {
-                var durationText = durationTextTransform.GetComponent<Text>();
-                if (durationText != null)
-                {
-                    durationText.text = "  " + providedTrack.TrackProperties.GetProperty("Duration");
-                }
-            }
-            yield return null;
-            // Instantiate and setup track display as in your code
-
-            Button titleButton = newTrackDisplay.transform.Find("UI_Track_Title_Button").GetComponent<Button>();
-            Button artistButton = newTrackDisplay.transform.Find("UI_Track_Artist_Button").GetComponent<Button>();
-            Button albumButton = newTrackDisplay.transform.Find("UI_Track_Album_Button").GetComponent<Button>();
-            Button durationButton = newTrackDisplay.transform.Find("UI_Track_Duration_Button").GetComponent<Button>();
-
-            /* Disable the duration button so it cannot be clicked. 
-             Uncomment out later in case I want this functionality (or lack thereof)
-            if (durationButton != null)
-            {
-                durationButton.interactable = false;
-            }*/
-
-            // Pass a unique identifier for each button
-            titleButton.onClick.AddListener(() => OnTrackDisplayButtonClick(newTrackDisplay, "Title"));
-            artistButton.onClick.AddListener(() => OnTrackDisplayButtonClick(newTrackDisplay, "Artist"));
-            albumButton.onClick.AddListener(() => OnTrackDisplayButtonClick(newTrackDisplay, "Album"));
-            durationButton.onClick.AddListener(() => OnTrackDisplayButtonClick(newTrackDisplay, "Duration"));
-
-            yield return null;
-
         }
-        private IEnumerator RemoveTrackOnUpdate(object data)
+
+        private IEnumerator RemoveTrackOnUpdate(object data) //Method yet to be tested due to lack of Remove track feature currently
         {
             if (data == null)
             {
@@ -262,10 +181,10 @@ namespace AudioFile.View
             // Iterate through children of Track_List_DisplayViewportContent to find the matching GameObject
             foreach (Transform child in Track_List_DisplayViewportContent)
             {
-                var titleTextTransform = child.Find("UI_Track_Title_Button/UI_Track_Title_Button_Text");
-                var artistTextTransform = child.Find("UI_Track_Artist_Button/UI_Track_Artist_Button_Text");
-                var albumTextTransform = child.Find("UI_Track_Album_Button/UI_Track_Album_Button_Text");
-                var durationTextTransform = child.Find("UI_Track_Duration_Button/UI_Track_Duration_Button_Text");
+                var titleTextTransform = child.Find(titleTextPath);
+                var artistTextTransform = child.Find(artistTextPath);
+                var albumTextTransform = child.Find(albumTextPath);
+                var durationTextTransform = child.Find(durationTextPath);
 
                 if (titleTextTransform != null && artistTextTransform != null && albumTextTransform != null && durationTextTransform != null)
                 {
@@ -289,26 +208,29 @@ namespace AudioFile.View
                 Destroy(trackDisplayToRemove.gameObject);
             }
         }
-#endregion
+
         public void AudioFileUpdate(string observationType, object data)
         {
-            if (observationType == "OnTrackAdded")
+            switch (observationType)
             {
-                StartCoroutine(AddTrackOnUpdate(data));
-            }
-            else if (observationType == "OnTrackRemoved")
-            {
-                StartCoroutine(RemoveTrackOnUpdate(data));
-            }
-            else if (observationType == "OnCurrentTrackCycled")
-            {
-                if (data is int currentTrackIndex)
-                {
-                    GameObject currentTrackDisplay = Track_List_DisplayViewportContent.GetChild(currentTrackIndex).gameObject;
-                    TrackSelected(currentTrackDisplay);
-                }
+                case "OnTrackAdded":
+                    StartCoroutine(AddTrackOnUpdate(data));
+                    break;
+                case "OnTrackRemoved":
+                    StartCoroutine(RemoveTrackOnUpdate(data));
+                    break;
+                case "OnCurrentTrackCycled":
+                    if (data is int currentTrackIndex)
+                    {
+                        GameObject currentTrackDisplay = Track_List_DisplayViewportContent.GetChild(currentTrackIndex).gameObject;
+                        TrackSelected(currentTrackDisplay);
+                    }
+                    break;
+                // Add more cases here if needed
+                default:
+                    Debug.LogWarning($"Unhandled observation type: {observationType} at {this}");
+                    break;
             }
         }
-
     }
 }

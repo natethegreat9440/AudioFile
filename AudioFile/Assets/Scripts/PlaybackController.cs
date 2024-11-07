@@ -63,6 +63,25 @@ namespace AudioFile.Controller
         {
             return CurrentTrack != null ? AudioFile.Model.TrackLibrary.Instance.GetTrackIndex(CurrentTrack) : -1;
         }
+
+        public void HandlePlayPauseButton(int trackDisplayIndex)
+        {
+            if (CurrentTrack == null)
+            {
+                // Play the selected track
+                HandleRequest(new PlayCommand(trackDisplayIndex));
+            }
+            else if (CurrentTrack != null && GetCurrentTrackIndex() == trackDisplayIndex && CurrentTrack.IsPlaying)
+            {
+                // Pause the current track
+                HandleRequest(new PauseCommand(trackDisplayIndex));
+            }
+            else
+            {
+                // Play the selected track
+                HandleRequest(new PlayCommand(trackDisplayIndex));
+            }
+        }
         public void HandleRequest(object request, bool isUndo = false)
         {
             //Add methods to log these commands with the UndoController
@@ -189,7 +208,7 @@ namespace AudioFile.Controller
                     break;
                 // Add more cases here if needed
                 default:
-                    Debug.LogWarning($"Unhandled observation type: {observationType}");
+                    Debug.LogWarning($"Unhandled observation type: {observationType} at {this}");
                     break;
             }
         }

@@ -813,7 +813,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000015258789, y: -0.000031695876}
+  m_AnchoredPosition: {x: 0.000015258789, y: 0.000004616851}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &480053971
@@ -5180,6 +5180,7 @@ GameObject:
   - component: {fileID: 1917368898}
   - component: {fileID: 1917368897}
   - component: {fileID: 1917368900}
+  - component: {fileID: 1917368901}
   m_Layer: 5
   m_Name: Track_List_Display
   m_TagString: Untagged
@@ -5284,9 +5285,23 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1917368895}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dee3ed1ca6d6efa41997886eea51fa3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  UI_Track_DisplayPrefab: {fileID: 2544996683617785101, guid: 78ce12c110b0f0741b40cc35c0869c73, type: 3}
+  Track_List_DisplayViewportContent: {fileID: 480053970}
+--- !u!114 &1917368901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1917368895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8739dd0d5e486864abdbc3e3f7cfac19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   UI_Track_DisplayPrefab: {fileID: 2544996683617785101, guid: 78ce12c110b0f0741b40cc35c0869c73, type: 3}

@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 2925123291967288492}
   - component: {fileID: 271961876291552621}
   - component: {fileID: 5189994999071905039}
+  - component: {fileID: 5269546618318456420}
   m_Layer: 5
   m_Name: UI_Track_Display
   m_TagString: Untagged
@@ -201,6 +202,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &5269546618318456420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2544996683617785101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cedec32b4d138de4a85fc5fff6be1fda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3305812749273206363
 GameObject:
   m_ObjectHideFlags: 0
