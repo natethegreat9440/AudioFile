@@ -1,15 +1,26 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using AudioFile;
 using AudioFile.Model;
-using AudioFile.View;
-using AudioFile.ObserverManager;
-using System;
 using System.Windows.Forms;
+using AudioFile.ObserverManager;
+using UnityEngine;
+using AudioFile.View;
+using System;
 
 namespace AudioFile.Controller
 {
+    /// <summary>
+    /// Generic singleton controller for setting up the UI where needed (i.e., Menus)
+    /// <remarks>
+    /// This should be attached to a GameObject in the scene for the easiest entry point for setting up the UI
+    /// Members: SetupFileMenu(). Implements Start() and Awake() from MonoBehaviour. 
+    /// This controller has no implementation for IController methods (yet).
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// <seealso cref="IController"/>
+    /// </summary>
+
     public class SetupController : MonoBehaviour, IController
     {
         // Lazy<T> ensures that the instance is created in a thread-safe manner
@@ -22,8 +33,7 @@ namespace AudioFile.Controller
 
         private UIFileMenuSetup fileMenuSetup;
 
-        //private TrackLibrary trackLibrary;
-        //No CreateSingleton() method for this controller as it is already attached to a GameObject in the scene
+        //No CreateSingleton() method needed for this controller as it is already attached to a GameObject in the scene
 
         public void Awake()
         {
@@ -33,7 +43,6 @@ namespace AudioFile.Controller
         public void Start()
         {
             SetupFileMenu(); //This script also sets up TrackLibraryController
-            //TrackLibrary trackLibrary = AudioFile.Model.TrackLibrary.Instance;
 
         }
         public void Initialize()
@@ -56,12 +65,5 @@ namespace AudioFile.Controller
             fileMenuSetup = fileMenuSetupObject.AddComponent<UIFileMenuSetup>();
             fileMenuSetup.Initialize();
         }
-
-        /*private void SetupLibrary()
-        {
-            GameObject trackLibraryObject = new GameObject("TrackLibraryObject");
-            trackLibrary = trackLibraryObject.AddComponent<TrackLibrary>();
-            trackLibrary.Initialize();
-        }*/
     }
 }

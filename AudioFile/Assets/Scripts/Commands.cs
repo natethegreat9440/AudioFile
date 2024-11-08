@@ -127,7 +127,9 @@ namespace AudioFile.View
     public class AddTrackCommand : ICommand
     {
         bool isUndo = false;
-        
+
+        public Track Track { get; set; }
+
         public void Execute()
         {
             TrackLibraryController.Instance.HandleRequest(this, isUndo);
@@ -138,6 +140,33 @@ namespace AudioFile.View
         {
             TrackLibraryController.Instance.HandleRequest(this, isUndo=true);
             Debug.Log("New Track Command undone");
+        }
+    }
+
+    public class RemoveTrackCommand : ICommand
+    {
+        bool isUndo = false;
+
+        //public Track Track { get; }
+
+        public int Index { get; }
+
+        public string Path { get; set; }
+
+        public RemoveTrackCommand(int index)
+        {
+            Index = index;
+        }
+        public void Execute()
+        {
+            TrackLibraryController.Instance.HandleRequest(this, isUndo);
+            Debug.Log("Remove Track Command executed");
+        }
+
+        public void Undo()
+        {
+            TrackLibraryController.Instance.HandleRequest(this, isUndo = true);
+            Debug.Log("Remove Track Command undone");
         }
     }
 

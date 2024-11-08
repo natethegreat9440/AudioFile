@@ -38,7 +38,7 @@ namespace AudioFile.Model
 
         public void Start()
         {
-
+            throw new NotImplementedException();
         }
 
         public void Initialize()
@@ -107,7 +107,6 @@ namespace AudioFile.Model
             {
                 Debug.Log("Reached the end of the playlist.");
                 AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", currentTrackIndex);
-                //Stop(trackList.Count - 1);
             }
         }
 
@@ -122,102 +121,16 @@ namespace AudioFile.Model
                 AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", currentTrackIndex);
                 trackList[currentTrackIndex].Play();
             }
-
             else
             {
                 Debug.Log("Reached the front of the playlist.");
                 //Same event type as NextItem(), may want to change this later
                 AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", currentTrackIndex);
-                //Stop(trackList.Count - 1);
             }
         }
         #endregion
         #region Model control methods
 
-        public override void LoadItem()
-        {
-            string path = OpenFileDialog(); 
-            if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
-            {
-                StartCoroutine(LoadAudioClipFromFile(path));
-            }
-            else
-            {
-                Debug.LogError("Invalid file path or file does not exist.");
-            }
-        }
-
-        // Coroutine to load the mp3 file as an AudioClip
-        private IEnumerator LoadAudioClipFromFile(string filePath)
-        {
-            //TODO: Move metadata extraction to a separate method that can be delegated by this method or called seperately with
-            //different arguments for whether we want full extraction or just basic extraction
-            string trackTitle = "Untitled Track";
-            string trackAlbum = "Unknown Album";
-            string contributingArtists = "Unknown Artist";
-
-            try
-            {
-                var file = TagLib.File.Create(filePath);
-                trackTitle = !string.IsNullOrEmpty(file.Tag.Title) ? file.Tag.Title : Path.GetFileName(filePath);
-                trackAlbum = !string.IsNullOrEmpty(file.Tag.Album) ? file.Tag.Album : "Unknown Album";
-                contributingArtists = !string.IsNullOrEmpty(string.Join(", ", file.Tag.Performers)) ? string.Join(", ", file.Tag.Performers) //Wrapping around next line since its so goddamn long
-                    : !string.IsNullOrEmpty(string.Join(", ", file.Tag.AlbumArtists)) ? string.Join(", ", file.Tag.AlbumArtists) : "Unknown Artist";
-                //Looks for Tag.Performers first (this translates to the Contributing Artists property in File Explorer), then AlbumArtists, then finally Unknown Artist if nothing found
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError("Error reading metadata: " + e.Message);
-            }
-            
-            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
-            {
-                yield return www.SendWebRequest();
-
-                if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
-                {
-                    Debug.LogError("Error loading audio file: " + www.error);
-                }
-                else
-                {
-                    AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
-                    if (audioClip != null)
-                    {
-                        Debug.Log("Successfully loaded audio clip!");
-                        Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum);
-                        AddItem(newTrack);
-                    }
-                }
-            }
-        }
-
-        /* Redundant method. Might keep it around for now in case we need it later for a specific situation
-        private Track CreateTrack(AudioClip audioClip) // Function to create a track with the loaded AudioClip
-        {
-            Track newTrack = new Track(audioClip);
-            return newTrack;
-            // Add newTrack to your media library collection, etc.
-        }*/
-
-        // Function to open a file dialog (example, would need a third-party library)
-        private string OpenFileDialog()
-        {
-            //TODO: Move this method to controller class later
-            //Uses the standalone file browser (SFB) library on Github and use that to open a file dialog for selecting MP3 files
-            string[] paths = StandaloneFileBrowser.OpenFilePanel("Select an MP3 file", "", "mp3", false);
-            if (paths.Length > 0)
-            {
-                string selectedFilePath = paths[0];
-                Debug.Log("Selected file: " + selectedFilePath);
-                // Use the selected file path in your project
-                return selectedFilePath;
-            }
-            else
-            {
-                Debug.LogError("No file selected.");
-                return string.Empty;
-            }
-        }
         public override void AddItem(MediaLibraryComponent newTrack)
         {
             
@@ -238,7 +151,16 @@ namespace AudioFile.Model
             trackList.Remove((Track)providedTrack);
             Debug.Log($"Track '{providedTrack}' has been removed from the media library.");
             AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", providedTrack);
+        }
 
+        public void RemoveItemAtIndex(int providedIndex)
+        {
+            Track removedTrack = trackList[providedIndex];
+            Debug.Log($"Track '{removedTrack}' has been removed from the media library.");
+
+            trackList.RemoveAt(providedIndex);
+
+            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", removedTrack);
         }
 
         public void AudioFileUpdate(string observationType, object data)

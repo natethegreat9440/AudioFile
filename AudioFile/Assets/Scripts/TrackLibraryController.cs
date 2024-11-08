@@ -1,17 +1,29 @@
-using UnityEngine;
+using System.Windows.Forms;
 using System.Collections;
 using System.Collections.Generic;
 using AudioFile;
-using AudioFile.Model;
-using AudioFile.View;
 using AudioFile.ObserverManager;
+using AudioFile.Model;
 using System;
-using System.Windows.Forms;
+using UnityEngine;
+using AudioFile.View;
+using SFB;
+using TagLib;
+using System.IO;
+using UnityEngine.Networking;
 
 namespace AudioFile.Controller
 {
+    /// <summary>
+    /// Singleton Track Library Controller in AudioFile used for controlling loading and removing tracks from the Track Library as well as Initializing the Track Library
+    /// <remarks>
+    /// Members: LoadTrack(), RemoveTrack(), RemoveTrackAtIndex(), OpenFileDialog(). Coroutine LoadAudioClipFromFile(). Implements Awake() and Start() from MonoBehaviour. Implements HandleRequest() from IController.
+    /// This controller has no implementation for IController methods Initialize() or Dispose() (yet).
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// <seealso cref="IController"/>
+    /// </summary>
 
-    //Responsible for loading and removing tracks and (for now) instantiating the TrackLibrary
     public class TrackLibraryController : MonoBehaviour, IController
     {
         // Lazy<T> ensures that the instance is created in a thread-safe manner
@@ -21,8 +33,6 @@ namespace AudioFile.Controller
         private TrackLibraryController() { } //Unity objects should not use constructors with parameters as Unity uses its own lifecycle methods to manage these objects
 
         public static TrackLibraryController Instance => _instance.Value;
-
-        private TrackLibrary trackLibrary;
 
         private static TrackLibraryController CreateSingleton()
         {
@@ -49,17 +59,60 @@ namespace AudioFile.Controller
 
         public void HandleRequest(object request, bool isUndo)
         {
+            //Add methods to log these commands with the UndoController
+            string command = request.GetType().Name;
+
             if (isUndo == false)
             {
-                //Add Switch case statements here for the different request types
-                LoadTrack();
-                //Pass command to the Command Controller which manages a stack of commands
+                switch (command)
+                {
+                    case "AddTrackCommand":
+                        AddTrackCommand addTrackCommand = request as AddTrackCommand;
+                        LoadTrack(addTrackCommand); 
+                        //The completion of LoadAudioClipFromFile will log the AddTrackCommand with the CommandStackController with the newly created Track reference
+                        //This way undoing the AddTrackCommand will know which track to remove from the Library
+                        //This is why LoadItem() passes along the AddTrackCommand
+                        break;
+
+                    case "RemoveTrackCommand":
+                        RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
+                        string removedTrackPath = RemoveTrackAtIndex(removeTrackCommand.Index);
+                        removeTrackCommand.Path = removedTrackPath;
+                        //Add logic to log this command to the CommandStackController.
+                        //Setting the Path property is necessary for being able to perform an undo operation on the RemoveTrackCommand later 
+                        break;
+
+                    default:
+                        Debug.LogWarning($"Unhandled command: {request}");
+                        break;
+                }
             }
             else
             {
-                //Will need to remove the item that was added (once item is added) to library it will need to update the command controller 
-                //which item was removed for that way it can pass to this method the correct track to remove
-                //RemoveItem(MediaLibraryComponent mediaLibraryComponent);
+                switch (command)
+                {
+                    case "AddTrackCommand":
+                        AddTrackCommand addTrackCommand = request as AddTrackCommand;
+                        RemoveTrack(addTrackCommand.Track);
+                        break;
+
+                    case "RemoveTrackCommand":
+                        RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
+                        string path = removeTrackCommand.Path;
+                        if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+                        {
+                            StartCoroutine(LoadAudioClipFromFile(path, null));
+                        }
+                        else
+                        {
+                            Debug.LogError("Invalid file path or file does not exist. Action can not be undone");
+                        }                        
+                        break;
+
+                    default:
+                        Debug.LogWarning($"Unhandled command: {request}");
+                        break;
+                }
             }
         }
 
@@ -67,22 +120,100 @@ namespace AudioFile.Controller
         {
             throw new NotImplementedException();
         }
-
-        public void LoadTrack()
-        {
-            AudioFile.Model.TrackLibrary.Instance.LoadItem();
-        }
-
         public void RemoveTrack(Track track)
         {
             AudioFile.Model.TrackLibrary.Instance.RemoveItem(track);
         }
-
-        //TODO: Move this method to a Playlist controller which will add the track to a playlist
-        /*public void AddItem(Track track)
+        public string RemoveTrackAtIndex(int index)
         {
-            throw new System.NotImplementedException();
-        }*/
+            Track trackToRemove = AudioFile.Model.TrackLibrary.Instance.GetTrackAtIndex(index);
+            string trackPath = trackToRemove.TrackProperties.GetProperty("Path");
+            AudioFile.Model.TrackLibrary.Instance.RemoveItemAtIndex(index);
+            return trackPath; //Returns Track's path so Handle Request can log this path to the RemoveTrackCommand that initiates this method
+        }
+
+        public void LoadTrack(AddTrackCommand addTrackCommand)
+        {
+            string path = OpenFileDialog();
+            if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+            {
+                StartCoroutine(LoadAudioClipFromFile(path, addTrackCommand));
+            }
+            else
+            {
+                Debug.LogError("Invalid file path or file does not exist.");
+            }
+        }
+
+        // Coroutine to load the mp3 file as an AudioClip
+        private IEnumerator LoadAudioClipFromFile(string filePath, AddTrackCommand addTrackCommand)
+        {
+            //TODO: Move metadata extraction to a separate method that can be delegated by this method or called seperately with
+            //different arguments for whether we want full extraction or just basic extraction
+            string trackTitle = "Untitled Track";
+            string trackAlbum = "Unknown Album";
+            string contributingArtists = "Unknown Artist";
+
+            try
+            {
+                var file = TagLib.File.Create(filePath);
+                trackTitle = !string.IsNullOrEmpty(file.Tag.Title) ? file.Tag.Title : Path.GetFileName(filePath);
+                trackAlbum = !string.IsNullOrEmpty(file.Tag.Album) ? file.Tag.Album : "Unknown Album";
+                contributingArtists = !string.IsNullOrEmpty(string.Join(", ", file.Tag.Performers)) ? string.Join(", ", file.Tag.Performers) //Wrapping around next line since its so goddamn long
+                    : !string.IsNullOrEmpty(string.Join(", ", file.Tag.AlbumArtists)) ? string.Join(", ", file.Tag.AlbumArtists) : "Unknown Artist";
+                //Looks for Tag.Performers first (this translates to the Contributing Artists property in File Explorer), then AlbumArtists, then finally Unknown Artist if nothing found
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("Error reading metadata: " + e.Message);
+            }
+
+            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
+            {
+                yield return www.SendWebRequest();
+
+                if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
+                {
+                    Debug.LogError("Error loading audio file: " + www.error);
+                }
+                else
+                {
+                    AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
+                    if (audioClip != null)
+                    {
+                        Debug.Log("Successfully loaded audio clip!");
+                        Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath);
+                        AudioFile.Model.TrackLibrary.Instance.AddItem(newTrack);
+
+                        if (addTrackCommand != null)
+                        {
+                            addTrackCommand.Track = newTrack;
+                        }
+                        //TODO: Add logic to pass this AddTrackCommand reference to the CommandStackController
+                    }
+                }
+            }
+        }
+
+        // Function to open a file dialog (example, would need a third-party library)
+        private string OpenFileDialog()
+        {
+            //TODO: Move this method to controller class later
+            //Uses the standalone file browser (SFB) library on Github and use that to open a file dialog for selecting MP3 files
+            string[] paths = StandaloneFileBrowser.OpenFilePanel("Select an MP3 file", "", "mp3", false);
+            if (paths.Length > 0)
+            {
+                string selectedFilePath = paths[0];
+                Debug.Log("Selected file: " + selectedFilePath);
+                // Use the selected file path in your project
+                return selectedFilePath;
+            }
+            else
+            {
+                Debug.LogError("No file selected.");
+                return string.Empty;
+            }
+        }
     }
 }
 

@@ -1,15 +1,30 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using AudioFile;
+using System.Windows.Forms;
 using AudioFile.Model;
 using AudioFile.View;
 using AudioFile.ObserverManager;
 using System;
-using System.Windows.Forms;
+using UnityEngine;
+
 
 namespace AudioFile.Controller
 {
+    /// <summary>
+    /// Singleton Playback Controller in AudioFile used for controlling playback functions of tracks within TrackLibrary and Playlists
+    /// <remarks>
+    /// May be modified later to control synchronization of track and visualizer playback. 
+    /// Will be modified to pass along all commands to the CommandStackController for undo/redo operations.
+    /// Members: CurrentTrack, CreateSingleton(), GetCurentTrackIndex(), HandlePlayPauseButton(), SetCurrentTrack(), Play(), Pause(), Stop(), NextItem(), PreviousItem().
+    /// Implements Awake(), Start(), and Update() from MonoBehaviour. Implements AudioFileUpdate() from IAudioFileObserver. Implements HandleRequest() from IController.
+    /// This controller has no implementation for IController methods Initialize() or Dispose() (yet).
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// <seealso cref="IAudioFileObserver"/>
+    /// <seealso cref="IController"/>
+    /// </summary>
+
     public class PlaybackController : MonoBehaviour, IController, IAudioFileObserver
     {
         // Lazy<T> ensures that the instance is created in a thread-safe manner
@@ -22,14 +37,12 @@ namespace AudioFile.Controller
 
         public Track CurrentTrack { get; private set; }
 
-        public bool isPlaying = false;
-
         private static PlaybackController CreateSingleton()
         {
             // Create a new GameObject to hold the singleton instance if it doesn't already exist
             GameObject singletonObject = new GameObject(typeof(PlaybackController).Name);
 
-            // Add the TrackListController component to the GameObject
+            // Add the PlayBackController component to the GameObject
             return singletonObject.AddComponent<PlaybackController>();
         }
 
@@ -46,7 +59,6 @@ namespace AudioFile.Controller
 
         void Update()
         {
-            //Should this be coroutine?
             if (CurrentTrack != null && CurrentTrack.IsDone())
             {
                 Debug.Log("Track has finished playing.");
@@ -94,7 +106,7 @@ namespace AudioFile.Controller
                     case "PlayCommand":
                         int currentTrackIndex = GetCurrentTrackIndex();
                         PlayCommand playCommand = request as PlayCommand;
-                        if (CurrentTrack != null && currentTrackIndex != playCommand.Index)//(CurrentTrack.IsPlaying || CurrentTrack.IsPaused))
+                        if (CurrentTrack != null && currentTrackIndex != playCommand.Index)
                         {
                             Stop(currentTrackIndex);
                         }
@@ -173,30 +185,25 @@ namespace AudioFile.Controller
         {
             SetCurrentTrack(AudioFile.Model.TrackLibrary.Instance.GetTrackAtIndex(index));
             AudioFile.Model.TrackLibrary.Instance.Play(index);
-            //isPlaying = true;
         }
 
         public void Pause(int index)
         {
             AudioFile.Model.TrackLibrary.Instance.Pause(index);
-            //isPlaying = false;
         }
 
         public void Stop(int index)
         {
             AudioFile.Model.TrackLibrary.Instance.Stop(index);
-            //isPlaying = false;
         }
 
         public void NextItem()
         {
             AudioFile.Model.TrackLibrary.Instance.NextItem();
-            //isPlaying = true;
         }
         public void PreviousItem()
         {
             AudioFile.Model.TrackLibrary.Instance.PreviousItem();
-            //isPlaying = true;
         }
 
         public void AudioFileUpdate(string observationType, object data)

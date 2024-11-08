@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
+using TagLib.Flac;
+using UnityEngine.Rendering.VirtualTexturing;
 
 namespace AudioFile.View
 {
@@ -31,6 +33,7 @@ namespace AudioFile.View
         public Menu(Button button, string description, bool alphaMenu = false) : base(button, description)
         {
             _alphaMenu = alphaMenu;
+
             // Enable Raycast Target for hover detection
             text.raycastTarget = true;
 
@@ -112,7 +115,9 @@ namespace AudioFile.View
             // Check if mouse is exiting from the bottom and top boundaries only
             if ((localMousePosition.y > rect.yMax || localMousePosition.y < rect.yMin) && !_alphaMenu)
             {
-                if (localMousePosition.y > rect.yMax)
+                Hide();
+                //This commented out block is only for debugging. Keep here if needed for future use.
+                /*if (localMousePosition.y > rect.yMax)
                 {
                     Debug.Log("Pointer Exited from the top boundary: " + this.Name);
                     Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMax: {rect.yMax} localMousePosition.y > rect.yMax??");
@@ -126,21 +131,19 @@ namespace AudioFile.View
                 {
                     Debug.Log("Something went wrong: " + this.Name);
                     Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMin: {rect.yMin} rect.yMax: {rect.yMax}");
-                }
-                Hide();
+                }*/
             }
             // Check if mouse is exiting from the sides and top boundaries only
             else if ((localMousePosition.x < rect.xMin || localMousePosition.x > rect.xMax || localMousePosition.y > rect.yMax) && _alphaMenu)
             {
                 Debug.Log("Pointer Exited from the top/left/right boundary: " + this.Name);
                 Hide();
-
             }
-
             else
             {
-                Debug.Log("Something went really wrong: " + this.Name);
-                Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMin: {rect.yMin} rect.yMax: {rect.yMax}");
+                //This commented out block is only for debugging.Keep here if needed for future use.
+                //Debug.Log("Something went really wrong: " + this.Name);
+                //Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMin: {rect.yMin} rect.yMax: {rect.yMax}");
             }
         }
     }

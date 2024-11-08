@@ -29,17 +29,17 @@ namespace AudioFile.Model
         #region Setup/Unity methods
         // Static factory method to create and initialize Track
         public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
-                                        string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string name = "A track")
+                                        string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string name = "A track", string loadedPath = "Unknown Path")
         {
             // Create a new GameObject and attach Track as a component
             GameObject trackObject = new GameObject("Track_" + trackTitle);
             Track track = trackObject.AddComponent<Track>();
-            track.Initialize(loadedClip, trackTitle, trackArtist, trackAlbum);
+            track.Initialize(loadedClip, trackTitle, trackArtist, trackAlbum, loadedPath);
             return track;
         }
 
         // Initialize method to set up properties
-        private void Initialize(AudioClip loadedClip, string trackTitle, string trackArtist, string trackAlbum)
+        private void Initialize(AudioClip loadedClip, string trackTitle, string trackArtist, string trackAlbum, string loadedPath)
         {
             _audioSource = gameObject.AddComponent<AudioSource>();
             _audioSource.clip = loadedClip;
@@ -47,6 +47,7 @@ namespace AudioFile.Model
             TrackProperties.SetProperty("Title", trackTitle);
             TrackProperties.SetProperty("Artist", trackArtist);
             TrackProperties.SetProperty("Album", trackAlbum);
+            TrackProperties.SetProperty("Path", loadedPath);
 
             _playableGraph = PlayableGraph.Create();
             _audioPlayableOutput = AudioPlayableOutput.Create(_playableGraph, "Audio", _audioSource);

@@ -16,12 +16,13 @@ namespace AudioFile.Model
             {"Artist", "Unknown Artist"},
             {"Album", "Unknown Album"},
             {"Duration", "--:--"},
-            {"BPM", "--" }
+            {"BPM", "--"},
+            {"Path", "Unknown Path"}
         };
 
         private readonly HashSet<string> cantRemoveProperties = new HashSet<string>()
         {
-            "Title", "Artist", "Album", "Duration", "BPM"
+            "Title", "Artist", "Album", "Duration", "BPM", "LoadedPath"
         };
 
         public string GetProperty(string key)
