@@ -47,12 +47,13 @@ namespace AudioFile.Model
             // Create a new GameObject and attach Track as a component
             GameObject trackObject = new GameObject("Track_" + trackTitle);
             Track track = trackObject.AddComponent<Track>();
-            track.Initialize(loadedClip, trackTitle, trackArtist, trackAlbum, loadedPath);
+            string trackID = TrackIDRegistry.Instance.GenerateNewTrackID();
+            track.Initialize(trackID, loadedClip, trackTitle, trackArtist, trackAlbum, loadedPath);
             return track;
         }
 
         // Initialize method to set up properties
-        private void Initialize(AudioClip loadedClip, string trackTitle, string trackArtist, string trackAlbum, string loadedPath)
+        private void Initialize(string trackID, AudioClip loadedClip, string trackTitle, string trackArtist, string trackAlbum, string loadedPath)
         {
             _audioSource = gameObject.AddComponent<AudioSource>();
             _audioSource.clip = loadedClip;
@@ -61,6 +62,7 @@ namespace AudioFile.Model
             TrackProperties.SetProperty("Artist", trackArtist);
             TrackProperties.SetProperty("Album", trackAlbum);
             TrackProperties.SetProperty("Path", loadedPath);
+            TrackProperties.SetProperty("TrackID", trackID);
 
             _playableGraph = PlayableGraph.Create();
             _audioPlayableOutput = AudioPlayableOutput.Create(_playableGraph, "Audio", _audioSource);

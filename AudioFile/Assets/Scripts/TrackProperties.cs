@@ -32,7 +32,7 @@ namespace AudioFile.Model
 
         private readonly HashSet<string> cantRemoveProperties = new HashSet<string>()
         {
-            "Title", "Artist", "Album", "Duration", "BPM", "LoadedPath"
+            "Title", "Artist", "Album", "Duration", "BPM", "LoadedPath", "TrackID"
         };
 
         public string GetProperty(string key)

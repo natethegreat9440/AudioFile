@@ -23,6 +23,8 @@ namespace AudioFile.View
         private Button titleButton, artistButton, albumButton, durationButton;
         private UITrackListDisplayManager listDisplayManager;
 
+        public string TrackDisplayID { get; private set; }
+
         private void Awake()
         {
             // Set TrackDisplayGameObject to the current GameObject this script is attached to
@@ -31,6 +33,9 @@ namespace AudioFile.View
         public void Initialize(Track trackData, UITrackListDisplayManager manager)
         {
             listDisplayManager = manager;
+
+            //Set TrackDisplayID to match TrackID so these can be compared later with LINQ queries
+            TrackDisplayID = trackData.TrackProperties.GetProperty("TrackID");
             SetTrackData(trackData);
             InitializeButtons();
         }
