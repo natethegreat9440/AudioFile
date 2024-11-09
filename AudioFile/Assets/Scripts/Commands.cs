@@ -1,19 +1,30 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 using TMPro;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Xml.Linq;
 using Unity.VisualScripting;
 using UnityEngine.EventSystems;
+using UnityEditor;
 using AudioFile.Controller;
 using AudioFile.Model;
-using UnityEditor;
-
+using System;
+using UnityEngine;
 
 namespace AudioFile.View
 {
+    /// <summary>
+    /// This file contains all the Commands used in AudioFile
+    /// <remarks>
+    /// All the commands are ICommand objects used to execute and undo user specified actions. Each command has an Execute() and Undo() method.
+    /// Undo() is always designed to do the opposite action of Execute() for a given command and thus certain commands may need to have
+    /// keep track of certain Properties that may be necessary for undoing the command later as needed. Controllers however are what implement the actual 
+    /// logic for executing and undoing commands based on the type of command passed and whether the command should be executed or undone (i.e., IsUndo gets set to true by the CommandStackController).
+    /// Not every command has an undo action.
+    /// </remarks>
+    /// <see cref="CommandStackController"/>
+    /// </summary>
+
     //TODO:Implement undo and redo commands (redo might be handled by a command controller keeping a fixed stack of commands)
     public interface ICommand
     {
@@ -23,30 +34,31 @@ namespace AudioFile.View
 
     public class PlayCommand : ICommand
     {
-        bool isUndo = false;
+        public bool IsUndo { get; set; } = false;
         public int Index { get; }
 
-        public PlayCommand(int index) 
+        public PlayCommand(int index)
         {
             Index = index;
         }
 
         public void Execute()
         {
-            PlaybackController.Instance.HandleRequest(this, isUndo);
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Track Command executed");
         }
 
         public void Undo()
         {
-            PlaybackController.Instance.HandleRequest(this, isUndo = true);
+            IsUndo = true;
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Track Command undone");
         }
     }
 
     public class PauseCommand : ICommand
     {
-        bool isUndo = false;
+        public bool IsUndo { get; set; } = false;
         public int Index { get; }
 
         public PauseCommand(int index)
@@ -56,20 +68,21 @@ namespace AudioFile.View
 
         public void Execute()
         {
-            PlaybackController.Instance.HandleRequest(this, isUndo);
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Pause Command executed");
         }
 
         public void Undo()
         {
-            PlaybackController.Instance.HandleRequest(this, isUndo = true);
+            IsUndo = true;
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Pause Command undone");
         }
     }
 
     public class StopCommand : ICommand
     {
-        bool isUndo = false;
+        public bool IsUndo { get; set; } = false;
 
         public int Index { get; }
 
@@ -80,72 +93,76 @@ namespace AudioFile.View
 
         public void Execute()
         {
-            PlaybackController.Instance.HandleRequest(this, isUndo);
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Stop Command executed");
         }
 
         public void Undo()
         {
-            PlaybackController.Instance.HandleRequest(this, isUndo = true);
+            IsUndo = true;
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Stop Command undone");
         }
     }
 
     public class NextItemCommand : ICommand
     {
-        bool isUndo = false;
+        public bool IsUndo { get; set; } = false;
 
         public void Execute()
         {
-            PlaybackController.Instance.HandleRequest(this, isUndo);
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Next Item Command executed");
         }
 
         public void Undo()
         {
-            PlaybackController.Instance.HandleRequest(this, isUndo = true);
+            IsUndo = true;
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Next Item Command undone");
         }
     }
 
     public class PreviousItemCommand : ICommand
     {
-        bool isUndo = false;
+        public bool IsUndo { get; set; } = false;
 
         public void Execute()
         {
-            PlaybackController.Instance.HandleRequest(this, isUndo);
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Previous Item Command executed");
         }
 
         public void Undo()
         {
-            PlaybackController.Instance.HandleRequest(this, isUndo = true);
+            IsUndo = true;
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Previous Item Command undone");
         }
     }
     public class AddTrackCommand : ICommand
     {
-        bool isUndo = false;
+        public bool IsUndo { get; set; } = false;
 
         public Track Track { get; set; }
 
         public void Execute()
         {
-            TrackLibraryController.Instance.HandleRequest(this, isUndo);
+            TrackLibraryController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Track Command executed");
         }
 
         public void Undo()
         {
-            TrackLibraryController.Instance.HandleRequest(this, isUndo=true);
+            IsUndo = true;
+            TrackLibraryController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Track Command undone");
         }
     }
 
     public class RemoveTrackCommand : ICommand
     {
-        bool isUndo = false;
+        public bool IsUndo { get; set; } = false;
 
         //public Track Track { get; }
 
@@ -159,13 +176,14 @@ namespace AudioFile.View
         }
         public void Execute()
         {
-            TrackLibraryController.Instance.HandleRequest(this, isUndo);
+            TrackLibraryController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("Remove Track Command executed");
         }
 
         public void Undo()
         {
-            TrackLibraryController.Instance.HandleRequest(this, isUndo = true);
+            IsUndo = true;
+            TrackLibraryController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("Remove Track Command undone");
         }
     }
@@ -189,7 +207,7 @@ namespace AudioFile.View
         public void Undo()
         {
             throw new NotImplementedException();
-            //controller.HandleRequest(this, isUndo = true);
+            //controller.HandleRequest(this, IsUndo = true);
             //Debug.Log("New Playlist Command undone");
         }
     }
@@ -213,7 +231,7 @@ namespace AudioFile.View
         public void Undo()
         {
             throw new NotImplementedException();
-            //controller.HandleRequest(this, isUndo = true);
+            //controller.HandleRequest(this, IsUndo = true);
             //Debug.Log("New Playlist Folder Command undone");
         }
     }

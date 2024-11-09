@@ -8,6 +8,7 @@ using System.Collections;
 using UnityEngine;
 using TMPro;
 using AudioFile.ObserverManager;
+using AudioFile.Model;
 
 namespace AudioFile.View
 {
@@ -46,8 +47,10 @@ namespace AudioFile.View
             isScrolling = true;
 
             //Register for these observations
-            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackChanged", this);
-            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackListEnd", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackChanged", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackListEnd", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSkipped", this);
+
         }
 
         void Update()
@@ -93,17 +96,17 @@ namespace AudioFile.View
             return new Rect(corners[0].x, corners[0].y, corners[2].x - corners[0].x, corners[2].y - corners[0].y);
         }
 
-        private IEnumerator QuickMessage(float waitTime, string message)
+        private IEnumerator QuickMessage(float waitTime, string message, bool isQuickMessageScrolling = false)
         {
             //This is the Quick message that will appear on the ticker for the provided wait time
             textRect.GetComponent<TextMeshProUGUI>().text = message;
-            isScrolling = false;
+            isScrolling = isQuickMessageScrolling;
 
             yield return new WaitForSeconds(waitTime);
 
             //After waiting the coroutine resets the beahvior. Moving this outside of the coroutine will now work.
             //If this method is to be abstracted then it needs additional parameter(s) to specify reset behavior
-            textRect.GetComponent<TextMeshProUGUI>().text = AudioFile.Controller.PlaybackController.Instance.CurrentTrack.ToString();
+            textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.CurrentTrack.ToString();
             isScrolling = true;
         }
 
@@ -113,11 +116,11 @@ namespace AudioFile.View
             {
                 case "OnCurrentTrackChanged":
                     textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
-                    textRect.GetComponent<TextMeshProUGUI>().text = AudioFile.Controller.PlaybackController.Instance.CurrentTrack.ToString();
+                    textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.CurrentTrack.ToString();
                     isScrolling = true;
                     break;
                 case "OnTrackListEnd":
-                    if (AudioFile.Controller.PlaybackController.Instance.GetCurrentTrackIndex() == 0)
+                    if (Controller.PlaybackController.Instance.GetCurrentTrackIndex() == 0)
                     {
                         StartCoroutine(QuickMessage(1f, "Front of playlist"));
                         break;
@@ -125,6 +128,22 @@ namespace AudioFile.View
                     else
                     {
                         StartCoroutine(QuickMessage(1f, "End of playlist"));
+                        break;
+                    }
+                case "OnTrackSkipped":
+                    if (data is Track trackSkipped)
+                    {
+                        StartCoroutine(QuickMessage(4f, $"{trackSkipped.TrackProperties.GetProperty("Title")} skipped due to error", true));
+                        break;
+                    }
+                    else if (data is null)
+                    {
+                        StartCoroutine(QuickMessage(4f, "Unknown track skipped due to error", true));
+                        break;
+                    }
+                    else
+                    {
+                        StartCoroutine(QuickMessage(4f, "Track skipped due to unknown error", true)); //Should only get here if there is a "what the actual fuck" error where the skipped track is neither a Track or a null reference
                         break;
                     }
                 // Add more cases here if needed

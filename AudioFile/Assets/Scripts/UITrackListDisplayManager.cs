@@ -49,9 +49,9 @@ namespace AudioFile.View
 
         public void Start()
         {
-            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackAdded", this);
-            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
-            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackCycled", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackAdded", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackCycled", this);
         }
 
         /*public void PopulateOnLoad()
@@ -89,7 +89,7 @@ namespace AudioFile.View
             {
                 case "Duration":
                 case "Title":
-                    AudioFile.Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex));
+                    Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex));
                     break;
 
                 case "Artist":
@@ -112,7 +112,7 @@ namespace AudioFile.View
 
             int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
             trackDisplay.GetComponent<Image>().color = Color.blue;
-            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayIndex);
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayIndex);
         }
 
         private void DeselectAllTrackDisplays()

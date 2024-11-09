@@ -1,17 +1,30 @@
-﻿//Create a concrete class called Track that implements the IPlayable interface. 
-
-using AudioFile.Model;
+﻿using AudioFile.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using AudioFile.ObserverManager;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Playables;
-using AudioFile.ObserverManager;
-using UnityEditor;
 
 namespace AudioFile.Model
 {
+    /// <summary>
+    /// Concrete class for Track objects
+    /// <remarks>
+    /// Part of a Composite design pattern implementation. Track is a leaf node. Tracks are the children to the TrackLibrary composite node.
+    /// Track Properties (i.e., Title, Artist, etc.) are stored in a TrackProperties object for better cohesion. Uses a static factory method to create and initialize Tracks.
+    /// Members: IsPlaying, IsPaused, TrackProperties, _audioSource, _trackDuration, CreateTrack(), IsDone(), FormatTime(). 
+    /// Inherits Play(), Pause(), Stop(), GetDuration(), SetTime() from MediaLibraryComponent and largely delegates to the playback methods of Unity AudioSource objects with minor additions to help facilitate program flow.
+    /// Has _audioPlayableOutput and _audioPlayable properties that hold Unity AudioPlayableOutput and AudioClipPlayable objects for more advanced playback capabilities (so far I haven't really needed to use them, so could be candidates for removal later)
+    /// Has default ToString() override implementations. Implements Initialize(), Update(), OnDestroy(), from MonoBehaviour.
+    /// </remarks>
+    /// <see cref="TrackProperties"/>
+    /// <seealso cref="MediaLibraryComponent"/>
+    /// <seealso cref="TrackLibrary"/>
+    /// <seealso cref="IPlayable"/>
+    /// </summary>
     public class Track : MediaLibraryComponent, IPlayable
     {
         AudioSource _audioSource;
@@ -67,7 +80,7 @@ namespace AudioFile.Model
                 double currentTime = _audioSource.time;
                 double clipLength = _audioSource.clip.length;
                 float progress = (float)(currentTime / clipLength);
-                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackFrameUpdate", progress);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackFrameUpdate", progress);
             }
         }
         void OnDestroy()
@@ -81,7 +94,6 @@ namespace AudioFile.Model
             {
                 Destroy(_audioSource);
             }
-
         }
         public override string ToString()
         {
@@ -98,7 +110,6 @@ namespace AudioFile.Model
 
         public override void Play(int index = -1)
         {
-            //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(this);
             //_playableGraph.Play(); Doesn't affect playback. This kind of object just offers more advanced 
             // functionality than AudioSource does, but for now it might be overkill
             Debug.Log($"{this}_audioSource.time: {FormatTime((float)_audioSource.time)}");
@@ -128,8 +139,6 @@ namespace AudioFile.Model
         }
         public override void Stop(int index = -1)
         {
-            //AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(null);
-
             //Stopping a PlayableGraph essentially just pauses it. Need to manually set to zero
             //using AudioPlayable.SetTime(0.0) if using PlayableGraph
             //_playableGraph.Stop();
@@ -140,14 +149,13 @@ namespace AudioFile.Model
             //Debug.Log($"AudioPlayable time: { FormatTime((float)_audioPlayable.GetTime())}");
             //Debug.Log($"AudioSource time: {FormatTime((float)_audioSource.time)}");
 
-            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackStopped");
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackStopped");
 
         }
 
         // Get or set playback time
         public override float GetDuration()
         {
-            //return (float)_audioPlayable.GetDuration();
             return (float)_audioSource.clip.length;
         }
 
@@ -160,11 +168,6 @@ namespace AudioFile.Model
         // Check if the track is done
         public bool IsDone()
         {
-            /*if (_audioSource != null && this.IsPlaying && !this.IsPaused)
-            {
-                Debug.Log($"{this} is done");
-                return !_audioSource.isPlaying;
-            }*/
             if (_audioSource.time >= _audioSource.clip.length)
             {
                 Debug.Log($"{this} is done");
@@ -174,7 +177,6 @@ namespace AudioFile.Model
             {
                 return false;
             }
-
         }
         #endregion
     }

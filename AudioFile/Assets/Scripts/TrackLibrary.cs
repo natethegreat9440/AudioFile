@@ -1,19 +1,29 @@
 ﻿using AudioFile.Model;
-using UnityEngine;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using AudioFile.ObserverManager;
 using System.IO;
 using UnityEngine.Networking;
 using SFB;
 using TagLib;
+using UnityEngine;
+using System;
+using System.Collections.Generic;
 using AudioFile.Controller;
-
 
 namespace AudioFile.Model
 {
-    public class TrackLibrary : MediaLibraryComponent, IAudioFileObserver
+    /// <summary>
+    /// Concrete composite class for the global Track Library, which holds all Track objects uploaded to AudioFile.
+    /// <remarks>
+    /// Part of a Composite design pattern implementation. TrackLibrary is a composite node. Track are the children leaf nodes TrackLibrary contains. 
+    /// Not sure yet whether to implement Playlists as composite nodes in this tree or a detached filter type object so only TrackLibary holds Tracks and Playlists only hold TrackIDs
+    /// Members: GetTrackAtIndex(), GetTrackIndex(). Has Play(), Pause(), Stop() that largely delegate down to individual Track objects. These methods inherit from MediaLibraryComponent. 
+    /// Inherits NextItem(), PreviousItem(), AddItem(), RemoveItem(), RemoveItemAtIndex() methods form MediaLibaryComponent as well.
+    /// Has default ToString() override implementations. Implements Initialize() from MonoBehaviour.
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// </summary>
+    public class TrackLibrary : MediaLibraryComponent
     {
         // Lazy<T> ensures that the instance is created in a thread-safe manner
         private static readonly Lazy<TrackLibrary> _instance = new Lazy<TrackLibrary>(CreateSingleton);
@@ -26,8 +36,6 @@ namespace AudioFile.Model
         protected List<Track> trackList;
         private int currentTrackIndex;
 
-        private TrackLibraryController _trackLibraryController;
-
         private static TrackLibrary CreateSingleton()
         {
             // Create a new GameObject to hold the singleton instance if it doesn't already exist
@@ -36,10 +44,10 @@ namespace AudioFile.Model
             return singletonObject.AddComponent<TrackLibrary>();
         }
 
-        public void Start()
+        /*public void Start()
         {
             throw new NotImplementedException();
-        }
+        }*/
 
         public void Initialize()
         {
@@ -66,7 +74,23 @@ namespace AudioFile.Model
         public override void Play(int index)
         {
             currentTrackIndex = index;
-            trackList[currentTrackIndex].Play();
+            try
+            {
+                trackList[currentTrackIndex].Play();
+            }
+            catch (Exception ex)
+            {
+                Debug.Log($"Track skipped: {ex.GetType()} - {ex.Message}");
+                if (trackList[currentTrackIndex] != null)
+                {
+                    ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSkipped", trackList[currentTrackIndex]); //Passes the track name if possible when skipped
+                }
+                else
+                {
+                    ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSkipped", null); //Otherwise passes null (most likely to end up here I would imagine)
+                }
+                NextItem();
+            }
         }
 
         public override void Pause(int index)
@@ -80,7 +104,8 @@ namespace AudioFile.Model
             currentTrackIndex = index;
             trackList[currentTrackIndex].Stop();
         }
-        public override void Skip(int index)
+        /*public override void Skip(int index) //Commenting this out for now as it seems to me this Skip() logic could just be implemented into the Play() method directly 
+        //(and potentially other playback methods, however I'll want to test how Skip logic works inside Play before deciding if I want to add to other methods)
         {
             try
             {
@@ -90,7 +115,7 @@ namespace AudioFile.Model
             {
                 NextItem();
             }
-        }
+        }*/
 
         public override void NextItem()
         {
@@ -99,14 +124,14 @@ namespace AudioFile.Model
                 trackList[currentTrackIndex].Stop();
 
                 currentTrackIndex++;
-                AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
-                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", currentTrackIndex);
+                PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", currentTrackIndex);
                 trackList[currentTrackIndex].Play();
             }
             else
             {
                 Debug.Log("Reached the end of the playlist.");
-                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", currentTrackIndex);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", currentTrackIndex);
             }
         }
 
@@ -117,20 +142,19 @@ namespace AudioFile.Model
                 trackList[currentTrackIndex].Stop();
 
                 currentTrackIndex--;
-                AudioFile.Controller.PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
-                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", currentTrackIndex);
+                PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", currentTrackIndex);
                 trackList[currentTrackIndex].Play();
             }
             else
             {
                 Debug.Log("Reached the front of the playlist.");
                 //Same event type as NextItem(), may want to change this later
-                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", currentTrackIndex);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", currentTrackIndex);
             }
         }
         #endregion
         #region Model control methods
-
         public override void AddItem(MediaLibraryComponent newTrack)
         {
             
@@ -138,7 +162,7 @@ namespace AudioFile.Model
             {
                 trackList.Add(track);
                 Debug.Log($"Track '{track}' has been added to the media library.");
-                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackAdded", track);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackAdded", track);
             }
             else
             {
@@ -150,71 +174,23 @@ namespace AudioFile.Model
         {
             trackList.Remove((Track)providedTrack);
             Debug.Log($"Track '{providedTrack}' has been removed from the media library.");
-            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", providedTrack);
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", providedTrack);
         }
 
-        public void RemoveItemAtIndex(int providedIndex)
+        public override void RemoveItemAtIndex(int providedIndex)
         {
             Track removedTrack = trackList[providedIndex];
             Debug.Log($"Track '{removedTrack}' has been removed from the media library.");
 
             trackList.RemoveAt(providedIndex);
 
-            AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", removedTrack);
-        }
-
-        public void AudioFileUpdate(string observationType, object data)
-        {
-            /*switch (observationType)
-            {
-                case "":
-                    break;
-                // Add more cases here if needed
-                default:
-                    Debug.LogWarning($"Unhandled observation type: {observationType}");
-                    break;
-            }*/
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", removedTrack);
         }
         #endregion
     }
 }
 /*
-public class TrackLibrary : ILibrary<Track>
-{
-    #region Singleton pattern with Lazy<T> implementation (thread-safe)
-    private static readonly Lazy<TrackLibrary> lazy =
-        new Lazy<TrackLibrary>(() => new TrackLibrary());
-
-    public static TrackLibrary Instance { get { return lazy.Value; } }
-
-    private List<Track> tracks;
-
-    private TrackLibrary()
-    {
-        tracks = new List<Track>();
-    }
-    #endregion
-
-    #region Variables
-    public Track this[int index] { get => tracks[index]; set => tracks[index] = value; }
-
-    public int Count => tracks.Count;
-
-    public bool IsReadOnly => false;
-    #endregion
-
-    
-    #region IList implementation
-
-    public void Add(Track item)
-    {
-        tracks.Add(item);
-    }
-
-    public void Clear()
-    {
-        tracks.Clear();
-    }
+ //Methods I may want to add later (logic below is generic)
 
     public bool Contains(Track item)
     {
@@ -231,86 +207,10 @@ public class TrackLibrary : ILibrary<Track>
         return tracks.IndexOf(item);
     }
 
-    public void Insert(int index, Track item)
-    {
-        tracks.Insert(index, item);
-    }
-
-    public bool Remove(Track item)
-    {
-        return tracks.Remove(item);
-    }
-
-    public void RemoveAt(int index)
-    {
-        tracks.RemoveAt(index);
-    }
-
-    public IEnumerator<Track> GetEnumerator()
-    {
-        return tracks.GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return tracks.GetEnumerator();
-    }
-    //Codepilot seems to suggest this method should be implemented in the Track class
-    // should I just have it return 0?
-
     public int CompareTo(Track other) //Add this to the Track class
     {
         throw new NotImplementedException();
     }
     
-    #endregion
-
-    #region ILibrary implementation
-
-    public Track GetSelection()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void ClearSelection()
-    {
-        throw new NotImplementedException();
-    }
-
-    public List<Track> GetSelectedItems()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void SelectAll()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void DeselectAll()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Track GetSelectedItem(int index)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void SelectItem(int index)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void DeselectItem(int index)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool IsItemSelected(int index)
-    {
-        throw new NotImplementedException();
-    }
-    #endregion
 }
 */

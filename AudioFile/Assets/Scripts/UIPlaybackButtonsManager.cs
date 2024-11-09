@@ -26,7 +26,7 @@ namespace AudioFile.View
 
         void Start()
         {
-            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSelected", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSelected", this);
 
             Canvas canvas = GameObject.Find("GUI_Canvas").GetComponent<Canvas>();
 
@@ -45,7 +45,7 @@ namespace AudioFile.View
                 {
                     if (PlaybackController.Instance.CurrentTrack != null)
                     {
-                        AudioFile.Controller.PlaybackController.Instance.HandleRequest(new PreviousItemCommand());
+                        PlaybackController.Instance.HandleRequest(new PreviousItemCommand());
                     }
                 });
             }
@@ -57,7 +57,7 @@ namespace AudioFile.View
                 {
                     if (PlaybackController.Instance.CurrentTrack != null)
                     {
-                        AudioFile.Controller.PlaybackController.Instance.HandleRequest(new NextItemCommand());
+                        PlaybackController.Instance.HandleRequest(new NextItemCommand());
                     }
                 });
             }
@@ -69,7 +69,7 @@ namespace AudioFile.View
                 {
                     if (PlaybackController.Instance.CurrentTrack != null)
                     {
-                        AudioFile.Controller.PlaybackController.Instance.HandleRequest(new StopCommand(trackDisplayIndex));
+                        PlaybackController.Instance.HandleRequest(new StopCommand(trackDisplayIndex));
                     }
                 });
             }

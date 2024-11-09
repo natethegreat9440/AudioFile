@@ -1,16 +1,18 @@
 using System.Windows.Forms;
-using System.Collections;
-using System.Collections.Generic;
 using AudioFile;
 using AudioFile.ObserverManager;
-using AudioFile.Model;
+using Unity.VisualScripting;
 using System;
 using UnityEngine;
 using AudioFile.View;
 using SFB;
-using TagLib;
 using System.IO;
 using UnityEngine.Networking;
+using System.Collections;
+using AudioFile.Model;
+using System.Collections.Generic;
+using TagLib;
+//using TagLib.Matroska;
 
 namespace AudioFile.Controller
 {
@@ -49,7 +51,7 @@ namespace AudioFile.Controller
         }
         public void Start()
         {
-            AudioFile.Model.TrackLibrary.Instance.Initialize();
+            TrackLibrary.Instance.Initialize();
         }
 
         public void Initialize()
@@ -122,13 +124,13 @@ namespace AudioFile.Controller
         }
         public void RemoveTrack(Track track)
         {
-            AudioFile.Model.TrackLibrary.Instance.RemoveItem(track);
+            TrackLibrary.Instance.RemoveItem(track);
         }
         public string RemoveTrackAtIndex(int index)
         {
-            Track trackToRemove = AudioFile.Model.TrackLibrary.Instance.GetTrackAtIndex(index);
+            Track trackToRemove = TrackLibrary.Instance.GetTrackAtIndex(index);
             string trackPath = trackToRemove.TrackProperties.GetProperty("Path");
-            AudioFile.Model.TrackLibrary.Instance.RemoveItemAtIndex(index);
+            TrackLibrary.Instance.RemoveItemAtIndex(index);
             return trackPath; //Returns Track's path so Handle Request can log this path to the RemoveTrackCommand that initiates this method
         }
 
@@ -145,14 +147,12 @@ namespace AudioFile.Controller
             }
         }
 
-        // Coroutine to load the mp3 file as an AudioClip
-        private IEnumerator LoadAudioClipFromFile(string filePath, AddTrackCommand addTrackCommand)
+        private List<string> ExtractFileMetadata(string filePath)
         {
-            //TODO: Move metadata extraction to a separate method that can be delegated by this method or called seperately with
-            //different arguments for whether we want full extraction or just basic extraction
             string trackTitle = "Untitled Track";
-            string trackAlbum = "Unknown Album";
             string contributingArtists = "Unknown Artist";
+            string trackAlbum = "Unknown Album";
+            List<string> metadata = new List<string>() { trackTitle, contributingArtists, trackAlbum };
 
             try
             {
@@ -161,12 +161,22 @@ namespace AudioFile.Controller
                 trackAlbum = !string.IsNullOrEmpty(file.Tag.Album) ? file.Tag.Album : "Unknown Album";
                 contributingArtists = !string.IsNullOrEmpty(string.Join(", ", file.Tag.Performers)) ? string.Join(", ", file.Tag.Performers) //Wrapping around next line since its so goddamn long
                     : !string.IsNullOrEmpty(string.Join(", ", file.Tag.AlbumArtists)) ? string.Join(", ", file.Tag.AlbumArtists) : "Unknown Artist";
+                metadata[0] = trackTitle;
+                metadata[1] = contributingArtists;
+                metadata[2] = trackAlbum;
+                return metadata;
                 //Looks for Tag.Performers first (this translates to the Contributing Artists property in File Explorer), then AlbumArtists, then finally Unknown Artist if nothing found
             }
             catch (System.Exception e)
             {
                 Debug.LogError("Error reading metadata: " + e.Message);
+                return metadata;
             }
+        }
+        // Coroutine to load the mp3 file as an AudioClip
+        private IEnumerator LoadAudioClipFromFile(string filePath, AddTrackCommand addTrackCommand)
+        {
+            List<string> metadata = ExtractFileMetadata(filePath);
 
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
             {
@@ -182,8 +192,11 @@ namespace AudioFile.Controller
                     if (audioClip != null)
                     {
                         Debug.Log("Successfully loaded audio clip!");
+                        string trackTitle = metadata[0];
+                        string contributingArtists = metadata[1];
+                        string trackAlbum = metadata[2];
                         Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath);
-                        AudioFile.Model.TrackLibrary.Instance.AddItem(newTrack);
+                        TrackLibrary.Instance.AddItem(newTrack);
 
                         if (addTrackCommand != null)
                         {

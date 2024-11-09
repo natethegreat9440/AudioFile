@@ -53,7 +53,7 @@ namespace AudioFile.Controller
 
         public void Start()
         {
-            AudioFile.ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackIsDone", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackIsDone", this);
 
         }
 
@@ -62,7 +62,7 @@ namespace AudioFile.Controller
             if (CurrentTrack != null && CurrentTrack.IsDone())
             {
                 Debug.Log("Track has finished playing.");
-                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackIsDone", null);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackIsDone", null);
             }
         }
 
@@ -73,7 +73,7 @@ namespace AudioFile.Controller
 
         public int GetCurrentTrackIndex()
         {
-            return CurrentTrack != null ? AudioFile.Model.TrackLibrary.Instance.GetTrackIndex(CurrentTrack) : -1;
+            return CurrentTrack != null ? Model.TrackLibrary.Instance.GetTrackIndex(CurrentTrack) : -1;
         }
 
         public void HandlePlayPauseButton(int trackDisplayIndex)
@@ -172,7 +172,7 @@ namespace AudioFile.Controller
             {
                 CurrentTrack = track;
                 Debug.Log($"Current track set to: {CurrentTrack}");
-                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackChanged", null);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackChanged", null);
             }
             else
             {
@@ -183,27 +183,27 @@ namespace AudioFile.Controller
 
         public void Play(int index)
         {
-            SetCurrentTrack(AudioFile.Model.TrackLibrary.Instance.GetTrackAtIndex(index));
-            AudioFile.Model.TrackLibrary.Instance.Play(index);
+            SetCurrentTrack(Model.TrackLibrary.Instance.GetTrackAtIndex(index));
+            TrackLibrary.Instance.Play(index);
         }
 
         public void Pause(int index)
         {
-            AudioFile.Model.TrackLibrary.Instance.Pause(index);
+            TrackLibrary.Instance.Pause(index);
         }
 
         public void Stop(int index)
         {
-            AudioFile.Model.TrackLibrary.Instance.Stop(index);
+            TrackLibrary.Instance.Stop(index);
         }
 
         public void NextItem()
         {
-            AudioFile.Model.TrackLibrary.Instance.NextItem();
+            TrackLibrary.Instance.NextItem();
         }
         public void PreviousItem()
         {
-            AudioFile.Model.TrackLibrary.Instance.PreviousItem();
+            TrackLibrary.Instance.PreviousItem();
         }
 
         public void AudioFileUpdate(string observationType, object data)
