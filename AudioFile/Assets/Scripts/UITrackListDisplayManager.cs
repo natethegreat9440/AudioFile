@@ -85,25 +85,16 @@ namespace AudioFile.View
             Debug.Log("Double-click detected on " + buttonType);
             int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay.TrackDisplayGameObject);
 
-            switch (buttonType)
+            Action action = buttonType switch
             {
-                case "Duration":
-                case "Title":
-                    Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex));
-                    break;
+                "Duration" => () => Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex)),
+                "Title" => () => Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex)),
+                /*"Artist" => () => /*Filter by artist logic here,
+                "Album" => () => /*Filter by album logic here, */
+                _ => () => Debug.LogWarning("Unknown button type double-clicked.")
+            };
 
-                case "Artist":
-                    // Filter by artist logic here
-                    break;
-
-                case "Album":
-                    // Filter by album logic here
-                    break;
-
-                default:
-                    Debug.LogWarning("Unknown button type double-clicked.");
-                    break;
-            }
+            action();
         }
 
         private void TrackSelected(GameObject trackDisplay)
@@ -211,26 +202,23 @@ namespace AudioFile.View
 
         public void AudioFileUpdate(string observationType, object data)
         {
-            switch (observationType)
+            Action action = observationType switch
             {
-                case "OnTrackAdded":
-                    StartCoroutine(AddTrackOnUpdate(data));
-                    break;
-                case "OnTrackRemoved":
-                    StartCoroutine(RemoveTrackOnUpdate(data));
-                    break;
-                case "OnCurrentTrackCycled":
+                "OnTrackAdded" => () => StartCoroutine(AddTrackOnUpdate(data)),
+                "OnTrackRemoved" => () => StartCoroutine(RemoveTrackOnUpdate(data)),
+                "OnCurrentTrackCycled" => () =>
+                {
                     if (data is int currentTrackIndex)
                     {
                         GameObject currentTrackDisplay = Track_List_DisplayViewportContent.GetChild(currentTrackIndex).gameObject;
                         TrackSelected(currentTrackDisplay);
                     }
-                    break;
-                // Add more cases here if needed
-                default:
-                    Debug.LogWarning($"Unhandled observation type: {observationType} at {this}");
-                    break;
-            }
+                },
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
         }
     }
 }

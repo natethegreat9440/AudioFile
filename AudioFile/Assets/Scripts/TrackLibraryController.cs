@@ -61,61 +61,47 @@ namespace AudioFile.Controller
 
         public void HandleRequest(object request, bool isUndo)
         {
-            //Add methods to log these commands with the UndoController
             string command = request.GetType().Name;
 
-            if (isUndo == false)
+            Action action = (command, isUndo) switch
             {
-                switch (command)
+                ("AddTrackCommand", false) => () =>
                 {
-                    case "AddTrackCommand":
-                        AddTrackCommand addTrackCommand = request as AddTrackCommand;
-                        LoadTrack(addTrackCommand); 
-                        //The completion of LoadAudioClipFromFile will log the AddTrackCommand with the CommandStackController with the newly created Track reference
-                        //This way undoing the AddTrackCommand will know which track to remove from the Library
-                        //This is why LoadItem() passes along the AddTrackCommand
-                        break;
-
-                    case "RemoveTrackCommand":
-                        RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
-                        string removedTrackPath = RemoveTrackAtIndex(removeTrackCommand.Index);
-                        removeTrackCommand.Path = removedTrackPath;
-                        //Add logic to log this command to the CommandStackController.
-                        //Setting the Path property is necessary for being able to perform an undo operation on the RemoveTrackCommand later 
-                        break;
-
-                    default:
-                        Debug.LogWarning($"Unhandled command: {request}");
-                        break;
-                }
-            }
-            else
-            {
-                switch (command)
+                    AddTrackCommand addTrackCommand = request as AddTrackCommand;
+                    LoadTrack(addTrackCommand);
+                },
+                ("RemoveTrackCommand", false) => () =>
                 {
-                    case "AddTrackCommand":
-                        AddTrackCommand addTrackCommand = request as AddTrackCommand;
-                        RemoveTrack(addTrackCommand.Track);
-                        break;
+                    RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
+                    string removedTrackPath = RemoveTrackAtIndex(removeTrackCommand.Index);
+                    removeTrackCommand.Path = removedTrackPath;
+                },
+                //Add more switch arms here as needed
 
-                    case "RemoveTrackCommand":
-                        RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
-                        string path = removeTrackCommand.Path;
-                        if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
-                        {
-                            StartCoroutine(LoadAudioClipFromFile(path, null));
-                        }
-                        else
-                        {
-                            Debug.LogError("Invalid file path or file does not exist. Action can not be undone");
-                        }                        
-                        break;
+                //Start of Undo actions
+                ("AddTrackCommand", true) => () =>
+                {
+                    AddTrackCommand addTrackCommand = request as AddTrackCommand;
+                    RemoveTrack(addTrackCommand.Track);
+                },
+                ("RemoveTrackCommand", true) => () =>
+                {
+                    RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
+                    string path = removeTrackCommand.Path;
+                    if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+                    {
+                        StartCoroutine(LoadAudioClipFromFile(path, null));
+                    }
+                    else
+                    {
+                        Debug.LogError("Invalid file path or file does not exist. Action can not be undone");
+                    }
+                },
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled command: {request}")
+            };
 
-                    default:
-                        Debug.LogWarning($"Unhandled command: {request}");
-                        break;
-                }
-            }
+            action();
         }
 
         public void Dispose()
@@ -233,54 +219,8 @@ namespace AudioFile.Controller
 
 /*public enum PlayMode { Consecutive, RecommendedRandom, TrueRandom, }
 
-public class MediaPlayerManager : MonoBehaviour
-{
-    #region Variables
-    //TODO: See how to reimplement MediaLibrary as either/or a TrackLibrary or VisualLibrary
-    //or Playlist
-    [Header("Sound Components:")]
-    public AudioSource audioSource; // Unity's AudioSource component for playing music
-    public MediaLibrary mediaLibrary;
-
-    [Header("Visual Components:")]
-    //TODO: Add a VisualizerManager class and have these methods refer to whatever selected Visualizer is passed
-    //public RadialWaveformVisualizer radialWaveformVisualizer;
-
-    [HideInInspector]
-    public int currentTrackIndex = 0;
-    private float trackDuration;
-
-    // Events to communicate with other components
-    public delegate void TrackChangeHandler(string trackName);
-    public event TrackChangeHandler OnTrackChanged;
-
-    public delegate void PlayStateChangeHandler(bool isPlaying);
-    public event PlayStateChangeHandler OnPlayStateChanged;
-
     private PlayMode currentPlayMode = PlayMode.Consecutive;
-    #endregion
 
-    #region UnityEngine
-    private void Start()
-    {
-        if (audioSource == null || mediaLibrary == null || mediaLibrary.tracks.Count == 0)
-        {
-            Debug.LogError("MediaPlayerManager setup error: Ensure AudioSource and MediaLibrary are set and MediaLibrary is not empty.");
-            this.enabled = false; // Disable the script if setup is incomplete
-        }
-        else
-        {
-            PlayCurrentTrack();
-        }
-    }
-    private void Update()
-    {
-        CheckIfTrackFinished();
-    }
-    #endregion
-
-    #region TestingMethods
-    //TODO: Refactor PlayCurrentTrack() to use Track instead of audiSource.clip
     public void PlayCurrentTrack()
     {
         if (mediaLibrary.tracks.Count > 0 && currentTrackIndex < mediaLibrary.tracks.Count)
@@ -313,75 +253,7 @@ public class MediaPlayerManager : MonoBehaviour
             Debug.LogError("No tracks available or index out of range.");
         }
     }
-    public void NextTrack()
-    {
-        if (currentTrackIndex < mediaLibrary.tracks.Count - 1)
-        {
-            currentTrackIndex++;
-            PlayCurrentTrack();
-        }
-        else
-        {
-            Debug.Log("Reached the end of the playlist.");
-        }
-    }
-    public void PreviousTrack()
-    {
-        if (currentTrackIndex > 0)
-        {
-            currentTrackIndex--;
-            PlayCurrentTrack();
-        }
-        else
-        {
-            Debug.Log("Already at the beginning of the playlist.");
-        }
-    }
-    private void CheckIfTrackFinished()
-    {
-        if (!audioSource.isPlaying && audioSource.time >= trackDuration)
-        {
-            NextTrack();
-        }
-    }
 
- /*   public void Play()
-    {
-        if (!audioSource.isPlaying)
-        {
-            audioSource.Play();
-            Debug.Log("Audio was Played");
-
-            OnPlayStateChanged?.Invoke(true);
-
-        }
-    }
- 
-
-    public void Pause()
-    {
-        if (audioSource.isPlaying)
-        {
-            audioSource.Pause();
-            Debug.Log("Audio was Paused");
-
-            OnPlayStateChanged?.Invoke(false);
-
-        }
-    }
-    public void Skip(bool forward)
-    {
-        if (forward)
-        {
-            Debug.LogError($"Clip at index {currentTrackIndex} is null. Skipping to the next track.");
-            NextTrack();
-        }
-        else
-        {
-            Debug.LogError($"Clip at index {currentTrackIndex} is null. Skipping to the previous track.");
-            PreviousTrack();
-        }
-    }
 
     public void SetPlayMode(PlayMode mode)
     {

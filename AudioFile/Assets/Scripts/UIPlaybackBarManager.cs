@@ -35,14 +35,15 @@ namespace AudioFile.View
         //have the PlaybackController HandleRequest(new SeekCommand(currentTime, seekedTime))
         public void AudioFileUpdate(string observationType, object data)
         {
-            if (observationType == "OnTrackFrameUpdate")
+            Action action = observationType switch
             {
-                slider.value = (float)data;
-            }
-            else if (observationType == "OnTrackStopped")
-            {
-                slider.value = 0;
-            }
+                "OnTrackFrameUpdate" => () => slider.value = (float)data,
+                "OnTrackStopped" => () => slider.value = 0,
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
         }
     }
 }

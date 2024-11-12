@@ -112,45 +112,44 @@ namespace AudioFile.View
 
         public void AudioFileUpdate(string observationType, object data)
         {
-            switch (observationType)
+            Action action = observationType switch
             {
-                case "OnCurrentTrackChanged":
+                "OnCurrentTrackChanged" => () =>
+                {
                     textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
                     textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.CurrentTrack.ToString();
                     isScrolling = true;
-                    break;
-                case "OnTrackListEnd":
+                },
+                "OnTrackListEnd" => () =>
+                {
                     if (Controller.PlaybackController.Instance.GetCurrentTrackIndex() == 0)
                     {
                         StartCoroutine(QuickMessage(1f, "Front of playlist"));
-                        break;
                     }
                     else
                     {
                         StartCoroutine(QuickMessage(1f, "End of playlist"));
-                        break;
                     }
-                case "OnTrackSkipped":
+                },
+                "OnTrackSkipped" => () =>
+                {
                     if (data is Track trackSkipped)
                     {
                         StartCoroutine(QuickMessage(4f, $"{trackSkipped.TrackProperties.GetProperty("Title")} skipped due to error", true));
-                        break;
                     }
                     else if (data is null)
                     {
                         StartCoroutine(QuickMessage(4f, "Unknown track skipped due to error", true));
-                        break;
                     }
                     else
                     {
-                        StartCoroutine(QuickMessage(4f, "Track skipped due to unknown error", true)); //Should only get here if there is a "what the actual fuck" error where the skipped track is neither a Track or a null reference
-                        break;
+                        StartCoroutine(QuickMessage(4f, "Track skipped due to unknown error", true));
                     }
-                // Add more cases here if needed
-                default:
-                    Debug.LogWarning($"Unhandled observation type: {observationType} at {this}");
-                    break;
-            }
+                },
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
         }
 
     }

@@ -85,16 +85,14 @@ namespace AudioFile.View
         }
         public void AudioFileUpdate(string observationType, object data)
         {
-            switch (observationType)
+            Action action = observationType switch
             {
-                case "OnTrackSelected":
-                    trackDisplayIndex = (int)data;
-                    break;
-                // Add more cases here if needed
-                default:
-                    Debug.LogWarning($"Unhandled observation type: {observationType} at {this}");
-                    break;
-            }
+                "OnTrackSelected" => () => trackDisplayIndex = (int)data,
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
         }
     }
 }

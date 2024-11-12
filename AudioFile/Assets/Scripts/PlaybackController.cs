@@ -101,9 +101,10 @@ namespace AudioFile.Controller
 
             if (isUndo == false)
             {
-                switch (command)
+                Action action = command switch
                 {
-                    case "PlayCommand":
+                    "PlayCommand" => () =>
+                    {
                         int currentTrackIndex = GetCurrentTrackIndex();
                         PlayCommand playCommand = request as PlayCommand;
                         if (CurrentTrack != null && currentTrackIndex != playCommand.Index)
@@ -111,53 +112,46 @@ namespace AudioFile.Controller
                             Stop(currentTrackIndex);
                         }
                         Play(playCommand.Index);
-                        break;
-
-                    case "PauseCommand":
+                    },
+                    "PauseCommand" => () =>
+                    {
                         PauseCommand pauseCommand = request as PauseCommand;
                         Pause(pauseCommand.Index);
-                        break;
-
-                    case "StopCommand":
+                    },
+                    "StopCommand" => () =>
+                    {
                         StopCommand stopCommand = request as StopCommand;
                         Stop(stopCommand.Index);
-                        break;
+                    },
+                    "NextItemCommand" => NextItem,
+                    "PreviousItemCommand" => PreviousItem,
+                    //Add more switch arms here as needed
+                    _ => () => Debug.LogWarning($"Unhandled command: {request}")
+                };
 
-                    case "NextItemCommand":
-                        NextItem();
-                        break;
-
-                    case "PreviousItemCommand":
-                        PreviousItem();
-                        break;
-
-                    default:
-                        Debug.LogWarning($"Unhandled command: {request}");
-                        break;
-                }
+                action();
             }
             else
             {
-                switch (command)
+                Action action = command switch
                 {
-                    case "PlayCommand":
+                    "PlayCommand" => () =>
+                    {
                         PlayCommand undoPlayCommand = request as PlayCommand;
                         Pause(undoPlayCommand.Index);
-                        break;
-                    case "PauseCommand":
+                    },
+                    "PauseCommand" => () =>
+                    {
                         PauseCommand undoPauseCommand = request as PauseCommand;
                         Play(undoPauseCommand.Index);
-                        break;
-                    case "NextItemCommand":
-                        PreviousItem();
-                        break;
-                    case "PreviousItemCommand":
-                        NextItem();
-                        break;
-                    default:
-                        Debug.LogWarning($"Unhandled undo command: {request}");
-                        break;
-                }
+                    },
+                    "NextItemCommand" => PreviousItem,
+                    "PreviousItemCommand" => NextItem,
+                    //Add more switch arms here as needed
+                    _ => () => Debug.LogWarning($"Unhandled undo command: {request}")
+                };
+
+                action();
             }
         }
 
@@ -208,16 +202,14 @@ namespace AudioFile.Controller
 
         public void AudioFileUpdate(string observationType, object data)
         {
-            switch (observationType)
+            Action action = observationType switch
             {
-                case "OnCurrentTrackIsDone":
-                    NextItem();
-                    break;
-                // Add more cases here if needed
-                default:
-                    Debug.LogWarning($"Unhandled observation type: {observationType} at {this}");
-                    break;
-            }
+                "OnCurrentTrackIsDone" => NextItem,
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
         }
 
         /* TODO: Move this to an exitprogram controller
