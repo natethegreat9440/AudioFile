@@ -5,6 +5,7 @@ using System.IO;
 using UnityEngine.Networking;
 using SFB;
 using TagLib;
+using System.Linq;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
@@ -170,11 +171,22 @@ namespace AudioFile.Model
             }
 
         }
-        public override void RemoveItem(MediaLibraryComponent providedTrack)
+        public Track GetTrackAtID(string trackDisplayID)
         {
-            trackList.Remove((Track)providedTrack);
-            Debug.Log($"Track '{providedTrack}' has been removed from the media library.");
-            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", providedTrack);
+            return trackList
+                .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
+                .FirstOrDefault();
+        }
+        public override void RemoveItem(string trackDisplayID)
+        {
+            var trackToRemove = GetTrackAtID(trackDisplayID);
+
+            var trackIndex = GetTrackIndex(trackToRemove);
+            trackList[trackIndex].Stop();
+
+            trackList.Remove(trackToRemove);
+            Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
         }
 
         public override void RemoveItemAtIndex(int providedIndex)

@@ -32,8 +32,11 @@ namespace AudioFile.View
         public MenuComponent(Button button, string description)
         {
             this.button = button;
-            Name = button.GetComponentInChildren<Text>().text;
-            text = button.GetComponentInChildren<Text>();
+            if (button != null)
+            {
+                Name = button.GetComponentInChildren<Text>().text;
+                text = button.GetComponentInChildren<Text>();
+            }
             Description = description;
         }
         public override string ToString()

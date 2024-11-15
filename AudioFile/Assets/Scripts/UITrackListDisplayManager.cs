@@ -21,8 +21,36 @@ namespace AudioFile.View
     /// </summary>
     public class UITrackListDisplayManager : MonoBehaviour, IAudioFileObserver
     {
-        private static readonly Lazy<UITrackListDisplayManager> _instance = new Lazy<UITrackListDisplayManager>(() => new UITrackListDisplayManager());
+        private static readonly Lazy<UITrackListDisplayManager> _instance = new Lazy<UITrackListDisplayManager>(CreateSingleton);
+
+        // Private constructor to prevent instantiation
+        private UITrackListDisplayManager() { } //Unity objects should not use constructors with parameters as Unity uses its own lifecycle methods to manage these objects
+
         public static UITrackListDisplayManager Instance => _instance.Value;
+
+        private static UITrackListDisplayManager CreateSingleton()
+        {
+            // Check if an instance already exists in the scene
+            UITrackListDisplayManager existingInstance = FindObjectOfType<UITrackListDisplayManager>();
+            if (existingInstance != null)
+            {
+                return existingInstance;
+            }
+
+            // Create a new GameObject to hold the singleton instance if it doesn't already exist
+            GameObject singletonObject = new GameObject(typeof(UITrackListDisplayManager).Name);
+            // Add the UITrackListDisplayManager component to the GameObject
+            UITrackListDisplayManager instance = singletonObject.AddComponent<UITrackListDisplayManager>();
+
+            // Ensure the GameObject is not destroyed on scene load
+            DontDestroyOnLoad(singletonObject);
+
+            return instance;
+            /*// Create a new GameObject to hold the singleton instance if it doesn't already exist
+            GameObject singletonObject = new GameObject(typeof(UITrackListDisplayManager).Name);
+            // Add the TrackListController component to the GameObject
+            return singletonObject.AddComponent<UITrackListDisplayManager>();*/
+        }
 
         public GameObject UI_Track_DisplayPrefab;
         public Transform Track_List_DisplayViewportContent;
@@ -87,8 +115,8 @@ namespace AudioFile.View
 
             Action action = buttonType switch
             {
-                "Duration" => () => Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex)),
-                "Title" => () => Controller.PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex)),
+                "Duration" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex)),
+                "Title" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex)),
                 /*"Artist" => () => /*Filter by artist logic here,
                 "Album" => () => /*Filter by album logic here, */
                 _ => () => Debug.LogWarning("Unknown button type double-clicked.")
@@ -161,8 +189,33 @@ namespace AudioFile.View
                 yield break;  // Exit if there’s no track data or prefab reference
             }
 
+            var providedTrackID = providedTrack.TrackProperties.GetProperty("TrackID");
+            Transform trackDisplayToRemove = null;
+
+            foreach (Transform child in Track_List_DisplayViewportContent)
+            {
+                var trackDisplayID = child.GetComponent<UITrackDisplay>().TrackDisplayID;
+                if (providedTrackID == trackDisplayID)
+                {
+                    trackDisplayToRemove = child;
+                    break;
+                }
+            }
+
+            if (trackDisplayToRemove != null) //Destroy the TrackDisplay GameObject once found
+            {
+                //Call the TrackDisplay's DestroyContext Menu method first in case there is an open Context Menu when the
+                //Track Display is removed
+                trackDisplayToRemove.GetComponent<UITrackDisplay>().DestroyContextMenu();
+                Destroy(trackDisplayToRemove.gameObject);
+                yield break;
+            }
+
+            yield break;
+        }
+
             // Use a unique identifier to find the specific TrackDisplay GameObject
-            string trackTitleIdentifier = providedTrack.TrackProperties.GetProperty("Title");
+            /*string trackTitleIdentifier = providedTrack.TrackProperties.GetProperty("Title");
             string trackArtistIdentifier = providedTrack.TrackProperties.GetProperty("Artist");
             string trackAlbumIdentifier = providedTrack.TrackProperties.GetProperty("Album");
             string trackDurationIdentifier = providedTrack.TrackProperties.GetProperty("Duration");
@@ -191,14 +244,9 @@ namespace AudioFile.View
                     }
                 }
                 yield return null;  // Yield to distribute the workload over multiple frames
-            }
+            }*/
 
             // Destroy the TrackDisplay GameObject if found
-            if (trackDisplayToRemove != null)
-            {
-                Destroy(trackDisplayToRemove.gameObject);
-            }
-        }
 
         public void AudioFileUpdate(string observationType, object data)
         {

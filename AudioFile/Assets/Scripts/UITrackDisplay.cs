@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using AudioFile.Model;
 using TagLib.Riff;
+using UnityEngine.EventSystems;
 
 namespace AudioFile.View
 {
@@ -17,11 +18,22 @@ namespace AudioFile.View
     /// <seealso cref="MonoBehaviour"/>
     /// </summary>
 
-    public class UITrackDisplay : MonoBehaviour
+    public class UITrackDisplay : MonoBehaviour, IPointerClickHandler
     {
-        public GameObject TrackDisplayGameObject { get; private set; }
-        private Button titleButton, artistButton, albumButton, durationButton;
+        public GameObject TrackDisplayGameObject;
+        public Button titleButton { get; private set; } 
+        public Button artistButton { get; private set; } 
+        public Button albumButton { get; private set; } 
+        public Button durationButton { get; private set; }
+
         private UITrackListDisplayManager listDisplayManager;
+        public GameObject ContextMenuPrefab; //Will need to drag this prefab into UI_Track_Display_Prefab
+                                             //TODO: Add an AllPlaylist and AllPlaylistFolder collection (or something along those lines) reference
+                                             //so whenever the user right clicks on a track, it populates the context menu with the appropriate options
+                                             // these references here should just get from the global reference when called internally here
+
+        private UIContextMenu contextMenuInstance;
+
 
         public string TrackDisplayID { get; private set; }
 
@@ -38,6 +50,8 @@ namespace AudioFile.View
             TrackDisplayID = trackData.TrackProperties.GetProperty("TrackID");
             SetTrackData(trackData);
             InitializeButtons();
+            //TrackDisplayGameObject.onClick.AddListener(() => OnPointerClick(PointerEventData eventData);
+
         }
 
         private void SetTrackData(Track trackData)
@@ -46,6 +60,7 @@ namespace AudioFile.View
             SetText(listDisplayManager.artistTextPath, trackData.TrackProperties.GetProperty("Artist"));
             SetText(listDisplayManager.albumTextPath, trackData.TrackProperties.GetProperty("Album"));
             SetText(listDisplayManager.durationTextPath, trackData.TrackProperties.GetProperty("Duration"));
+            
         }
 
         private void SetText(string path, string value)
@@ -82,10 +97,95 @@ namespace AudioFile.View
             if (durationButton != null) durationButton.onClick.AddListener(() => OnButtonClicked("Duration"));
         }
 
+        //This method exists to be called from the UITrackListDisplayManager,
+        //so when the track is removed it destroys the Track Displays Context Menu if it is already open
+        public void DestroyContextMenu() 
+        {
+            if (contextMenuInstance != null)
+            {
+                contextMenuInstance.DestroyContextMenu();
+                contextMenuInstance = null;
+            }
+        }
         private void OnButtonClicked(string buttonType)
         {
             listDisplayManager.HandleTrackButtonClick(this, buttonType);
             Debug.Log("Button clicked: " + buttonType);
         }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            Debug.Log("Pointer click detected");
+            // Check for right-click
+            if (eventData.button == PointerEventData.InputButton.Right)
+            {
+
+                Debug.Log($"Right-click detected on {transform.Find(UITrackListDisplayManager.Instance.titleTextPath).GetComponent<Text>()} - {transform.Find(UITrackListDisplayManager.Instance.titleTextPath).GetComponent<Text>()}");
+                //UIContextMenu newContextMenuInstance = new UIContextMenu("Track Display Context Menu", TrackDisplayID);
+                //GameObject contextMenuPrefab = (GameObject)Instantiate(Resources.Load("Track_Context_Menu"));
+                //Transform contextMenuTransform = ContextMenuPrefab.GetComponent<RectTransform>();
+
+                Canvas mainCanvas = FindObjectOfType<Canvas>();
+                RectTransform canvasRectTransform = mainCanvas.GetComponent<RectTransform>();
+
+                //GameObject contextMenuPrefab = Instantiate(ContextMenuPrefab, contextMenuTransform);
+
+
+                if (ContextMenuPrefab != null && canvasRectTransform != null)
+                {
+                    GameObject newContextMenuInstance = Instantiate(ContextMenuPrefab, canvasRectTransform);
+                    UIContextMenu contextMenu = newContextMenuInstance.GetComponent<UIContextMenu>();
+                    if (contextMenu != null)
+                    {
+                        Debug.Log("Context menu initializing");
+                        Vector2 displayPosition = eventData.position;
+                        contextMenuInstance = contextMenu.Initialize(TrackDisplayID, displayPosition, this);
+                        Debug.Log("Context menu initialized");
+
+                    }
+                    //contextMenuPrefab.InitializeContextMenu(contextMenuPrefab,TrackDisplayID);
+                    //newContextMenuInstance.DisplayContextMenu(eventData.position);
+                    Debug.Log("Somehow the context menu was null");
+                }
+                Debug.Log("Somehow the context menu prefab was null");
+                // Create and display the context menu at the mouse position
+                //DisplayContextMenu(eventData.position);
+            }
+            /*else if (eventData.button == PointerEventData.InputButton.Left)
+            {
+                Debug.Log($"Left_click detected. Exiting context menu.");
+                //DestroyContextMenu(); //TODO: Implement this method
+            }*/
+        }
+        /*private void InitializeContextMenu(GameObject menuInstance)
+        {
+            RemoveTrackCommand removeTrackCommand = new RemoveTrackCommand(UITrackListDisplayManager.Instance.GetTrackDisplayIndex(TrackDisplayGameObject)); //TODO: Change this and the RemoveTrackCommand class to take an ID as opposed to an index
+            AddToPlaylistCommand addToPlaylistCommand = new AddToPlaylistCommand(TrackDisplayID); //TODO: Add Playlist as second parameter once I have that class set up
+
+            Button addToPlaylistButton = menuInstance.transform.Find("Add_To_Playlist_Button").GetComponent<Button>();
+            Button removeTrackButton = menuInstance.transform.Find("Remove_Button").GetComponent<Button>();
+
+            Menu addToPlaylistMenu = new Menu(addToPlaylistButton, "Add to Playlist Menu");
+            //TODO: Add a loop to add all Playlist Folders (sub menus) and Playlists names (Menu Items) to the addToPlaylistMenu
+            MenuItem removeTrackMenuItem = new MenuItem(removeTrackButton, "Remove Track", removeTrackCommand);
+
+        }
+
+        private void DisplayContextMenu(Vector2 position)
+        {
+            Debug.Log("DisplayContextMenu() called");
+            // Find the Canvas transform
+            Transform canvasTransform = FindObjectOfType<Canvas>().transform;
+
+            contextMenuInstance = Instantiate(ContextMenuPrefab, canvasTransform);
+
+            // Set menu position to right-click location
+            RectTransform menuRectTransform = contextMenuInstance.GetComponent<RectTransform>();
+            menuRectTransform.position = position;
+
+            InitializeContextMenu(contextMenuInstance);
+        }*/
+
+
     }
 }

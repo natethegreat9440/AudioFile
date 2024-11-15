@@ -73,7 +73,8 @@ namespace AudioFile.Controller
                 ("RemoveTrackCommand", false) => () =>
                 {
                     RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
-                    string removedTrackPath = RemoveTrackAtIndex(removeTrackCommand.Index);
+                    //string removedTrackPath = RemoveTrackAtIndex(removeTrackCommand.Index);
+                    string removedTrackPath = RemoveTrack(removeTrackCommand.TrackDisplayID);
                     removeTrackCommand.Path = removedTrackPath;
                 },
                 //Add more switch arms here as needed
@@ -82,7 +83,7 @@ namespace AudioFile.Controller
                 ("AddTrackCommand", true) => () =>
                 {
                     AddTrackCommand addTrackCommand = request as AddTrackCommand;
-                    RemoveTrack(addTrackCommand.Track);
+                    RemoveTrack(addTrackCommand.Track.TrackProperties.GetProperty("TrackID"));
                 },
                 ("RemoveTrackCommand", true) => () =>
                 {
@@ -108,9 +109,12 @@ namespace AudioFile.Controller
         {
             throw new NotImplementedException();
         }
-        public void RemoveTrack(Track track)
+        public string RemoveTrack(string trackDisplayID)
         {
-            TrackLibrary.Instance.RemoveItem(track);
+            Track trackToRemove = TrackLibrary.Instance.GetTrackAtID(trackDisplayID);
+            string trackPath = trackToRemove.TrackProperties.GetProperty("Path");
+            TrackLibrary.Instance.RemoveItem(trackDisplayID);
+            return trackPath;
         }
         public string RemoveTrackAtIndex(int index)
         {

@@ -166,13 +166,15 @@ namespace AudioFile.View
 
         //public Track Track { get; }
 
-        public int Index { get; }
+        //public int Index { get; }
+        public string TrackDisplayID { get; }
 
         public string Path { get; set; }
 
-        public RemoveTrackCommand(int index)
+        public RemoveTrackCommand(string trackDisplayID)
         {
-            Index = index;
+            TrackDisplayID = trackDisplayID;
+            //Index = index;
         }
         public void Execute()
         {
@@ -233,6 +235,36 @@ namespace AudioFile.View
             throw new NotImplementedException();
             //controller.HandleRequest(this, IsUndo = true);
             //Debug.Log("New Playlist Folder Command undone");
+        }
+    }
+
+    public class AddToPlaylistCommand : ICommand
+    {
+        public bool IsUndo { get; set; } = false;
+
+        //Will need to have a reference to the playlist once I have that class figured out
+        //public Playlist Playlist { get; }
+
+        public string TrackDisplayID { get; set; } //Track reference used for execute and undo action
+
+        public AddToPlaylistCommand(string trackDisplayID)//,Playlist playlist)
+        {
+            //Playlist = playlist;
+            TrackDisplayID = trackDisplayID;
+        }
+
+        public void Execute()
+        {
+            //controller.HandleRequest(this, IsUndo);
+            //Debug.Log("New Add To Playlist Command executed");
+            throw new NotImplementedException();
+        }
+
+        public void Undo()
+        {
+            throw new NotImplementedException();
+            //controller.HandleRequest(this, IsUndo = true);
+            //Debug.Log("New Playlist Command undone");
         }
     }
 

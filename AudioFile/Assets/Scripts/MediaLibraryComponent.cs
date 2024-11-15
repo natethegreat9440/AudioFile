@@ -107,7 +107,7 @@ namespace AudioFile.Model
             throw new NotImplementedException();
         }
 
-        public virtual void RemoveItem(MediaLibraryComponent mediaLibraryComponent)
+        public virtual void RemoveItem(string trackID)
         {
             throw new NotImplementedException();
         }
