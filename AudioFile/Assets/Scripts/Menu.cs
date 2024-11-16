@@ -37,6 +37,11 @@ namespace AudioFile.View
             // Enable Raycast Target for hover detection
             text.raycastTarget = true;
 
+            InitializePointerHandling();
+        }
+
+        public void InitializePointerHandling()
+        {
             // Attach the event handling to the Text GameObject
             EventTrigger trigger = text.gameObject.GetComponent<EventTrigger>();
             if (trigger == null)
@@ -49,7 +54,9 @@ namespace AudioFile.View
             {
                 eventID = EventTriggerType.PointerEnter
             };
-            pointerEnterEntry.callback.AddListener((eventData) => { ((IPointerEnterHandler)this).OnPointerEnter((PointerEventData)eventData); });
+
+            pointerEnterEntry.callback.AddListener((eventData) =>
+            { ((IPointerEnterHandler)this).OnPointerEnter((PointerEventData)eventData); });
             trigger.triggers.Add(pointerEnterEntry);
 
             // Add OnPointerExit event
@@ -57,9 +64,12 @@ namespace AudioFile.View
             {
                 eventID = EventTriggerType.PointerExit
             };
-            pointerExitEntry.callback.AddListener((eventData) => { ((IPointerExitHandler)this).OnPointerExit((PointerEventData)eventData); });
+
+            pointerExitEntry.callback.AddListener((eventData) =>
+            { ((IPointerExitHandler)this).OnPointerExit((PointerEventData)eventData); });
             trigger.triggers.Add(pointerExitEntry);
         }
+
         public override void Add(MenuComponent menuComponent) => _menuComponents.Add(menuComponent);
         public override void Remove(MenuComponent menuComponent) => _menuComponents.Remove(menuComponent);
         public override MenuComponent GetChild(int i) => _menuComponents[i];
@@ -105,7 +115,7 @@ namespace AudioFile.View
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
-            //Debug.Log("Pointer Exited: " + this.Name);
+            Debug.Log("Pointer Exited: " + this.Name);
 
             RectTransform rectTransform = button.GetComponent<RectTransform>();
 

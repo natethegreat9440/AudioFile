@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AudioFile.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,31 +7,34 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+//using UnityEngine.UIElements;
 
 namespace AudioFile.View
 {
-    public class UIContextMenu :  MonoBehaviour, IPointerClickHandler
+    public class UIContextMenu : MonoBehaviour
     {
+        // Lazy<T> ensures that the instance is created in a thread-safe manner
+        private static readonly Lazy<UIContextMenu> _instance = new Lazy<UIContextMenu>(() => new GameObject("UIContextMenu").AddComponent<UIContextMenu>());
 
-        //public GameObject ContextMenuPrefab; //Will need to drag this prefab into UI_Track_Display_Prefab
-                                             //TODO: Add an AllPlaylist and AllPlaylistFolder collection (or something along those lines) reference
-                                             //so whenever the user right clicks on a track, it populates the context menu with the appropriate options
-                                             // these references here should just get from the global reference when called internally here
+        // Private constructor to prevent instantiation
+        private UIContextMenu() { } //Unity objects should not use constructors with parameters as Unity uses its own lifecycle methods to manage these objects
+
+        public static UIContextMenu Instance => _instance.Value;
+        //TODO: Add an AllPlaylist and AllPlaylistFolder collection (or something along those lines) reference
+        //so whenever the user right clicks on a track, it populates the context menu with the appropriate options
+        // these references here should just get from the global reference when called internally here
 
         public GameObject ContextMenuGameObject;
+
+        public Canvas mainCanvas;
 
         private string TrackDisplayID;
         private UITrackDisplay trackDisplay;
 
         private List<MenuComponent> menuComponents;
 
-        /*public UIContextMenu(string description, string trackDisplayID) 
-        {
-            TrackDisplayID = trackDisplayID;
-            Transform prefabTransform = ContextMenuPrefab.GetComponent<RectTransform>();
-            contextMenuInstance = MonoBehaviour.Instantiate(ContextMenuPrefab, prefabTransform);
-            InitializeContextMenu(contextMenuInstance);
-        }*/
+        private ClickOutsideHandler ClickOutsideHandler;
+
         private void Awake()
         {
             // Set TrackDisplayGameObject to the current GameObject this script is attached to
@@ -40,75 +44,81 @@ namespace AudioFile.View
         {
             trackDisplay = manager;
             TrackDisplayID = trackDisplayID;
-            //Transform prefabTransform = contextMenuPrefab.GetComponent<RectTransform>();
-            //contextMenuInstance = MonoBehaviour.Instantiate((GameObject)contextMenuPrefab, prefabTransform);
 
-            RemoveTrackCommand removeTrackCommand = new RemoveTrackCommand(TrackDisplayID); 
-            AddToPlaylistCommand addToPlaylistCommand = new AddToPlaylistCommand(TrackDisplayID); //TODO: Add Playlist as second parameter once I have that class set up
-
-            Button addToPlaylistButton = ContextMenuGameObject.transform.Find("Add_To_Playlist_Button").GetComponent<Button>();
-            Button removeTrackButton = ContextMenuGameObject.transform.Find("Remove_Button").GetComponent<Button>();
-
-            Menu addToPlaylistMenu = new Menu(addToPlaylistButton, "Add to Playlist Menu");
-            //TODO: Add a loop to add all Playlist Folders (sub menus) and Playlists names (Menu Items) to the addToPlaylistMenu
-            MenuItem removeTrackMenuItem = new MenuItem(removeTrackButton, "Remove Track", removeTrackCommand);
-
-            menuComponents = new List<MenuComponent>();
-            menuComponents.Add(addToPlaylistMenu);
-            menuComponents.Add(removeTrackMenuItem);
 
             // Set menu position to right-click location
             RectTransform menuRectTransform = ContextMenuGameObject.GetComponent<RectTransform>();
             menuRectTransform.position = position;
 
+            CreateClickCatcher();
+            //Set as last sibling makes it so the context renders above the click catcher so the click 
+            //catcher doesn't intercept mouse behavior
+            ContextMenuGameObject.transform.SetAsLastSibling();
+            InitializeMenu();
+
+            UITrackListDisplayManager.Instance.activeContextMenu = this;
             return this;
         }
 
-        public void OnPointerClick(PointerEventData eventData) //Needs to destroy itself if it is clicked outside of its own transform area
+        private void InitializeMenu()
         {
-            // Check if the click is outside the context menu or any of its children
-            bool clickOutside = true;
+            RemoveTrackCommand removeTrackCommand = new RemoveTrackCommand(TrackDisplayID);
+            AddToPlaylistCommand addToPlaylistCommand = new AddToPlaylistCommand(TrackDisplayID); //TODO: Add Playlist as second parameter once I have that class set up
 
-            // Iterate through all child UI elements of the context menu
-            foreach (Transform child in ContextMenuGameObject.transform)
-            {
-                RectTransform rectTransform = child.GetComponent<RectTransform>();
-                if (rectTransform != null && RectTransformUtility.RectangleContainsScreenPoint(rectTransform, eventData.position, eventData.pressEventCamera))
-                {
-                    clickOutside = false;
-                    break;
-                }
-            }
+            Button addToPlaylistButton = ContextMenuGameObject.transform.Find("Add_To_Playlist_Button").GetComponent<Button>();
+            Button removeTrackButton = ContextMenuGameObject.transform.Find("Remove_Button").GetComponent<Button>();
+            Button testPlaylistButton = ContextMenuGameObject.transform.Find("Test_Playlist_Button").GetComponent<Button>();
 
-            // Destroy the context menu if the click is outside
-            if (clickOutside)
+            Menu addToPlaylistMenu = new Menu(addToPlaylistButton, "Add to Playlist Menu");
+            addToPlaylistMenu.InitializePointerHandling();
+            //TODO: Add a loop to add all Playlist Folders (sub menus) and Playlists names (Menu Items) to the addToPlaylistMenu
+            MenuItem removeTrackMenuItem = new MenuItem(removeTrackButton, "Remove Track", removeTrackCommand);
+            //Added for testing submenu
+            MenuItem testPlaylistMenuItem = new MenuItem(testPlaylistButton, "Dummy playlist for testing", addToPlaylistCommand);
+            
+            //Set initial active state of menu items/submenus
+            testPlaylistButton.gameObject.SetActive(false);
+
+            menuComponents = new List<MenuComponent>
             {
-                trackDisplay.DestroyContextMenu();
-            }
+                addToPlaylistMenu,
+                removeTrackMenuItem,
+                testPlaylistMenuItem
+            };
         }
-        /*public void DisplayContextMenu(Vector2 position)
+
+        //ClickCatcher is used to detect clicks outside the menu's transform
+        private void CreateClickCatcher()
         {
-            Debug.Log("DisplayContextMenu() called");
-            // Find the Canvas transform
-            Transform canvasTransform = MonoBehaviour.FindObjectOfType<Canvas>().transform;
+            // Create the overlay for detecting clicks outside the menu
+            mainCanvas = FindObjectOfType<Canvas>();
+            GameObject overlay = new GameObject("ClickCatcherOverlay");
+            overlay.transform.SetParent(mainCanvas.transform, false);
+            RectTransform overlayRect = overlay.AddComponent<RectTransform>();
+            overlayRect.anchorMin = Vector2.zero;
+            overlayRect.anchorMax = Vector2.one;
+            overlayRect.offsetMin = Vector2.zero;
+            overlayRect.offsetMax = Vector2.zero;
 
-            //contextMenuInstance = MonoBehaviour.Instantiate(ContextMenuPrefab, canvasTransform);
+            Image overlayImage = overlay.AddComponent<Image>();
+            overlayImage.color = new Color(0, 0, 0, 0); // Fully transparent
+            overlayImage.raycastTarget = true;
 
-            // Set menu position to right-click location
-            RectTransform menuRectTransform = contextMenuInstance.GetComponent<RectTransform>();
-            menuRectTransform.position = position;
-
-            //InitializeContextMenu(contextMenuInstance);
-        }*/
+            ClickOutsideHandler clickOutsideHandler = overlay.AddComponent<ClickOutsideHandler>();
+            clickOutsideHandler.contextMenu = this;
+            ClickOutsideHandler = clickOutsideHandler;
+        }
 
         public void DestroyContextMenu()
         {
+            Debug.Log("Entering DestroyContextMenu from UIContextMenu");
             if (ContextMenuGameObject != null)
             {
-                // Destroy the context menu instance and all its children
+                Debug.Log("Destroying Context Menu from UIContextMenu");
                 Destroy(ContextMenuGameObject);
                 ContextMenuGameObject = null;
-
+                ClickOutsideHandler.DestroyClickOutsideHandler();
+                ClickOutsideHandler = null;
                 // Clear the menu components list
                 if (menuComponents != null)
                 {

@@ -46,10 +46,6 @@ namespace AudioFile.View
             DontDestroyOnLoad(singletonObject);
 
             return instance;
-            /*// Create a new GameObject to hold the singleton instance if it doesn't already exist
-            GameObject singletonObject = new GameObject(typeof(UITrackListDisplayManager).Name);
-            // Add the TrackListController component to the GameObject
-            return singletonObject.AddComponent<UITrackListDisplayManager>();*/
         }
 
         public GameObject UI_Track_DisplayPrefab;
@@ -64,16 +60,7 @@ namespace AudioFile.View
         public readonly string albumTextPath = "UI_Track_Album_Button/UI_Track_Album_Button_Text";
         public readonly string durationTextPath = "UI_Track_Duration_Button/UI_Track_Duration_Button_Text";
 
-        // This class is assigned to a GameObject in scene so this method is not needed. Here it is anyway in case it is needed for future implementation
-        /*private static UITrackListDisplayManager CreateSingleton()
-        {
-            // Create a new GameObject to hold the singleton instance if it doesn't already exist
-            GameObject singletonObject = new GameObject(typeof(UITrackListDisplayManager).Name);
-
-            // Add the TrackListController component to the GameObject
-            return singletonObject.AddComponent<UITrackListDisplayManager>();
-        }*/
-
+        public UIContextMenu activeContextMenu;
 
         public void Start()
         {
@@ -191,6 +178,7 @@ namespace AudioFile.View
 
             var providedTrackID = providedTrack.TrackProperties.GetProperty("TrackID");
             Transform trackDisplayToRemove = null;
+            DeselectAllTrackDisplays();
 
             foreach (Transform child in Track_List_DisplayViewportContent)
             {
@@ -206,7 +194,10 @@ namespace AudioFile.View
             {
                 //Call the TrackDisplay's DestroyContext Menu method first in case there is an open Context Menu when the
                 //Track Display is removed
-                trackDisplayToRemove.GetComponent<UITrackDisplay>().DestroyContextMenu();
+                //trackDisplayToRemove.GetComponent<UITrackDisplay>().DestroyContextMenu();
+                var trackDisplayGameObject = trackDisplayToRemove.gameObject;
+                //UIContextMenu.Instance.DestroyContextMenu();
+                activeContextMenu.DestroyContextMenu();
                 Destroy(trackDisplayToRemove.gameObject);
                 yield break;
             }

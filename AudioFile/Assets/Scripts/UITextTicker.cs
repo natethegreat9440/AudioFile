@@ -9,6 +9,7 @@ using UnityEngine;
 using TMPro;
 using AudioFile.ObserverManager;
 using AudioFile.Model;
+using Unity.PlasticSCM.Editor.WebApi;
 
 namespace AudioFile.View
 {
@@ -50,7 +51,7 @@ namespace AudioFile.View
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackChanged", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackListEnd", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSkipped", this);
-
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
         }
 
         void Update()
@@ -106,7 +107,8 @@ namespace AudioFile.View
 
             //After waiting the coroutine resets the beahvior. Moving this outside of the coroutine will now work.
             //If this method is to be abstracted then it needs additional parameter(s) to specify reset behavior
-            textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.CurrentTrack.ToString();
+            if (Controller.PlaybackController.Instance.CurrentTrack != null)
+                textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.CurrentTrack.ToString();
             isScrolling = true;
         }
 
@@ -131,6 +133,14 @@ namespace AudioFile.View
                         StartCoroutine(QuickMessage(1f, "End of playlist"));
                     }
                 },
+                "OnTrackRemoved" => () =>
+                {
+                    if (data is Track trackRemoved)
+                    {
+                        StartCoroutine(QuickMessage(4f, $"{trackRemoved.TrackProperties.GetProperty("Title")} removed from library", true));
+                    }
+                }
+                ,
                 "OnTrackSkipped" => () =>
                 {
                     if (data is Track trackSkipped)

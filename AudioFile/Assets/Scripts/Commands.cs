@@ -44,15 +44,15 @@ namespace AudioFile.View
 
         public void Execute()
         {
-            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Track Command executed");
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
         }
 
         public void Undo()
         {
+            Debug.Log("New Track Command undone");
             IsUndo = true;
             PlaybackController.Instance.HandleRequest(this, IsUndo);
-            Debug.Log("New Track Command undone");
         }
     }
 
@@ -68,15 +68,15 @@ namespace AudioFile.View
 
         public void Execute()
         {
-            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Pause Command executed");
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
         }
 
         public void Undo()
         {
+            Debug.Log("New Pause Command undone");
             IsUndo = true;
             PlaybackController.Instance.HandleRequest(this, IsUndo);
-            Debug.Log("New Pause Command undone");
         }
     }
 
@@ -93,15 +93,15 @@ namespace AudioFile.View
 
         public void Execute()
         {
-            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Stop Command executed");
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
         }
 
         public void Undo()
         {
+            Debug.Log("New Stop Command undone");
             IsUndo = true;
             PlaybackController.Instance.HandleRequest(this, IsUndo);
-            Debug.Log("New Stop Command undone");
         }
     }
 
@@ -111,15 +111,15 @@ namespace AudioFile.View
 
         public void Execute()
         {
-            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Next Item Command executed");
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
         }
 
         public void Undo()
         {
+            Debug.Log("New Next Item Command undone");
             IsUndo = true;
             PlaybackController.Instance.HandleRequest(this, IsUndo);
-            Debug.Log("New Next Item Command undone");
         }
     }
 
@@ -129,15 +129,15 @@ namespace AudioFile.View
 
         public void Execute()
         {
-            PlaybackController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Previous Item Command executed");
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
         }
 
         public void Undo()
         {
+            Debug.Log("New Previous Item Command undone");
             IsUndo = true;
             PlaybackController.Instance.HandleRequest(this, IsUndo);
-            Debug.Log("New Previous Item Command undone");
         }
     }
     public class AddTrackCommand : ICommand
@@ -148,15 +148,15 @@ namespace AudioFile.View
 
         public void Execute()
         {
-            TrackLibraryController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("New Track Command executed");
+            TrackLibraryController.Instance.HandleRequest(this, IsUndo);
         }
 
         public void Undo()
         {
+            Debug.Log("New Track Command undone");
             IsUndo = true;
             TrackLibraryController.Instance.HandleRequest(this, IsUndo);
-            Debug.Log("New Track Command undone");
         }
     }
 
@@ -178,15 +178,15 @@ namespace AudioFile.View
         }
         public void Execute()
         {
-            TrackLibraryController.Instance.HandleRequest(this, IsUndo);
             Debug.Log("Remove Track Command executed");
+            TrackLibraryController.Instance.HandleRequest(this, IsUndo);
         }
 
         public void Undo()
         {
+            Debug.Log("Remove Track Command undone");
             IsUndo = true;
             TrackLibraryController.Instance.HandleRequest(this, IsUndo);
-            Debug.Log("Remove Track Command undone");
         }
     }
 

@@ -21,7 +21,7 @@ namespace AudioFile.View
     /// ExecuteAction(), MenuItem_Click(). Has default ToString() override and IsEnabled() and SetEnabled(bool enabled) implementations.
     /// </remarks>
     /// </summary>
-    public abstract class MenuComponent
+    public abstract class MenuComponent //TODO: Implement MonoBehaviour and refactor UIFileMenuSetup and how it makes new Menu/Menu Items
     {
         public Button button;
         public Text text;

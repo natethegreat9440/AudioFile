@@ -73,7 +73,6 @@ namespace AudioFile.Controller
                 ("RemoveTrackCommand", false) => () =>
                 {
                     RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
-                    //string removedTrackPath = RemoveTrackAtIndex(removeTrackCommand.Index);
                     string removedTrackPath = RemoveTrack(removeTrackCommand.TrackDisplayID);
                     removeTrackCommand.Path = removedTrackPath;
                 },
