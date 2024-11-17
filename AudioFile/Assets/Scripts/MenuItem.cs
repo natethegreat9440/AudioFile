@@ -27,27 +27,41 @@ namespace AudioFile.View
     {
         ICommand _command;
 
-        public MenuItem(Button button, string description, ICommand command) : base(button, description)
+        /*public MenuItem(Button button, string label, string description, ICommand command) : base(button, description)
         {
             button.onClick.AddListener(MenuItem_Click); // Wire up the event handler
             _command = command;
+        }*/
+
+        public MenuItem Initialize(Button button, string label, string description, ICommand command)
+        {
+            base.Button = button;
+            base.Text = Button.GetComponentInChildren<Text>();
+            base.Description = description;
+            base.Name = label;
+
+            base.Text.text = " " + label; //Extra space as buffer as I don't like how close the text starts to the left button border by default
+            base.Button.onClick.AddListener(MenuItem_Click); // Wire up the event handler
+            _command = command;
+
+            return this;
         }
 
         public override void Display()
         {
             if (_enabled == true)
             {
-                button.gameObject.SetActive(true); //set button when Display is called
+                Button.gameObject.SetActive(true); //set button when Display is called
             }
             else
             {
-                button.enabled = false;
+                Button.enabled = false;
             }
         }
 
         public override void Hide()
         {
-            button.gameObject.SetActive(false); //set button when Hide is called
+            Button.gameObject.SetActive(false); //set button when Hide is called
         }
 
         public override void ExecuteAction()
@@ -64,7 +78,5 @@ namespace AudioFile.View
         {
             this.ExecuteAction();
         }
-
     }
-
 }

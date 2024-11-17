@@ -813,7 +813,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000015258789, y: 0.008917387}
+  m_AnchoredPosition: {x: 0.000015258789, y: -0.00002804321}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &480053971
@@ -1987,7 +1987,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 681399647}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999886
+  m_Size: 0.99995196
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -5381,6 +5381,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UI_Track_DisplayPrefab: {fileID: 2544996683617785101, guid: 78ce12c110b0f0741b40cc35c0869c73, type: 3}
   Track_List_DisplayViewportContent: {fileID: 480053970}
+  activeContextMenu: {fileID: 0}
 --- !u!1 &2037761133
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-//using UnityEngine.UIElements;
+using AudioFile.Utilities;
+using Unity.VisualScripting;
 
 namespace AudioFile.View
 {
@@ -44,7 +45,7 @@ namespace AudioFile.View
         {
             trackDisplay = manager;
             TrackDisplayID = trackDisplayID;
-
+            //ContextMenuGameObject = GameObject.Find("UIContextMenu");
 
             // Set menu position to right-click location
             RectTransform menuRectTransform = ContextMenuGameObject.GetComponent<RectTransform>();
@@ -62,6 +63,13 @@ namespace AudioFile.View
 
         private void InitializeMenu()
         {
+            Debug.Log("Initializing context menu");
+            GameObject contextMenu = ContextMenuGameObject;
+            //GameObjectExtensions is a class I made to make finding game objects easier for this project. It is part of the Utilities namespace
+            GameObject addToPlaylistGameObject = GameObjectExtensions.FindInChildren(contextMenu, "Add_To_Playlist_Button");
+            GameObject removeTrackGameObject = GameObjectExtensions.FindInChildren(contextMenu, "Remove_Button");
+            GameObject testPlaylistGameObject = GameObjectExtensions.FindInChildren(contextMenu, "Test_Playlist_Button");
+
             RemoveTrackCommand removeTrackCommand = new RemoveTrackCommand(TrackDisplayID);
             AddToPlaylistCommand addToPlaylistCommand = new AddToPlaylistCommand(TrackDisplayID); //TODO: Add Playlist as second parameter once I have that class set up
 
@@ -69,13 +77,21 @@ namespace AudioFile.View
             Button removeTrackButton = ContextMenuGameObject.transform.Find("Remove_Button").GetComponent<Button>();
             Button testPlaylistButton = ContextMenuGameObject.transform.Find("Test_Playlist_Button").GetComponent<Button>();
 
-            Menu addToPlaylistMenu = new Menu(addToPlaylistButton, "Add to Playlist Menu");
-            addToPlaylistMenu.InitializePointerHandling();
+            Menu addToPlaylistMenu = addToPlaylistButton.AddComponent<Menu>();
+            addToPlaylistMenu = addToPlaylistMenu.Initialize(addToPlaylistButton, "Add to Playlist...", "Add to Playlist Menu");
+
             //TODO: Add a loop to add all Playlist Folders (sub menus) and Playlists names (Menu Items) to the addToPlaylistMenu
-            MenuItem removeTrackMenuItem = new MenuItem(removeTrackButton, "Remove Track", removeTrackCommand);
+
+            MenuItem removeTrackMenuItem = removeTrackGameObject.AddComponent<MenuItem>();
+            removeTrackMenuItem = removeTrackMenuItem.Initialize(removeTrackButton, "Remove", "Remove Track", removeTrackCommand);
+
             //Added for testing submenu
-            MenuItem testPlaylistMenuItem = new MenuItem(testPlaylistButton, "Dummy playlist for testing", addToPlaylistCommand);
+            MenuItem testPlaylistMenuItem = testPlaylistGameObject.AddComponent<MenuItem>();
+            testPlaylistMenuItem = testPlaylistMenuItem.Initialize(testPlaylistButton, "Playlist 1", "Dummy playlist for testing", addToPlaylistCommand);
             
+            //Add submenus to menu items
+            addToPlaylistMenu.Add(testPlaylistMenuItem);
+
             //Set initial active state of menu items/submenus
             testPlaylistButton.gameObject.SetActive(false);
 

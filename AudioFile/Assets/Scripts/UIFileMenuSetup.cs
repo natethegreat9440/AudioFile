@@ -51,13 +51,23 @@ namespace AudioFile.View
             #endregion
 
             #region Menu Components
-            Menu fileMenu = new Menu(fileButton, "File Menu", true);
-            MenuItem addTrackMenuItem = new MenuItem(addButton, "Add track to library", addTrackCommand);
-            Menu newMenu = new Menu(newButton, "New Item Menu");
-            MenuItem newPlaylistMenuItem = new MenuItem(newPlaylistButton, "Add empty playlist to library", addPlaylistCommand);
-            MenuItem newPlaylistFolderMenuItem = new MenuItem(newPlaylistFolderButton, "Add empty playlist folder to library", addPlaylistFolderCommand);
-            MenuItem exitMenuItem = new MenuItem(exitButton, "Exit program", exitProgramCommand);
+            Menu fileMenu = fileGameObject.AddComponent<Menu>();
+            fileMenu = fileMenu.Initialize(fileButton, "File", "File Menu", true);
 
+            MenuItem addTrackMenuItem = addGameObject.AddComponent<MenuItem>();
+            addTrackMenuItem = addTrackMenuItem.Initialize(addButton, "Add", "Add New Track", addTrackCommand);
+
+            Menu newMenu = newGameObject.AddComponent<Menu>();
+            newMenu = newMenu.Initialize(newButton, "New...", "New Item Menu");
+
+            MenuItem newPlaylistMenuItem = newPlaylistGameObject.AddComponent<MenuItem>();
+            newPlaylistMenuItem = newPlaylistMenuItem.Initialize(newPlaylistButton, "Playlist", "Add empty playlist to library", addPlaylistCommand);
+
+            MenuItem newPlaylistFolderMenuItem = newPlaylistFolderGameObject.AddComponent<MenuItem>();
+            newPlaylistFolderMenuItem = newPlaylistFolderMenuItem.Initialize(newPlaylistFolderButton, "Playlist Folder", "Add empty playlist folder to library", addPlaylistFolderCommand);
+
+            MenuItem exitMenuItem = exitGameObject.AddComponent<MenuItem>();
+            exitMenuItem = exitMenuItem.Initialize(exitButton, "Exit", "Exit program", exitProgramCommand);
             #endregion
 
             #region Menu Set-up

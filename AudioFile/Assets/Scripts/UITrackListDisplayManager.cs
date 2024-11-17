@@ -77,7 +77,6 @@ namespace AudioFile.View
         }
         */
 
-
         public void HandleTrackButtonClick(UITrackDisplay trackDisplay, string buttonType)
         {
             float timeSinceLastClick = Time.time - lastClickTime;
@@ -205,40 +204,6 @@ namespace AudioFile.View
             yield break;
         }
 
-            // Use a unique identifier to find the specific TrackDisplay GameObject
-            /*string trackTitleIdentifier = providedTrack.TrackProperties.GetProperty("Title");
-            string trackArtistIdentifier = providedTrack.TrackProperties.GetProperty("Artist");
-            string trackAlbumIdentifier = providedTrack.TrackProperties.GetProperty("Album");
-            string trackDurationIdentifier = providedTrack.TrackProperties.GetProperty("Duration");
-
-            Transform trackDisplayToRemove = null;
-
-            // Iterate through children of Track_List_DisplayViewportContent to find the matching GameObject
-            foreach (Transform child in Track_List_DisplayViewportContent)
-            {
-                var titleTextTransform = child.Find(titleTextPath);
-                var artistTextTransform = child.Find(artistTextPath);
-                var albumTextTransform = child.Find(albumTextPath);
-                var durationTextTransform = child.Find(durationTextPath);
-
-                if (titleTextTransform != null && artistTextTransform != null && albumTextTransform != null && durationTextTransform != null)
-                {
-                    var titleText = titleTextTransform.GetComponent<Text>();
-                    var artistText = artistTextTransform.GetComponent<Text>();
-                    var albumText = albumTextTransform.GetComponent<Text>();
-                    var durationText = durationTextTransform.GetComponent<Text>();
-
-                    if (titleText != null && titleText.text == trackTitleIdentifier && artistText != null && artistText.text == trackArtistIdentifier && albumText != null && albumText.text == trackAlbumIdentifier && durationText != null && durationText.text == trackDurationIdentifier)
-                    {
-                        trackDisplayToRemove = child;
-                        break;
-                    }
-                }
-                yield return null;  // Yield to distribute the workload over multiple frames
-            }*/
-
-            // Destroy the TrackDisplay GameObject if found
-
         public void AudioFileUpdate(string observationType, object data)
         {
             Action action = observationType switch
@@ -252,12 +217,49 @@ namespace AudioFile.View
                         GameObject currentTrackDisplay = Track_List_DisplayViewportContent.GetChild(currentTrackIndex).gameObject;
                         TrackSelected(currentTrackDisplay);
                     }
-                },
+                }
+                ,
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };
 
             action();
         }
+
+
+        // Use a unique identifier to find the specific TrackDisplay GameObject
+        /*string trackTitleIdentifier = providedTrack.TrackProperties.GetProperty("Title");
+        string trackArtistIdentifier = providedTrack.TrackProperties.GetProperty("Artist");
+        string trackAlbumIdentifier = providedTrack.TrackProperties.GetProperty("Album");
+        string trackDurationIdentifier = providedTrack.TrackProperties.GetProperty("Duration");
+
+        Transform trackDisplayToRemove = null;
+
+        // Iterate through children of Track_List_DisplayViewportContent to find the matching GameObject
+        foreach (Transform child in Track_List_DisplayViewportContent)
+        {
+            var titleTextTransform = child.Find(titleTextPath);
+            var artistTextTransform = child.Find(artistTextPath);
+            var albumTextTransform = child.Find(albumTextPath);
+            var durationTextTransform = child.Find(durationTextPath);
+
+            if (titleTextTransform != null && artistTextTransform != null && albumTextTransform != null && durationTextTransform != null)
+            {
+                var titleText = titleTextTransform.GetComponent<Text>();
+                var artistText = artistTextTransform.GetComponent<Text>();
+                var albumText = albumTextTransform.GetComponent<Text>();
+                var durationText = durationTextTransform.GetComponent<Text>();
+
+                if (titleText != null && titleText.text == trackTitleIdentifier && artistText != null && artistText.text == trackArtistIdentifier && albumText != null && albumText.text == trackAlbumIdentifier && durationText != null && durationText.text == trackDurationIdentifier)
+                {
+                    trackDisplayToRemove = child;
+                    break;
+                }
+            }
+            yield return null;  // Yield to distribute the workload over multiple frames
+        }*/
+
+        // Destroy the TrackDisplay GameObject if found
+
     }
 }

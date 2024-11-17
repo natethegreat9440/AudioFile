@@ -21,28 +21,28 @@ namespace AudioFile.View
     /// ExecuteAction(), MenuItem_Click(). Has default ToString() override and IsEnabled() and SetEnabled(bool enabled) implementations.
     /// </remarks>
     /// </summary>
-    public abstract class MenuComponent //TODO: Implement MonoBehaviour and refactor UIFileMenuSetup and how it makes new Menu/Menu Items
+    public abstract class MenuComponent : MonoBehaviour
     {
-        public Button button;
-        public Text text;
+        public Button Button;
+        public Text Text;
+
         protected string Name { get; set; }
         protected string Description { get; set; }
         protected bool _enabled = true;
 
-        public MenuComponent(Button button, string description)
+        private void Awake()
         {
-            this.button = button;
-            if (button != null)
+            if (Button != null)
             {
-                Name = button.GetComponentInChildren<Text>().text;
-                text = button.GetComponentInChildren<Text>();
+                Text = Button.GetComponentInChildren<Text>();
             }
-            Description = description;
         }
+
         public override string ToString()
         {
             return $"{Name} - {Description}";
         }
+
         public virtual void Add(MenuComponent menuComponent)
         {
             throw new NotImplementedException();
@@ -60,8 +60,7 @@ namespace AudioFile.View
 
         protected bool IsEnabled()
         {
-            if (_enabled == true) return true;
-            else return false;
+            return _enabled;
         }
 
         protected void SetEnabled(bool enabled)
@@ -85,12 +84,9 @@ namespace AudioFile.View
             throw new NotImplementedException();
         }
 
-        //Keeping this redundant method (may be redundant with ExecuteAction()) in for now in case we want to be able to add functionality later in order to 
-        //navigate the Menu's and execute commands with just the keyboard
         public virtual void MenuItem_Click()
         {
             throw new NotImplementedException();
         }
-
     }
 }

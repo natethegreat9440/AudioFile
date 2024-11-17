@@ -30,44 +30,20 @@ namespace AudioFile.View
         List<MenuComponent> _menuComponents = new List<MenuComponent>();
         bool _alphaMenu;
 
-        public Menu(Button button, string description, bool alphaMenu = false) : base(button, description)
+        public Menu Initialize(Button button, string label, string description, bool alphaMenu = false)
         {
+            base.Button = button;
+            base.Text = Button.GetComponentInChildren<Text>();
+            base.Description = description;
+            base.Name = label;
+
             _alphaMenu = alphaMenu;
 
-            // Enable Raycast Target for hover detection
-            text.raycastTarget = true;
+            base.Text.text = " " + label; //Extra space as buffer as I don't like how close the text starts to the left button border by default
 
-            InitializePointerHandling();
-        }
+            base.Text.raycastTarget = true;
 
-        public void InitializePointerHandling()
-        {
-            // Attach the event handling to the Text GameObject
-            EventTrigger trigger = text.gameObject.GetComponent<EventTrigger>();
-            if (trigger == null)
-            {
-                trigger = text.gameObject.AddComponent<EventTrigger>();
-            }
-
-            // Add OnPointerEnter event
-            EventTrigger.Entry pointerEnterEntry = new EventTrigger.Entry
-            {
-                eventID = EventTriggerType.PointerEnter
-            };
-
-            pointerEnterEntry.callback.AddListener((eventData) =>
-            { ((IPointerEnterHandler)this).OnPointerEnter((PointerEventData)eventData); });
-            trigger.triggers.Add(pointerEnterEntry);
-
-            // Add OnPointerExit event
-            EventTrigger.Entry pointerExitEntry = new EventTrigger.Entry
-            {
-                eventID = EventTriggerType.PointerExit
-            };
-
-            pointerExitEntry.callback.AddListener((eventData) =>
-            { ((IPointerExitHandler)this).OnPointerExit((PointerEventData)eventData); });
-            trigger.triggers.Add(pointerExitEntry);
+            return this;
         }
 
         public override void Add(MenuComponent menuComponent) => _menuComponents.Add(menuComponent);
@@ -78,30 +54,27 @@ namespace AudioFile.View
         {
             if (_enabled == true)
             {
-                button.gameObject.SetActive(true);
+                Button.gameObject.SetActive(true);
 
                 for (int i = 0; i < this._menuComponents.Count; i++)
                 {
                     MenuComponent child = this.GetChild(i);
-                    child.button.gameObject.SetActive(true);
+                    child.Button.gameObject.SetActive(true);
                     Debug.Log($"{child} was displayed");
                     //child.Display(); Don't call this or else you will get full recursion
                 }
             }
-
         }
 
         public override void Hide() // Hide method to undisplay the menu components (called on OnPointerExit)
         {
-
             for (int i = 0; i < this._menuComponents.Count; i++)
             {
                 MenuComponent child = this.GetChild(i);
-                child.button.gameObject.SetActive(false);
+                child.Button.gameObject.SetActive(false);
                 Debug.Log($"{child} was hidden");
                 //child.Hide(); Don't call this or else you will get full recursion
             }
-
         }
 
         //IMPORTANT NOTE: OnPointerEnter and OnPointerExit will not work as expected unless anchors and pivot for Menus are centered 
@@ -117,7 +90,7 @@ namespace AudioFile.View
         {
             Debug.Log("Pointer Exited: " + this.Name);
 
-            RectTransform rectTransform = button.GetComponent<RectTransform>();
+            RectTransform rectTransform = Button.GetComponent<RectTransform>();
 
             Vector2 localMousePosition = rectTransform.InverseTransformPoint(eventData.position);
             Rect rect = rectTransform.rect;
@@ -127,7 +100,7 @@ namespace AudioFile.View
             {
                 Hide();
                 //This commented out block is only for debugging. Keep here if needed for future use.
-                /*if (localMousePosition.y > rect.yMax)
+                if (localMousePosition.y > rect.yMax)
                 {
                     Debug.Log("Pointer Exited from the top boundary: " + this.Name);
                     Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMax: {rect.yMax} localMousePosition.y > rect.yMax??");
@@ -141,7 +114,7 @@ namespace AudioFile.View
                 {
                     Debug.Log("Something went wrong: " + this.Name);
                     Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMin: {rect.yMin} rect.yMax: {rect.yMax}");
-                }*/
+                }
             }
             // Check if mouse is exiting from the sides and top boundaries only
             else if ((localMousePosition.x < rect.xMin || localMousePosition.x > rect.xMax || localMousePosition.y > rect.yMax) && _alphaMenu)
@@ -152,8 +125,8 @@ namespace AudioFile.View
             else
             {
                 //This commented out block is only for debugging.Keep here if needed for future use.
-                //Debug.Log("Something went really wrong: " + this.Name);
-                //Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMin: {rect.yMin} rect.yMax: {rect.yMax}");
+                Debug.Log("Something went really wrong: " + this.Name);
+                Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMin: {rect.yMin} rect.yMax: {rect.yMax}");
             }
         }
     }
