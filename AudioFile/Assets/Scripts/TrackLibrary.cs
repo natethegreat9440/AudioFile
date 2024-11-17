@@ -82,15 +82,7 @@ namespace AudioFile.Model
             catch (Exception ex)
             {
                 Debug.Log($"Track skipped: {ex.GetType()} - {ex.Message}");
-                if (trackList[currentTrackIndex] != null)
-                {
-                    ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSkipped", trackList[currentTrackIndex]); //Passes the track name if possible when skipped
-                }
-                else
-                {
-                    ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSkipped", null); //Otherwise passes null (most likely to end up here I would imagine)
-                }
-                NextItem();
+                Skip(currentTrackIndex);
             }
         }
 
@@ -105,18 +97,19 @@ namespace AudioFile.Model
             currentTrackIndex = index;
             trackList[currentTrackIndex].Stop();
         }
-        /*public override void Skip(int index) //Commenting this out for now as it seems to me this Skip() logic could just be implemented into the Play() method directly 
+        public override void Skip(int index) //Commenting this out for now as it seems to me this Skip() logic could just be implemented into the Play() method directly 
         //(and potentially other playback methods, however I'll want to test how Skip logic works inside Play before deciding if I want to add to other methods)
         {
-            try
+            if (trackList[currentTrackIndex] != null)
             {
-                trackList[currentTrackIndex].Play();
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSkipped", trackList[currentTrackIndex]); //Passes the track name if possible when skipped
             }
-            catch (Exception)
+            else
             {
-                NextItem();
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSkipped", null); //Otherwise passes null (most likely to end up here I would imagine)
             }
-        }*/
+            NextItem();
+        }
 
         public override void NextItem()
         {

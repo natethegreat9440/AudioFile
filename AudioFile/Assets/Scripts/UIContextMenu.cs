@@ -77,8 +77,11 @@ namespace AudioFile.View
             Button removeTrackButton = ContextMenuGameObject.transform.Find("Remove_Button").GetComponent<Button>();
             Button testPlaylistButton = ContextMenuGameObject.transform.Find("Test_Playlist_Button").GetComponent<Button>();
 
+
+            //Last argument in initialize is for a +1 correction factor to offset inconsistencies on how mouse position is tracked against OnPointerExit events
+            //See comments in Menu code for more details. It is recommended for each Menu object added to the context menu to set optional parameter correctYMin to +1 to offset issues and get proper behavior
             Menu addToPlaylistMenu = addToPlaylistButton.AddComponent<Menu>();
-            addToPlaylistMenu = addToPlaylistMenu.Initialize(addToPlaylistButton, "Add to Playlist...", "Add to Playlist Menu");
+            addToPlaylistMenu = addToPlaylistMenu.Initialize(addToPlaylistButton, "Add to Playlist...", "Add to Playlist Menu", false, 0f, 1f);
 
             //TODO: Add a loop to add all Playlist Folders (sub menus) and Playlists names (Menu Items) to the addToPlaylistMenu
 
@@ -99,7 +102,7 @@ namespace AudioFile.View
             {
                 addToPlaylistMenu,
                 removeTrackMenuItem,
-                testPlaylistMenuItem
+                testPlaylistMenuItem,
             };
         }
 

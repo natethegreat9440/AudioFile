@@ -30,7 +30,14 @@ namespace AudioFile.View
         List<MenuComponent> _menuComponents = new List<MenuComponent>();
         bool _alphaMenu;
 
-        public Menu Initialize(Button button, string label, string description, bool alphaMenu = false)
+        //These correction factors are used to correct for IPointerExitHandler being inconsistent about logging the proper mouse position once an OnPointerExit event is fired
+        //which can cause bugs with how Hide() is called once the mouse has exited from either the yMax or ymin position
+        //Use them on a case by case basis after using the debug statements in OnPointerExit to see what the correction factors should be
+        //Context menu's seem to need a +1f correction factor to correct yMin
+        float _correctYMax; 
+        float _correctYMin;
+
+        public Menu Initialize(Button button, string label, string description, bool alphaMenu = false, float correctYMax = 0f, float correctYMin = 0f)
         {
             base.Button = button;
             base.Text = Button.GetComponentInChildren<Text>();
@@ -38,6 +45,9 @@ namespace AudioFile.View
             base.Name = label;
 
             _alphaMenu = alphaMenu;
+
+            _correctYMax = correctYMax;
+            _correctYMin = correctYMin;
 
             base.Text.text = " " + label; //Extra space as buffer as I don't like how close the text starts to the left button border by default
 
@@ -96,16 +106,17 @@ namespace AudioFile.View
             Rect rect = rectTransform.rect;
 
             // Check if mouse is exiting from the bottom and top boundaries only
-            if ((localMousePosition.y > rect.yMax || localMousePosition.y < rect.yMin) && !_alphaMenu)
+            if ((localMousePosition.y > rect.yMax + _correctYMax || localMousePosition.y < rect.yMin + _correctYMin) && !_alphaMenu)
             {
                 Hide();
                 //This commented out block is only for debugging. Keep here if needed for future use.
-                if (localMousePosition.y > rect.yMax)
+                if (localMousePosition.y > rect.yMax + _correctYMax)
                 {
                     Debug.Log("Pointer Exited from the top boundary: " + this.Name);
                     Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMax: {rect.yMax} localMousePosition.y > rect.yMax??");
+
                 }
-                else if (localMousePosition.y < rect.yMin)
+                else if (localMousePosition.y < rect.yMin + _correctYMin)
                 {
                     Debug.Log("Pointer Exited from the bottom boundary: " + this.Name);
                     Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMin: {rect.yMin} localMousePosition.y < rect.yMin??");
@@ -117,7 +128,7 @@ namespace AudioFile.View
                 }
             }
             // Check if mouse is exiting from the sides and top boundaries only
-            else if ((localMousePosition.x < rect.xMin || localMousePosition.x > rect.xMax || localMousePosition.y > rect.yMax) && _alphaMenu)
+            else if ((localMousePosition.x < rect.xMin || localMousePosition.x > rect.xMax || localMousePosition.y > rect.yMax + _correctYMax) && _alphaMenu)
             {
                 Debug.Log("Pointer Exited from the top/left/right boundary: " + this.Name);
                 Hide();

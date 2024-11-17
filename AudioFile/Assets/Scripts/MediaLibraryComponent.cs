@@ -86,10 +86,10 @@ namespace AudioFile.Model
         }
         #endregion
         #region Playback methods for TrackLibrary
-        /*public virtual void Skip(int index = 0) //Skipping functionality integrated into Play() method for TrackLibrary for now. May not need an actual independent Skip method
+        public virtual void Skip(int index = 0) //Skipping functionality integrated into Play() method for TrackLibrary for now. May not need an actual independent Skip method
         {
             throw new NotImplementedException();
-        }*/
+        }
 
         public virtual void NextItem() //Used as either next song or next visualizer
         {
