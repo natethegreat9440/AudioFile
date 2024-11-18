@@ -110,7 +110,7 @@ namespace AudioFile.Model
             return string.Format("{0:0}:{1:00}", minutes, secs);
         }
 
-        public override void Play(int index = -1)
+        public override void Play(string trackDisplayID = "")
         {
             //_playableGraph.Play(); Doesn't affect playback. This kind of object just offers more advanced 
             // functionality than AudioSource does, but for now it might be overkill
@@ -130,7 +130,7 @@ namespace AudioFile.Model
             IsPaused = false;
         }
 
-        public override void Pause(int index = -1)
+        public override void Pause(string trackDisplayID="")
         {
             //Pausing does not affect which track is known as the current track by the PlaybackController
             //_playableGraph.Stop();
@@ -139,7 +139,7 @@ namespace AudioFile.Model
             IsPaused = true;
             IsPlaying = false;
         }
-        public override void Stop(int index = -1)
+        public override void Stop(string trackDisplayID = "")
         {
             //Stopping a PlayableGraph essentially just pauses it. Need to manually set to zero
             //using AudioPlayable.SetTime(0.0) if using PlayableGraph

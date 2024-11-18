@@ -70,11 +70,32 @@ namespace AudioFile.Model
         }
         public int GetTrackIndex(Track track)
         {
+            Debug.Log($"Track index = {trackList.IndexOf(track)}");
             return trackList.IndexOf(track);
         }
-        public override void Play(int index)
+        public Track GetTrackAtID(string trackDisplayID)
         {
-            currentTrackIndex = index;
+            return trackList
+                .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
+                .FirstOrDefault();
+        }
+
+        private int GetTrackIndexAtID(string trackDisplayID)
+        {
+            Debug.Log($"trackDisplayID passed = {trackDisplayID}. TrackList[1] TrackID = {trackList[1].TrackProperties.GetProperty("TrackID")}");
+            return trackList
+                .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
+                .Select(track => trackList.IndexOf(track))
+                .FirstOrDefault();
+        }
+
+        public string GetTrackID(Track track)
+        {
+            return track.TrackProperties.GetProperty("TrackID");
+        }
+        public override void Play(string trackDisplayID)
+        {
+            currentTrackIndex = GetTrackIndexAtID(trackDisplayID);
             try
             {
                 trackList[currentTrackIndex].Play();
@@ -86,15 +107,15 @@ namespace AudioFile.Model
             }
         }
 
-        public override void Pause(int index)
+        public override void Pause(string trackDisplayID)
         {
-            currentTrackIndex = index;
+            currentTrackIndex = GetTrackIndexAtID(trackDisplayID);
             trackList[currentTrackIndex].Pause();
         }
 
-        public override void Stop(int index)
+        public override void Stop(string trackDisplayID)
         {
-            currentTrackIndex = index;
+            currentTrackIndex = GetTrackIndexAtID(trackDisplayID);
             trackList[currentTrackIndex].Stop();
         }
         public override void Skip(int index) //Commenting this out for now as it seems to me this Skip() logic could just be implemented into the Play() method directly 
@@ -113,6 +134,8 @@ namespace AudioFile.Model
 
         public override void NextItem()
         {
+            currentTrackIndex = PlaybackController.Instance.GetCurrentTrackIndex();
+
             if (currentTrackIndex < trackList.Count - 1)
             {
                 trackList[currentTrackIndex].Stop();
@@ -131,6 +154,9 @@ namespace AudioFile.Model
 
         public override void PreviousItem()
         {
+            currentTrackIndex = PlaybackController.Instance.GetCurrentTrackIndex();
+            Debug.Log($"Current track index = {PlaybackController.Instance.GetCurrentTrackIndex()}");
+
             if (currentTrackIndex > 0)
             {
                 trackList[currentTrackIndex].Stop();
@@ -148,7 +174,7 @@ namespace AudioFile.Model
             }
         }
         #endregion
-        #region Model control methods
+            #region Model control methods
         public override void AddItem(MediaLibraryComponent newTrack)
         {
             
@@ -164,12 +190,7 @@ namespace AudioFile.Model
             }
 
         }
-        public Track GetTrackAtID(string trackDisplayID)
-        {
-            return trackList
-                .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
-                .FirstOrDefault();
-        }
+
         public override void RemoveItem(string trackDisplayID)
         {
             var trackToRemove = GetTrackAtID(trackDisplayID);

@@ -63,15 +63,15 @@ namespace AudioFile.Model
 
         #endregion
         #region Playback methods for tracks/visualizers
-        public virtual void Play(int index = 0)
+        public virtual void Play(string trackDisplayID)
         {
             throw new NotImplementedException();
         }
-        public virtual void Pause(int index = 0)
+        public virtual void Pause(string trackDisplayID)
         {
             throw new NotImplementedException();
         }
-        public virtual void Stop(int index = 0)
+        public virtual void Stop(string trackDisplayID)
         {
             throw new NotImplementedException();
         }

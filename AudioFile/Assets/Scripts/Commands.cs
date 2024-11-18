@@ -35,11 +35,14 @@ namespace AudioFile.View
     public class PlayCommand : ICommand
     {
         public bool IsUndo { get; set; } = false;
-        public int Index { get; }
+        //public int Index { get; }
+        public string TrackDisplayID { get; }
 
-        public PlayCommand(int index)
+
+        public PlayCommand(string trackDisplayID)
         {
-            Index = index;
+            TrackDisplayID = trackDisplayID;
+            //Index = index;
         }
 
         public void Execute()
@@ -59,11 +62,15 @@ namespace AudioFile.View
     public class PauseCommand : ICommand
     {
         public bool IsUndo { get; set; } = false;
-        public int Index { get; }
+        //public int Index { get; }
 
-        public PauseCommand(int index)
+        public string TrackDisplayID { get; }
+
+
+        public PauseCommand(string trackDisplayID)
         {
-            Index = index;
+            TrackDisplayID = trackDisplayID;
+            //Index = index;
         }
 
         public void Execute()
@@ -84,11 +91,15 @@ namespace AudioFile.View
     {
         public bool IsUndo { get; set; } = false;
 
-        public int Index { get; }
+        //public int Index { get; }
 
-        public StopCommand(int index)
+        public string TrackDisplayID { get; }
+
+
+        public StopCommand(string trackDisplayID)
         {
-            Index = index;
+            TrackDisplayID = trackDisplayID;
+            //Index = index;
         }
 
         public void Execute()

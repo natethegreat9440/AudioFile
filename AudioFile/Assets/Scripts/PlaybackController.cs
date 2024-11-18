@@ -76,22 +76,28 @@ namespace AudioFile.Controller
             return CurrentTrack != null ? Model.TrackLibrary.Instance.GetTrackIndex(CurrentTrack) : -1;
         }
 
-        public void HandlePlayPauseButton(int trackDisplayIndex)
+        public string GetCurrentTrackID()
+        {
+            return CurrentTrack != null ? Model.TrackLibrary.Instance.GetTrackID(CurrentTrack) : "";
+        }
+
+
+        public void HandlePlayPauseButton(string trackDisplayID)
         {
             if (CurrentTrack == null)
             {
                 // Play the selected track
-                HandleRequest(new PlayCommand(trackDisplayIndex));
+                HandleRequest(new PlayCommand(trackDisplayID));
             }
-            else if (CurrentTrack != null && GetCurrentTrackIndex() == trackDisplayIndex && CurrentTrack.IsPlaying)
+            else if (CurrentTrack != null && GetCurrentTrackID() == trackDisplayID && CurrentTrack.IsPlaying)
             {
                 // Pause the current track
-                HandleRequest(new PauseCommand(trackDisplayIndex));
+                HandleRequest(new PauseCommand(trackDisplayID));
             }
             else
             {
                 // Play the selected track
-                HandleRequest(new PlayCommand(trackDisplayIndex));
+                HandleRequest(new PlayCommand(trackDisplayID));
             }
         }
         public void HandleRequest(object request, bool isUndo = false)
@@ -105,23 +111,23 @@ namespace AudioFile.Controller
                 {
                     "PlayCommand" => () =>
                     {
-                        int currentTrackIndex = GetCurrentTrackIndex();
+                        string currentTrackID = GetCurrentTrackID();
                         PlayCommand playCommand = request as PlayCommand;
-                        if (CurrentTrack != null && currentTrackIndex != playCommand.Index)
+                        if (CurrentTrack != null && currentTrackID != playCommand.TrackDisplayID)
                         {
-                            Stop(currentTrackIndex);
+                            Stop(currentTrackID);
                         }
-                        Play(playCommand.Index);
+                        Play(playCommand.TrackDisplayID);
                     },
                     "PauseCommand" => () =>
                     {
                         PauseCommand pauseCommand = request as PauseCommand;
-                        Pause(pauseCommand.Index);
+                        Pause(pauseCommand.TrackDisplayID);
                     },
                     "StopCommand" => () =>
                     {
                         StopCommand stopCommand = request as StopCommand;
-                        Stop(stopCommand.Index);
+                        Stop(stopCommand.TrackDisplayID);
                     },
                     "NextItemCommand" => NextItem,
                     "PreviousItemCommand" => PreviousItem,
@@ -138,12 +144,12 @@ namespace AudioFile.Controller
                     "PlayCommand" => () =>
                     {
                         PlayCommand undoPlayCommand = request as PlayCommand;
-                        Pause(undoPlayCommand.Index);
+                        Pause(undoPlayCommand.TrackDisplayID);
                     },
                     "PauseCommand" => () =>
                     {
                         PauseCommand undoPauseCommand = request as PauseCommand;
-                        Play(undoPauseCommand.Index);
+                        Play(undoPauseCommand.TrackDisplayID);
                     },
                     "NextItemCommand" => PreviousItem,
                     "PreviousItemCommand" => NextItem,
@@ -154,6 +160,7 @@ namespace AudioFile.Controller
                 action();
             }
         }
+
 
         public void Dispose()
         {
@@ -175,20 +182,20 @@ namespace AudioFile.Controller
             
         }
 
-        public void Play(int index)
+        public void Play(string trackDisplayID)
         {
-            SetCurrentTrack(Model.TrackLibrary.Instance.GetTrackAtIndex(index));
-            TrackLibrary.Instance.Play(index);
+            SetCurrentTrack(TrackLibrary.Instance.GetTrackAtID(trackDisplayID));
+            TrackLibrary.Instance.Play(trackDisplayID);
         }
 
-        public void Pause(int index)
+        public void Pause(string trackDisplayID)
         {
-            TrackLibrary.Instance.Pause(index);
+            TrackLibrary.Instance.Pause(trackDisplayID);
         }
 
-        public void Stop(int index)
+        public void Stop(string trackDisplayID)
         {
-            TrackLibrary.Instance.Stop(index);
+            TrackLibrary.Instance.Stop(trackDisplayID);
         }
 
         public void NextItem()

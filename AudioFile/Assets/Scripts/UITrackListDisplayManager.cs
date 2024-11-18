@@ -97,12 +97,12 @@ namespace AudioFile.View
         private void OnTrackDisplayDoubleClick(UITrackDisplay trackDisplay, string buttonType)
         {
             Debug.Log("Double-click detected on " + buttonType);
-            int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay.TrackDisplayGameObject);
+            string trackDisplayID = trackDisplay.TrackDisplayID;
 
             Action action = buttonType switch
             {
-                "Duration" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex)),
-                "Title" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayIndex)),
+                "Duration" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayID)),
+                "Title" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayID)),
                 /*"Artist" => () => /*Filter by artist logic here,
                 "Album" => () => /*Filter by album logic here, */
                 _ => () => Debug.LogWarning("Unknown button type double-clicked.")
@@ -115,9 +115,9 @@ namespace AudioFile.View
         {
             DeselectAllTrackDisplays();
 
-            int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
+            string trackDisplayID = GetTrackDisplayID(trackDisplay);
             trackDisplay.GetComponent<Image>().color = Color.blue;
-            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayIndex);
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayID);
         }
 
         private void DeselectAllTrackDisplays()
@@ -131,8 +131,12 @@ namespace AudioFile.View
                 }
             }
         }
-
-        public int GetTrackDisplayIndex(GameObject trackDisplay)
+        public string GetTrackDisplayID(GameObject trackDisplay)
+        {
+            string trackDisplayID = trackDisplay.GetComponent<UITrackDisplay>().TrackDisplayID;
+            return trackDisplayID;
+        }
+        public int GetTrackDisplayIndex(GameObject trackDisplay) 
         {
             Transform contentTransform = Track_List_DisplayViewportContent;
 
@@ -195,7 +199,6 @@ namespace AudioFile.View
                 //Track Display is removed
                 //trackDisplayToRemove.GetComponent<UITrackDisplay>().DestroyContextMenu();
                 var trackDisplayGameObject = trackDisplayToRemove.gameObject;
-                //UIContextMenu.Instance.DestroyContextMenu();
                 activeContextMenu.DestroyContextMenu();
                 Destroy(trackDisplayToRemove.gameObject);
                 yield break;

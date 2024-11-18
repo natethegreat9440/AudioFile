@@ -27,7 +27,8 @@ namespace AudioFile.Model
             {"Album", "Unknown Album"},
             {"Duration", "--:--"},
             {"BPM", "--"},
-            {"Path", "Unknown Path"}
+            {"Path", "Unknown Path"},
+            {"TrackID", "Error: No Track ID" }
         };
 
         private readonly HashSet<string> cantRemoveProperties = new HashSet<string>()
@@ -41,6 +42,8 @@ namespace AudioFile.Model
             {
                 return trackProperties[key];
             }
+            else { Debug.Log($"Property: {key} does not exist."); }
+
             return null;
         }
 
@@ -50,6 +53,8 @@ namespace AudioFile.Model
             {
                 trackProperties[key] = value;
             }
+            else { Debug.Log($"Property: {key} does not exist."); }
+
         }
 
         public void AddProperty(string key, string value)

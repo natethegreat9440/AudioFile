@@ -27,7 +27,7 @@ namespace AudioFile.View
         public void Start()
         {
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackFrameUpdate", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackFrameUpdate", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackStopped", this);
         }
         //TODO: Create an onClick method for anywhere in the slider area that will seek the time of the track based on where the user clicks
         //This class should create a Seek command and if the current track is playing (Playback controller will check this) then the Seek command will 
