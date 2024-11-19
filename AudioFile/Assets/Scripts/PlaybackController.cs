@@ -35,7 +35,7 @@ namespace AudioFile.Controller
 
         public static PlaybackController Instance => _instance.Value;
 
-        public Track CurrentTrack { get; private set; }
+        public Track CurrentTrack { get; private set; } = null;
 
         private static PlaybackController CreateSingleton()
         {
@@ -46,13 +46,14 @@ namespace AudioFile.Controller
             return singletonObject.AddComponent<PlaybackController>();
         }
 
-        public void Awake()
+        /*public void Awake()
         {
             DontDestroyOnLoad(this.gameObject);
-        }
+        }*/
 
         public void Start()
         {
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSelected", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackIsDone", this);
 
         }
@@ -209,9 +210,19 @@ namespace AudioFile.Controller
 
         public void AudioFileUpdate(string observationType, object data)
         {
+            Debug.Log(observationType);
             Action action = observationType switch
             {
                 "OnCurrentTrackIsDone" => NextItem,
+                "OnTrackSelected" => () =>
+                {
+                    Debug.Log($"CurrentTrack = {CurrentTrack}");
+                    if (CurrentTrack == null)
+                    {
+                        Debug.Log("Setting current track to: " + (string)data);
+                        SetCurrentTrack(TrackLibrary.Instance.GetTrackAtID((string)data));
+                    }
+                },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };

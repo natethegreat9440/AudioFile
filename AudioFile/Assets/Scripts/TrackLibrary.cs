@@ -174,7 +174,7 @@ namespace AudioFile.Model
             }
         }
         #endregion
-            #region Model control methods
+        #region Model control methods
         public override void AddItem(MediaLibraryComponent newTrack)
         {
             if (newTrack is Track track)
@@ -195,6 +195,11 @@ namespace AudioFile.Model
 
             var trackIndex = GetTrackIndex(trackToRemove);
             trackList[trackIndex].Stop();
+
+            Debug.Log($"trackToRemove = {PlaybackController.Instance.CurrentTrack}");
+
+            PlaybackController.Instance.CurrentTrack.TrackProperties.GetProperty("TrackID");
+            currentTrackIndex = GetTrackIndexAtID(trackDisplayID);
 
             //Move the current track to the previous track
             currentTrackIndex--;

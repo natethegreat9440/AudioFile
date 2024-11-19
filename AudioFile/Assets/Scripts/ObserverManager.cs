@@ -17,7 +17,7 @@ namespace AudioFile.ObserverManager
     /// <remarks>
     /// ObserverManager utilizes an Observer design pattern and encapsulates all Observation Types into a single Dictionary object to simplify and cut down on the 
     /// amound of code needed to add and remove observers for different events (as in a typical Observer design pattern).
-    /// Events are now ObservationType strings passed to the methods in ObserverManager.
+    /// Events are now ObservationType strings passed to the methods in ObserverManager. IMPORTANT NOTE: Initialize singletons that register as observers in SetupController.
     /// Members: NotifyObservers(), RegisterObserver(), RemoveObserver(), CheckObservers(). Latter two are used dynamically at runtime.
     /// Registering an object as an observer is as simple as calling RegisterObserver() in a Start() method (typically) and implementing IAudioFileObserver.
     /// Subjects notifying Observers is as simple as calling NotifyObservers() and passing the observation type as a string.
@@ -26,6 +26,7 @@ namespace AudioFile.ObserverManager
     /// (and sometimes Controllers can be both) in accordance with an MVC design pattern. For primarily debugging purposes a CheckObservers() method is available to see which observers are registered to a given observation type.
     /// </remarks>
     /// <see cref="IAudioFileObserver"/>
+    /// <see also cref="ObserverManager"/>
     /// </summary>
 
     public interface IAudioFileObserver
@@ -112,7 +113,7 @@ namespace AudioFile.ObserverManager
                 List<IAudioFileObserver> observerList = observers[observationType];
                 foreach (var observer in observerList)
                 {
-                    Debug.Log(observer.ToString());
+                    Debug.Log(observationType + " has " + observer.ToString());
                 }
             }
             else

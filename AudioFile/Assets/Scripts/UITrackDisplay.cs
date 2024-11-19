@@ -34,8 +34,9 @@ namespace AudioFile.View
 
         public UIContextMenu contextMenuInstance { get; private set; }
 
-
         public string TrackDisplayID { get; private set; }
+
+        public bool IsSelected { get; set; } = false; //TrackListDisplayManager gets and sets these for individual instances
 
         private void Awake()
         {
@@ -108,7 +109,7 @@ namespace AudioFile.View
         {
             Debug.Log("Pointer click detected");
             // Check for right-click
-            if (eventData.button == PointerEventData.InputButton.Right)
+            if (eventData.button == PointerEventData.InputButton.Right && IsSelected)
             {
 
                 Debug.Log($"Right-click detected on {transform.Find(UITrackListDisplayManager.Instance.titleTextPath).GetComponent<Text>()} - {transform.Find(UITrackListDisplayManager.Instance.titleTextPath).GetComponent<Text>()}");

@@ -21,6 +21,7 @@ namespace AudioFile.View
     /// </summary>
     public class UITrackListDisplayManager : MonoBehaviour, IAudioFileObserver
     {
+        //Make sure in the Scroll Rect component in the Inspector for the Track_List_Display Game Object the Movement type is set to Clamped otherwise content can do some weird things
         private static readonly Lazy<UITrackListDisplayManager> _instance = new Lazy<UITrackListDisplayManager>(CreateSingleton);
 
         // Private constructor to prevent instantiation
@@ -61,6 +62,8 @@ namespace AudioFile.View
         public readonly string durationTextPath = "UI_Track_Duration_Button/UI_Track_Duration_Button_Text";
 
         public UIContextMenu activeContextMenu;
+
+        //public bool HasSelection { get; private set; } = false;
 
         public void Start()
         {
@@ -114,19 +117,26 @@ namespace AudioFile.View
         private void TrackSelected(GameObject trackDisplay)
         {
             DeselectAllTrackDisplays();
-
+            //HasSelection = true;
             string trackDisplayID = GetTrackDisplayID(trackDisplay);
             trackDisplay.GetComponent<Image>().color = Color.blue;
+            trackDisplay.GetComponent<UITrackDisplay>().IsSelected = true;
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayID);
+            Debug.Log("Did observers get notified?");
+            ObserverManager.ObserverManager.Instance.CheckObservers("OnTrackSelected");
+            ObserverManager.ObserverManager.Instance.CheckObservers("OnCurrentTrackIsDone");
+
         }
 
         private void DeselectAllTrackDisplays()
         {
+            //HasSelection = false;
             foreach (Transform child in Track_List_DisplayViewportContent)
             {
                 var trackDisplay = child.GetComponent<Image>();
                 if (trackDisplay != null)
                 {
+                    child.GetComponent<UITrackDisplay>().IsSelected = false;
                     trackDisplay.color = Color.white;
                 }
             }
@@ -134,6 +144,7 @@ namespace AudioFile.View
         public string GetTrackDisplayID(GameObject trackDisplay)
         {
             string trackDisplayID = trackDisplay.GetComponent<UITrackDisplay>().TrackDisplayID;
+            Debug.Log($"Getting trackDisplayID = {trackDisplayID}");
             return trackDisplayID;
         }
         public int GetTrackDisplayIndex(GameObject trackDisplay) 
