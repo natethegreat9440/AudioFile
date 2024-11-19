@@ -150,6 +150,23 @@ namespace AudioFile.View
             return -1;
         }
 
+        private Transform GetTrackDisplay(string providedTrackID)
+        {
+            Transform trackDisplayTransform = null;
+
+            foreach (Transform child in Track_List_DisplayViewportContent)
+            {
+                var trackDisplayID = child.GetComponent<UITrackDisplay>().TrackDisplayID;
+                if (providedTrackID == trackDisplayID)
+                {
+                    trackDisplayTransform = child;
+                    break;
+                }
+            }
+
+            return trackDisplayTransform;
+        }
+
         private IEnumerator AddTrackOnUpdate(object data)
         {
             if (data is Track providedTrack && UI_Track_DisplayPrefab != null && Track_List_DisplayViewportContent != null)
@@ -180,39 +197,38 @@ namespace AudioFile.View
             }
 
             var providedTrackID = providedTrack.TrackProperties.GetProperty("TrackID");
-            Transform trackDisplayToRemove = null;
-            DeselectAllTrackDisplays();
 
-            foreach (Transform child in Track_List_DisplayViewportContent)
-            {
-                var trackDisplayID = child.GetComponent<UITrackDisplay>().TrackDisplayID;
-                if (providedTrackID == trackDisplayID)
-                {
-                    trackDisplayToRemove = child;
-                    break;
-                }
-            }
+            Transform trackDisplayTransformToRemove = GetTrackDisplay(providedTrackID);
 
-            if (trackDisplayToRemove != null) //Destroy the TrackDisplay GameObject once found
+            if (trackDisplayTransformToRemove != null) //Destroy the TrackDisplay GameObject once found
             {
                 //Call the TrackDisplay's DestroyContext Menu method first in case there is an open Context Menu when the
                 //Track Display is removed
                 //trackDisplayToRemove.GetComponent<UITrackDisplay>().DestroyContextMenu();
-                var trackDisplayGameObject = trackDisplayToRemove.gameObject;
+                var trackDisplayGameObject = trackDisplayTransformToRemove.gameObject;
                 activeContextMenu.DestroyContextMenu();
-                Destroy(trackDisplayToRemove.gameObject);
+                Destroy(trackDisplayTransformToRemove.gameObject);
                 yield break;
             }
 
             yield break;
         }
 
+
+
         public void AudioFileUpdate(string observationType, object data)
         {
             Action action = observationType switch
             {
                 "OnTrackAdded" => () => StartCoroutine(AddTrackOnUpdate(data)),
-                "OnTrackRemoved" => () => StartCoroutine(RemoveTrackOnUpdate(data)),
+                "OnTrackRemoved" => () =>
+                {
+                    //Select the current track ID, which is now the track before the track that was removed
+                    string currentTrackID = PlaybackController.Instance.CurrentTrack.TrackProperties.GetProperty("TrackID");
+                    Transform currentTrackDisplay = GetTrackDisplay(currentTrackID);
+                    TrackSelected(currentTrackDisplay.gameObject);
+                    StartCoroutine(RemoveTrackOnUpdate(data));
+                },
                 "OnCurrentTrackCycled" => () =>
                 {
                     if (data is int currentTrackIndex)
@@ -220,8 +236,7 @@ namespace AudioFile.View
                         GameObject currentTrackDisplay = Track_List_DisplayViewportContent.GetChild(currentTrackIndex).gameObject;
                         TrackSelected(currentTrackDisplay);
                     }
-                }
-                ,
+                },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };

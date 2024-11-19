@@ -70,7 +70,7 @@ namespace AudioFile.Model
         }
         public int GetTrackIndex(Track track)
         {
-            Debug.Log($"Track index = {trackList.IndexOf(track)}");
+            //Debug.Log($"Track index = {trackList.IndexOf(track)}");
             return trackList.IndexOf(track);
         }
         public Track GetTrackAtID(string trackDisplayID)
@@ -82,7 +82,7 @@ namespace AudioFile.Model
 
         private int GetTrackIndexAtID(string trackDisplayID)
         {
-            Debug.Log($"trackDisplayID passed = {trackDisplayID}. TrackList[1] TrackID = {trackList[1].TrackProperties.GetProperty("TrackID")}");
+            Debug.Log($"trackDisplayID passed = {trackDisplayID}.");
             return trackList
                 .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
                 .Select(track => trackList.IndexOf(track))
@@ -177,7 +177,6 @@ namespace AudioFile.Model
             #region Model control methods
         public override void AddItem(MediaLibraryComponent newTrack)
         {
-            
             if (newTrack is Track track)
             {
                 trackList.Add(track);
@@ -188,7 +187,6 @@ namespace AudioFile.Model
             {
                 Debug.LogError("The provided item is not a Track.");
             }
-
         }
 
         public override void RemoveItem(string trackDisplayID)
@@ -198,6 +196,10 @@ namespace AudioFile.Model
             var trackIndex = GetTrackIndex(trackToRemove);
             trackList[trackIndex].Stop();
 
+            //Move the current track to the previous track
+            currentTrackIndex--;
+            PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
+
             trackList.Remove(trackToRemove);
             Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
@@ -205,12 +207,17 @@ namespace AudioFile.Model
 
         public override void RemoveItemAtIndex(int providedIndex)
         {
-            Track removedTrack = trackList[providedIndex];
-            Debug.Log($"Track '{removedTrack}' has been removed from the media library.");
+            var trackToRemove = trackList[providedIndex];
+            Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
+            trackList[providedIndex].Stop();
+
+            //Move the current track to the previous track
+            currentTrackIndex--;
+            PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
 
             trackList.RemoveAt(providedIndex);
-
-            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", removedTrack);
+            Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
         }
         #endregion
     }
