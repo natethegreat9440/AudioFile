@@ -82,7 +82,7 @@ namespace AudioFile.Model
 
         private int GetTrackIndexAtID(string trackDisplayID)
         {
-            Debug.Log($"trackDisplayID passed = {trackDisplayID}.");
+            //Debug.Log($"trackDisplayID passed = {trackDisplayID}.");
             return trackList
                 .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
                 .Select(track => trackList.IndexOf(track))

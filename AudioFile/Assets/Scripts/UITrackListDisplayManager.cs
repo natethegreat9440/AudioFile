@@ -122,9 +122,9 @@ namespace AudioFile.View
             trackDisplay.GetComponent<Image>().color = Color.blue;
             trackDisplay.GetComponent<UITrackDisplay>().IsSelected = true;
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayID);
-            Debug.Log("Did observers get notified?");
-            ObserverManager.ObserverManager.Instance.CheckObservers("OnTrackSelected");
-            ObserverManager.ObserverManager.Instance.CheckObservers("OnCurrentTrackIsDone");
+            //Debug.Log("Did observers get notified?");
+            //ObserverManager.ObserverManager.Instance.CheckObservers("OnTrackSelected");
+            //ObserverManager.ObserverManager.Instance.CheckObservers("OnCurrentTrackIsDone");
 
         }
 
@@ -144,7 +144,7 @@ namespace AudioFile.View
         public string GetTrackDisplayID(GameObject trackDisplay)
         {
             string trackDisplayID = trackDisplay.GetComponent<UITrackDisplay>().TrackDisplayID;
-            Debug.Log($"Getting trackDisplayID = {trackDisplayID}");
+            //Debug.Log($"Getting trackDisplayID = {trackDisplayID}");
             return trackDisplayID;
         }
         public int GetTrackDisplayIndex(GameObject trackDisplay) 

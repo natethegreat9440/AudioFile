@@ -132,6 +132,11 @@ namespace AudioFile.Controller
                     },
                     "NextItemCommand" => NextItem,
                     "PreviousItemCommand" => PreviousItem,
+                    "SeekCommand" => () =>
+                    {
+                        SeekCommand seekCommand = request as SeekCommand;
+                        Seek(seekCommand.NewTime);
+                    },
                     //Add more switch arms here as needed
                     _ => () => Debug.LogWarning($"Unhandled command: {request}")
                 };
@@ -154,6 +159,12 @@ namespace AudioFile.Controller
                     },
                     "NextItemCommand" => PreviousItem,
                     "PreviousItemCommand" => NextItem,
+                    "SeekCommand" => () => 
+                    {
+                        SeekCommand seekCommand = request as SeekCommand;
+                        Seek(seekCommand.PreviousTime);
+                    }
+                    ,
                     //Add more switch arms here as needed
                     _ => () => Debug.LogWarning($"Unhandled undo command: {request}")
                 };
@@ -173,7 +184,7 @@ namespace AudioFile.Controller
             if (track != null)
             {
                 CurrentTrack = track;
-                Debug.Log($"Current track set to: {CurrentTrack}");
+                //Debug.Log($"Current track set to: {CurrentTrack}");
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackChanged", null);
             }
             else
@@ -208,6 +219,15 @@ namespace AudioFile.Controller
             TrackLibrary.Instance.PreviousItem();
         }
 
+        public void Seek(float newTime)
+        {
+            CurrentTrack.SetTime(newTime);
+        }
+
+        public float GetTime()
+        {
+            return CurrentTrack.GetTime();
+        }
         public void AudioFileUpdate(string observationType, object data)
         {
             Debug.Log(observationType);
@@ -216,10 +236,10 @@ namespace AudioFile.Controller
                 "OnCurrentTrackIsDone" => NextItem,
                 "OnTrackSelected" => () =>
                 {
-                    Debug.Log($"CurrentTrack = {CurrentTrack}");
+                    //Debug.Log($"CurrentTrack = {CurrentTrack}");
                     if (CurrentTrack == null)
                     {
-                        Debug.Log("Setting current track to: " + (string)data);
+                        //Debug.Log("Setting current track to: " + (string)data);
                         SetCurrentTrack(TrackLibrary.Instance.GetTrackAtID((string)data));
                     }
                 },

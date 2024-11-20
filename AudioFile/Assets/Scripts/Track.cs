@@ -103,7 +103,9 @@ namespace AudioFile.Model
         }
         #endregion
         #region Playback method implementations
-        string FormatTime(float seconds)
+
+        //Make this a Utilities method
+        public string FormatTime(float seconds)
         {
             int minutes = Mathf.FloorToInt(seconds / 60);
             int secs = Mathf.FloorToInt(seconds % 60);
@@ -155,7 +157,6 @@ namespace AudioFile.Model
 
         }
 
-        // Get or set playback time
         public override float GetDuration()
         {
             return (float)_audioSource.clip.length;
@@ -165,6 +166,15 @@ namespace AudioFile.Model
         {
             //_audioPlayable.SetTime(time);
             _audioSource.time = (float)time;
+            Debug.Log($"Track {this} has been set to {FormatTime(_audioSource.time)}");
+            //_audioSource.Play();
+            IsPlaying = true;
+            IsPaused = false;
+        }
+
+        public float GetTime()
+        {
+            return (float)_audioSource.time;
         }
 
         // Check if the track is done

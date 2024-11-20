@@ -23,12 +23,25 @@ namespace AudioFile.View
     public class UIPlaybackBarManager : MonoBehaviour, IAudioFileObserver //IAudioFileObserver required method AudioFileUpdate(string observationType, object data) is last method in class
     {
         public Slider slider;
-
+        bool isUpdatingFromObservation = false;
         public void Start()
         {
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackFrameUpdate", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackStopped", this);
+
+            slider.onValueChanged.AddListener(SeekPosition);
         }
+
+        private void SeekPosition(float sliderValue) //This method can only be called if the slider is interacted with by the user and not from "OnTrackFrameUpdate"
+        {
+            if (!isUpdatingFromObservation)
+            {
+                float newTime = sliderValue * PlaybackController.Instance.CurrentTrack.GetDuration();
+                float previousTime = PlaybackController.Instance.GetTime();
+                PlaybackController.Instance.HandleRequest(new SeekCommand(previousTime, newTime));
+            }
+        }
+
         //TODO: Create an onClick method for anywhere in the slider area that will seek the time of the track based on where the user clicks
         //This class should create a Seek command and if the current track is playing (Playback controller will check this) then the Seek command will 
         //take the current time based on playback bar position (current time stored for a potential undo command) and take the "seeked time" based on where the user clicked 
@@ -37,8 +50,19 @@ namespace AudioFile.View
         {
             Action action = observationType switch
             {
-                "OnTrackFrameUpdate" => () => slider.value = (float)data,
-                "OnTrackStopped" => () => slider.value = 0,
+                "OnTrackFrameUpdate" => () =>
+                {
+                    isUpdatingFromObservation = true;
+                    slider.value = (float)data;
+                    isUpdatingFromObservation = false;
+                },
+                "OnTrackStopped" => () =>
+                {
+                    isUpdatingFromObservation = true;
+                    slider.value = 0;
+                    isUpdatingFromObservation = false;
+                }
+                ,
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };

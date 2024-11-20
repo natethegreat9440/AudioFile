@@ -87,6 +87,33 @@ namespace AudioFile.View
         }
     }
 
+    public class SeekCommand : ICommand
+    {
+        public bool IsUndo { get; set; } = false; //Seek Command can only be undone if it is at the top of the Command Stack. Undo only exists to in case a track was accidentally seeked by user error
+
+        public float PreviousTime { get; set; }
+
+        public float NewTime { get; set; }
+
+        public SeekCommand(float previousTime, float newTime)
+        {
+            PreviousTime = previousTime;
+            NewTime = newTime;
+        }
+        public void Execute()
+        {
+            Debug.Log("Seek Command executed");
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
+        }
+
+        public void Undo()
+        {
+            Debug.Log("Seek Command undone");
+            IsUndo = true;
+            PlaybackController.Instance.HandleRequest(this, IsUndo);
+        }
+    }
+
     public class StopCommand : ICommand
     {
         public bool IsUndo { get; set; } = false;
