@@ -42,7 +42,8 @@ namespace AudioFile.Controller
 
         public void Start()
         {
-            SetupFileMenu(); //This script also sets up TrackLibraryController
+            TrackLibraryController.Instance.Start();
+            SetupFileMenu();
             var observerManager = ObserverManager.ObserverManager.Instance; //Only assigned to a reference variable here to wake it up for all of it's dependents
             PlaybackController.Instance.Start(); //This needs to be manually called here otherwise it won't register as observer properly until called by a playback function
             var trackLibrary = TrackLibrary.Instance;

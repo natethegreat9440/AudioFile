@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using AudioFile.Controller;
 using AudioFile.Model;
 using AudioFile.ObserverManager;
+//using TagLib.Riff;
 
 namespace AudioFile.View
 {
@@ -70,15 +72,8 @@ namespace AudioFile.View
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackAdded", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackCycled", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("TracksDeserialized", this);
         }
-
-        /*public void PopulateOnLoad()
-        {
-            //TODO: Need a method to populate the UITrackList display based on what has been stored to memory for the track library
-            //This method will listen for the OnProgramStart notification when the program is launched
-            //For now it will display the full track library, but later will augment this so it displays whatever the last view filter on the library was (i.e., which playlist, album, etc.)
-        }
-        */
 
         public void HandleTrackButtonClick(UITrackDisplay trackDisplay, string buttonType)
         {
@@ -225,12 +220,31 @@ namespace AudioFile.View
             yield break;
         }
 
-
+        private IEnumerator PopulateOnStart(List<Track> initialTrackList)
+        {
+            if (initialTrackList == null)
+            {
+                Debug.Log("initialTrackList is empty/null");
+            }
+            foreach (var track in initialTrackList)
+            {
+                Debug.Log($"Adding {track} on load");
+                yield return AddTrackOnUpdate(track);
+            }
+        }
 
         public void AudioFileUpdate(string observationType, object data)
         {
             Action action = observationType switch
             {
+                "TracksDeserialized" => () =>
+                {
+                    if (data is List<Track> initialTrackList)
+                    {
+                        Debug.Log("Calling PopulateOnStart");
+                        StartCoroutine(PopulateOnStart(initialTrackList));
+                    }
+                },
                 "OnTrackAdded" => () => StartCoroutine(AddTrackOnUpdate(data)),
                 "OnTrackRemoved" => () =>
                 {

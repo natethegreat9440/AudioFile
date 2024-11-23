@@ -34,7 +34,7 @@ namespace AudioFile.Model
 
         public static TrackLibrary Instance => _instance.Value;
 
-        protected List<Track> trackList;
+        public List<Track> trackList;
         private int currentTrackIndex;
 
         private static TrackLibrary CreateSingleton()

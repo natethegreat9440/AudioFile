@@ -42,12 +42,17 @@ namespace AudioFile.Model
         #region Setup/Unity methods
         // Static factory method to create and initialize Track
         public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
-                                        string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string name = "A track", string loadedPath = "Unknown Path")
+                                        string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string name = "A track", string loadedPath = "Unknown Path", string trackID = null)
         {
             // Create a new GameObject and attach Track as a component
             GameObject trackObject = new GameObject("Track_" + trackTitle);
             Track track = trackObject.AddComponent<Track>();
-            string trackID = TrackIDRegistry.Instance.GenerateNewTrackID();
+            if (trackID == null)
+            { trackID = TrackIDRegistry.Instance.GenerateNewTrackID(); }
+            else if (System.Text.RegularExpressions.Regex.IsMatch(trackID, @"^\d{6}$"))
+            {
+                TrackIDRegistry.Instance.AddExistingIDOnStart(trackID);
+            }
             track.Initialize(trackID, loadedClip, trackTitle, trackArtist, trackAlbum, loadedPath);
             return track;
         }

@@ -40,6 +40,11 @@ namespace AudioFile.Model
             return newID;
         }
 
+        public void AddExistingIDOnStart(string id)
+        {
+            trackIDs.Add(id);
+        }
+
         public bool RemoveTrackID(string id)
         {
             return trackIDs.Remove(id);

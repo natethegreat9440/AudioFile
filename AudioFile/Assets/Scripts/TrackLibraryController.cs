@@ -11,8 +11,8 @@ using UnityEngine.Networking;
 using System.Collections;
 using AudioFile.Model;
 using System.Collections.Generic;
-using TagLib;
-//using TagLib.Matroska;
+using System.Linq;
+using Unity.Loading;
 
 namespace AudioFile.Controller
 {
@@ -45,6 +45,8 @@ namespace AudioFile.Controller
             return singletonObject.AddComponent<TrackLibraryController>();
         }
 
+        public List<Track> TrackList { get => TrackLibrary.Instance.trackList; set => TrackLibrary.Instance.trackList = value; }
+
         public void Awake()
         {
             DontDestroyOnLoad(this.gameObject);
@@ -52,6 +54,13 @@ namespace AudioFile.Controller
         public void Start()
         {
             TrackLibrary.Instance.Initialize();
+            LoadTracksFromFile();  //Method defaults to Documents/AudioFileTracks as the path to look for (just using this for initial development)      
+        }
+
+        void OnApplicationQuit()
+        {
+            Debug.Log("Saving tracks on application exit");
+            SaveTracksToFile();  //Method defaults to Documents/AudioFileTracks as the path to look for (just using this for initial development)      
         }
 
         public void Initialize()
@@ -163,9 +172,17 @@ namespace AudioFile.Controller
             }
         }
         // Coroutine to load the mp3 file as an AudioClip
-        private IEnumerator LoadAudioClipFromFile(string filePath, AddTrackCommand addTrackCommand)
+        private IEnumerator LoadAudioClipFromFile(string filePath, AddTrackCommand addTrackCommand = null, string trackID = null, Dictionary<string, string> otherProperties = null)
         {
-            List<string> metadata = ExtractFileMetadata(filePath);
+            /*List<string> metadata = new List<string>();
+            
+            if (addTrackCommand != null)
+            {
+                metadata = ExtractFileMetadata(filePath);
+            }*/
+
+            List<string> metadata = ExtractFileMetadata(filePath); //Metadata is always extracted even when loading clips that have already been added to the Library before.
+                                                                   //This is so if the user updates/fixes any mistakes in the local file themselves these will be automatically propagated on load
 
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
             {
@@ -181,11 +198,22 @@ namespace AudioFile.Controller
                     if (audioClip != null)
                     {
                         Debug.Log("Successfully loaded audio clip!");
+
                         string trackTitle = metadata[0];
                         string contributingArtists = metadata[1];
                         string trackAlbum = metadata[2];
-                        Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath);
+
+                        Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, trackID);
                         TrackLibrary.Instance.AddItem(newTrack);
+
+                        // Set the TrackProperties from the properties dictionary. Only happens when loading deserialized tracks
+                        if (otherProperties != null)
+                        {
+                            foreach (var property in otherProperties)
+                            {
+                                newTrack.TrackProperties.SetProperty(property.Key, property.Value);
+                            }
+                        }
 
                         if (addTrackCommand != null)
                         {
@@ -215,6 +243,117 @@ namespace AudioFile.Controller
                 Debug.LogError("No file selected.");
                 return string.Empty;
             }
+        }
+
+        private void SaveTracksToFile(string filePath = null)
+        {
+            try
+            {
+                //For initial testing/programming purposes the filePath essentially defaults to Documents/AudioFileTracks/tracks.json
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    string defaultDirectory = Path.Combine(documentsPath, "AudioFileTracks");
+                    if (!Directory.Exists(defaultDirectory))
+                    {
+                        Debug.Log($"Directory does not exist: {defaultDirectory}. Creating Directory.");
+                        Directory.CreateDirectory(defaultDirectory);
+                        Debug.Log(defaultDirectory + " created");
+                        // Ensure the directory exists
+                        // Handle the case where the directory does not exist,
+                        // which would occur whenever the program is loaded and the user has not attempted to load any files into the program
+                    }
+                    filePath = Path.Combine(defaultDirectory, "tracks.json");
+                    Debug.Log("Tracks saved to " + filePath);
+                }
+
+                var trackData = TrackList.Select(track =>
+                {
+                    var properties = new Dictionary<string, string>();
+                    var trackPropertiesType = track.TrackProperties.GetType();
+                    var getPropertyMethod = trackPropertiesType.GetMethod("GetProperty");
+
+                    foreach (var property in trackPropertiesType.GetProperties())
+                    {
+                        var key = property.Name;
+                        var value = getPropertyMethod.Invoke(track.TrackProperties, new object[] { key })?.ToString();
+                        properties[key] = value;
+                    }
+
+                    return properties;
+                }).ToList();
+
+                var json = JsonUtility.ToJson(new { Tracks = trackData });
+                System.IO.File.WriteAllText(filePath, json);
+                Debug.Log($"Tracks saved to {filePath}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error saving tracks: {ex.Message}");
+            }
+        }
+
+        private void LoadTracksFromFile(string filePath = null)
+        {
+            try
+            {
+                //For initial testing/programming purposes the filePath essentially defaults to Documents/AudioFileTracks/tracks.json
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    string defaultDirectory = Path.Combine(documentsPath, "AudioFileTracks");
+                    if (!Directory.Exists(defaultDirectory))
+                    {
+                        Debug.LogWarning($"Directory does not exist: {defaultDirectory}");
+                        return;
+                        // Handle the case where the directory does not exist,
+                        // which would occur whenever the program is loaded and the user has not attempted to load any files into the program
+                    }
+                    filePath = Path.Combine(defaultDirectory, "tracks.json");
+                    Debug.Log("Loading tracks from " + filePath);
+                }
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    Debug.LogWarning($"File not found: {filePath}");
+                    return;
+                }
+
+                var json = System.IO.File.ReadAllText(filePath);
+                var trackData = JsonUtility.FromJson<TrackLibraryData>(json);
+
+                TrackList = new List<Track>();
+                foreach (var data in trackData.Tracks)
+                {
+                    StartCoroutine(LoadAudioClipFromFile(data.Path, null, data.TrackID, data.CustomProperties));
+                }
+
+                Debug.Log("Tracks loaded successfully.");
+                ObserverManager.ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
+
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error loading tracks: {ex.Message}");
+            }
+        }
+
+        [Serializable]
+        private class TrackLibraryData //Helper class for LoadTracksFromFile
+        {
+            public List<TrackData> Tracks;
+        }
+
+        [Serializable]
+        private class TrackData //Helper class for LoadTracksFromFile
+        {
+            public string Title;
+            public string Artist;
+            public string Album;
+            public string Duration;
+            public string Path;
+            public string TrackID;
+            public Dictionary<string, string> CustomProperties; // Add this dictionary to store all other properties
         }
     }
 }
