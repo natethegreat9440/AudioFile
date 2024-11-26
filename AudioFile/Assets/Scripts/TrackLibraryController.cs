@@ -137,13 +137,31 @@ namespace AudioFile.Controller
         {
             string path = OpenFileDialog();
 
-            if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+            if (!string.IsNullOrEmpty(path))
             {
-                StartCoroutine(LoadAudioClipFromFile(path, addTrackCommand));
+                if (System.IO.File.Exists(path))
+                {
+                    StartCoroutine(LoadAudioClipFromFile(path, addTrackCommand));
+
+                    /*try
+                    {
+                        // Escape the path for UnityWebRequest
+                        string escapedPath = Uri.EscapeUriString(path);
+                        StartCoroutine(LoadAudioClipFromFile(escapedPath, addTrackCommand));
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"Error loading file: {ex.Message}");
+                    }*/
+                }
+                else
+                {
+                    Debug.LogError("Invalid file path or file does not exist.");
+                }
             }
             else
             {
-                Debug.LogError("Invalid file path or file does not exist.");
+                Debug.LogError("No file selected.");
             }
         }
 
@@ -176,57 +194,59 @@ namespace AudioFile.Controller
         // Coroutine to load the mp3 file as an AudioClip
         private IEnumerator LoadAudioClipFromFile(string filePath, AddTrackCommand addTrackCommand = null, string trackID = null, Dictionary<string, string> otherProperties = null)
         {
-            /*List<string> metadata = new List<string>();
-            
-            if (addTrackCommand != null)
-            {
-                metadata = ExtractFileMetadata(filePath);
-            }*/
 
             List<string> metadata = ExtractFileMetadata(filePath); //Metadata is always extracted even when loading clips that have already been added to the Library before.
                                                                    //This is so if the user updates/fixes any mistakes in the local file themselves these will be automatically propagated on load
 
-            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
-            {
-                yield return www.SendWebRequest();
+            // Escape the path for UnityWebRequest
+            //string escapedPath = Uri.EscapeUriString(filePath);
+            // Convert the file path to a URI
+            //string escapedPath = Uri.EscapeDataString(filePath);
+            string escapedPath = filePath.Replace("#", "%23"); 
 
-                if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
+            Debug.Log("Escaped path: " + escapedPath);
+
+            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + escapedPath, AudioType.MPEG))
                 {
-                    Debug.LogError("Error loading audio file: " + www.error);
-                }
-                else
-                {
-                    AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
-                    if (audioClip != null)
+                    yield return www.SendWebRequest();
+
+                    if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
                     {
-                        Debug.Log("Successfully loaded audio clip!");
-
-                        string trackTitle = metadata[0];
-                        string contributingArtists = metadata[1];
-                        string trackAlbum = metadata[2];
-
-                        Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, trackID);
-                        TrackLibrary.Instance.AddItem(newTrack);
-
-                        // Set the TrackProperties from the properties dictionary. Only happens when loading deserialized tracks
-                        if (otherProperties != null)
+                        Debug.LogError("Error loading audio file: " + www.error);
+                    }
+                    else
+                    {
+                        AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
+                        if (audioClip != null)
                         {
-                            foreach (var property in otherProperties)
+                            Debug.Log("Successfully loaded audio clip!");
+
+                            string trackTitle = metadata[0];
+                            string contributingArtists = metadata[1];
+                            string trackAlbum = metadata[2];
+
+                            Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, trackID);
+                            TrackLibrary.Instance.AddItem(newTrack);
+
+                            // Set the TrackProperties from the properties dictionary. Only happens when loading deserialized tracks
+                            if (otherProperties != null)
                             {
-                                //Skips setting any properties that are not already required/set by the CreateTrack method so only "other properties" get set
-                                if (property.Key != "Title" || property.Key != "Artist" || property.Key != "Album" || property.Key != "Duration" || property.Key != "Path" || property.Key != "TrackID")
-                                    newTrack.TrackProperties.SetProperty(property.Key, property.Value);
+                                foreach (var property in otherProperties)
+                                {
+                                    //Skips setting any properties that are not already required/set by the CreateTrack method so only "other properties" get set
+                                    if (property.Key != "Title" || property.Key != "Artist" || property.Key != "Album" || property.Key != "Duration" || property.Key != "Path" || property.Key != "TrackID")
+                                        newTrack.TrackProperties.SetProperty(property.Key, property.Value);
+                                }
                             }
-                        }
 
-                        if (addTrackCommand != null)
-                        {
-                            addTrackCommand.Track = newTrack;
+                            if (addTrackCommand != null)
+                            {
+                                addTrackCommand.Track = newTrack;
+                            }
+                            //TODO: Add logic to pass this AddTrackCommand reference to the CommandStackController
                         }
-                        //TODO: Add logic to pass this AddTrackCommand reference to the CommandStackController
                     }
                 }
-            }
         }
 
         // Function to open a file dialog (example, would need a third-party library)

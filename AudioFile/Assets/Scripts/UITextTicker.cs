@@ -38,20 +38,27 @@ namespace AudioFile.View
 
         void Start()
         {
-            // Set up scrolling text and welcome message
-            textRect = GetComponent<RectTransform>();
-            startPositionX = textRect.localPosition.x;
-            resetPositionX = textRect.rect.width; // Width of the text
-
-            //TODO: Have this choose a random humorous phrase from a phrase bank (List of strings)
-            textRect.GetComponent<TextMeshProUGUI>().text = "Welcome to AudioFile!";
-            isScrolling = true;
+            DisplayWelcome();
 
             //Register for these observations
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackChanged", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackListEnd", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSkipped", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateStart", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateEnd", this);
+        }
+
+        private void DisplayWelcome(string welcomeMessage = "Welcome to AudioFile!", bool isWelcomeScrolling = true)
+        {
+            // Set up scrolling text and welcome message
+            textRect = GetComponent<RectTransform>();
+            startPositionX = textRect.localPosition.x;
+            resetPositionX = textRect.rect.width; // Width of the text
+
+            //TODO: Have this choose a random humorous phrase from a phrase bank (List of strings)
+            textRect.GetComponent<TextMeshProUGUI>().text = welcomeMessage;
+            isScrolling = isWelcomeScrolling;
         }
 
         void Update()
@@ -156,6 +163,15 @@ namespace AudioFile.View
                         StartCoroutine(QuickMessage(4f, "Track skipped due to unknown error", true));
                     }
                 },
+                "TrackDisplayPopulateStart" => () =>
+                {
+                    DisplayWelcome("Loading tracks...", false);
+                },
+                "TrackDisplayPopulateEnd" => () =>
+                {
+                    DisplayWelcome();
+                }
+                ,
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };
 

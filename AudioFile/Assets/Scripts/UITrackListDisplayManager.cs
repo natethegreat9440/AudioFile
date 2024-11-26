@@ -231,6 +231,8 @@ namespace AudioFile.View
                 Debug.Log($"Adding {track} on load");
                 yield return AddTrackOnUpdate(track);
             }
+            yield return null; // Ensure the final yield return is executed before notifying observers
+            ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateEnd");
         }
 
         public void AudioFileUpdate(string observationType, object data)
@@ -242,7 +244,9 @@ namespace AudioFile.View
                     if (data is List<Track> initialTrackList)
                     {
                         Debug.Log("Calling PopulateOnStart");
+                        ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateStart");
                         StartCoroutine(PopulateOnStart(initialTrackList));
+
                     }
                 },
                 "OnTrackAdded" => () => StartCoroutine(AddTrackOnUpdate(data)),
