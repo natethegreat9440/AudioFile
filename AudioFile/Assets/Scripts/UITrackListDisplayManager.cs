@@ -222,7 +222,7 @@ namespace AudioFile.View
 
         private IEnumerator PopulateOnStart(List<Track> initialTrackList)
         {
-            if (initialTrackList == null)
+            if (initialTrackList == null || initialTrackList.Count == 0)
             {
                 Debug.Log("initialTrackList is empty/null");
             }

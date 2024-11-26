@@ -13,6 +13,7 @@ using AudioFile.Model;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Loading;
+using Newtonsoft.Json;
 
 namespace AudioFile.Controller
 {
@@ -135,6 +136,7 @@ namespace AudioFile.Controller
         public void LoadTrack(AddTrackCommand addTrackCommand)
         {
             string path = OpenFileDialog();
+
             if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
             {
                 StartCoroutine(LoadAudioClipFromFile(path, addTrackCommand));
@@ -211,7 +213,9 @@ namespace AudioFile.Controller
                         {
                             foreach (var property in otherProperties)
                             {
-                                newTrack.TrackProperties.SetProperty(property.Key, property.Value);
+                                //Skips setting any properties that are not already required/set by the CreateTrack method so only "other properties" get set
+                                if (property.Key != "Title" || property.Key != "Artist" || property.Key != "Album" || property.Key != "Duration" || property.Key != "Path" || property.Key != "TrackID")
+                                    newTrack.TrackProperties.SetProperty(property.Key, property.Value);
                             }
                         }
 
@@ -264,10 +268,9 @@ namespace AudioFile.Controller
                         // which would occur whenever the program is loaded and the user has not attempted to load any files into the program
                     }
                     filePath = Path.Combine(defaultDirectory, "tracks.json");
-                    Debug.Log("Tracks saved to " + filePath);
                 }
 
-                var trackData = TrackList.Select(track =>
+                /*var trackData = TrackList.Select(track =>
                 {
                     var properties = new Dictionary<string, string>();
                     var trackPropertiesType = track.TrackProperties.GetType();
@@ -281,9 +284,20 @@ namespace AudioFile.Controller
                     }
 
                     return properties;
+                }).ToList();*/
+
+                //var trackData = TrackList.Select(track => track.TrackProperties.GetAllProperties()).ToList();
+
+                //var json = JsonUtility.ToJson(new { Tracks = trackData });
+                var trackData = TrackList.Select(track => new TrackData
+                {
+                    TrackProperties = track.TrackProperties.GetAllProperties()
                 }).ToList();
 
-                var json = JsonUtility.ToJson(new { Tracks = trackData });
+                var trackLibraryData = new TrackLibraryData { Tracks = trackData };
+                //var json = JsonUtility.ToJson(trackLibraryData, true);
+
+                var json = JsonConvert.SerializeObject(trackLibraryData, Formatting.Indented);
                 System.IO.File.WriteAllText(filePath, json);
                 Debug.Log($"Tracks saved to {filePath}");
             }
@@ -320,15 +334,17 @@ namespace AudioFile.Controller
                 }
 
                 var json = System.IO.File.ReadAllText(filePath);
-                var trackData = JsonUtility.FromJson<TrackLibraryData>(json);
+                //var trackData = JsonUtility.FromJson<TrackLibraryData>(json);
 
-                TrackList = new List<Track>();
-                foreach (var data in trackData.Tracks)
+                var trackLibraryData = JsonConvert.DeserializeObject<TrackLibraryData>(json);
+
+                //TrackList = new List<Track>();
+                foreach (var data in trackLibraryData.Tracks)
                 {
-                    StartCoroutine(LoadAudioClipFromFile(data.Path, null, data.TrackID, data.CustomProperties));
+                    StartCoroutine(LoadAudioClipFromFile(data.TrackProperties["Path"], null, data.TrackProperties["TrackID"], data.TrackProperties));
+                    Debug.Log($"Track {data.TrackProperties["Title"]}  loaded successfully.");
                 }
 
-                Debug.Log("Tracks loaded successfully.");
                 ObserverManager.ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
 
             }
@@ -341,19 +357,24 @@ namespace AudioFile.Controller
         [Serializable]
         private class TrackLibraryData //Helper class for LoadTracksFromFile
         {
-            public List<TrackData> Tracks;
+            [SerializeField]
+            public List<TrackData> Tracks = new List<TrackData>();
         }
 
         [Serializable]
         private class TrackData //Helper class for LoadTracksFromFile
         {
-            public string Title;
-            public string Artist;
-            public string Album;
-            public string Duration;
-            public string Path;
-            public string TrackID;
-            public Dictionary<string, string> CustomProperties; // Add this dictionary to store all other properties
+            [SerializeField]
+            public Dictionary<string, string> TrackProperties = new Dictionary<string, string>
+            {
+                { "Title", string.Empty },
+                { "Artist", string.Empty },
+                { "Album", string.Empty },
+                { "Duration", string.Empty },
+                { "BPM", string.Empty },
+                { "Path", string.Empty },
+                { "TrackID", string.Empty }
+            };
         }
     }
 }

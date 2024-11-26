@@ -18,8 +18,10 @@ namespace AudioFile.Model
     /// <seealso cref="TrackLibrary"/>
     /// </summary>
 
+    [Serializable]
     public class TrackProperties
     {
+        [SerializeField]
         Dictionary<string, string> trackProperties = new Dictionary<string, string>()
         {
             {"Title", "Untitled Track"},
@@ -46,7 +48,10 @@ namespace AudioFile.Model
 
             return null;
         }
-
+        public Dictionary<string, string> GetAllProperties()
+        {
+            return new Dictionary<string, string>(trackProperties);
+        }
         public void SetProperty(string key, string value)
         {
             if (trackProperties.ContainsKey(key))
@@ -72,5 +77,6 @@ namespace AudioFile.Model
                 trackProperties.Remove(key);
             }
         }
+
     }
 }

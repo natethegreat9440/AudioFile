@@ -25,12 +25,17 @@ namespace AudioFile.Model
     /// <seealso cref="TrackLibrary"/>
     /// <seealso cref="IPlayable"/>
     /// </summary>
+
+    [Serializable]
     public class Track : MediaLibraryComponent, IPlayable
     {
         AudioSource _audioSource;
         AudioPlayableOutput _audioPlayableOutput;
         AudioClipPlayable _audioPlayable;
+
+        [SerializeField]
         public TrackProperties TrackProperties;
+
         private string _trackDuration;
 
         bool _isPlaying = false;
@@ -42,7 +47,7 @@ namespace AudioFile.Model
         #region Setup/Unity methods
         // Static factory method to create and initialize Track
         public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
-                                        string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string name = "A track", string loadedPath = "Unknown Path", string trackID = null)
+                                        string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string loadedPath = "Unknown Path", string trackID = null)
         {
             // Create a new GameObject and attach Track as a component
             GameObject trackObject = new GameObject("Track_" + trackTitle);
@@ -53,6 +58,8 @@ namespace AudioFile.Model
             {
                 TrackIDRegistry.Instance.AddExistingIDOnStart(trackID);
             }
+            Debug.Log($"The loaded path is: {loadedPath}");
+
             track.Initialize(trackID, loadedClip, trackTitle, trackArtist, trackAlbum, loadedPath);
             return track;
         }
@@ -67,6 +74,8 @@ namespace AudioFile.Model
             TrackProperties.SetProperty("Artist", trackArtist);
             TrackProperties.SetProperty("Album", trackAlbum);
             TrackProperties.SetProperty("Path", loadedPath);
+            //Debug.Log($"{this.TrackProperties.GetProperty("Path")} path added to {this}");
+            //Debug.Log($"The loaded path is: {loadedPath}");
             TrackProperties.SetProperty("TrackID", trackID);
 
             _playableGraph = PlayableGraph.Create();

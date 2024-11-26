@@ -202,9 +202,12 @@ namespace AudioFile.Model
             currentTrackIndex = GetTrackIndexAtID(trackDisplayID);
 
             //Move the current track to the previous track
-            currentTrackIndex--;
-            PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
+            if (currentTrackIndex > 0)
+            {
+                currentTrackIndex--;
+            }
 
+            PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
             trackList.Remove(trackToRemove);
             Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
