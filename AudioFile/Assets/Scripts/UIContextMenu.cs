@@ -29,7 +29,8 @@ namespace AudioFile.View
 
         public Canvas mainCanvas;
 
-        private string TrackDisplayID;
+        //private string TrackDisplayID;
+        private List<string> TrackDisplayIDs;
         private UITrackDisplay trackDisplay;
 
         private List<MenuComponent> menuComponents;
@@ -41,10 +42,10 @@ namespace AudioFile.View
             // Set TrackDisplayGameObject to the current GameObject this script is attached to
             ContextMenuGameObject = this.gameObject;
         }
-        public UIContextMenu Initialize(string trackDisplayID, Vector2 position, UITrackDisplay manager)
+        public UIContextMenu Initialize(List<string> trackDisplayIDs, Vector2 position, UITrackDisplay manager)
         {
             trackDisplay = manager;
-            TrackDisplayID = trackDisplayID;
+            TrackDisplayIDs = trackDisplayIDs;
             //ContextMenuGameObject = GameObject.Find("UIContextMenu");
 
             // Set menu position to right-click location
@@ -70,8 +71,8 @@ namespace AudioFile.View
             GameObject removeTrackGameObject = GameObjectExtensions.FindInChildren(contextMenu, "Remove_Button");
             GameObject testPlaylistGameObject = GameObjectExtensions.FindInChildren(contextMenu, "Test_Playlist_Button");
 
-            RemoveTrackCommand removeTrackCommand = new RemoveTrackCommand(TrackDisplayID);
-            AddToPlaylistCommand addToPlaylistCommand = new AddToPlaylistCommand(TrackDisplayID); //TODO: Add Playlist as second parameter once I have that class set up
+            RemoveTrackCommand removeTrackCommand = new RemoveTrackCommand(TrackDisplayIDs);
+            AddToPlaylistCommand addToPlaylistCommand = new AddToPlaylistCommand(TrackDisplayIDs); //TODO: Add Playlist as second parameter once I have that class set up
 
             Button addToPlaylistButton = ContextMenuGameObject.transform.Find("Add_To_Playlist_Button").GetComponent<Button>();
             Button removeTrackButton = ContextMenuGameObject.transform.Find("Remove_Button").GetComponent<Button>();

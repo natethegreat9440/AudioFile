@@ -68,13 +68,19 @@ namespace AudioFile.View
         {
             if (_enabled && _command != null)
             {
-                _command.Execute();
+                Type commandType = _command.GetType();
+                ICommand newCommand = (ICommand)Activator.CreateInstance(commandType);
+                newCommand.Execute();
             }
+            /*if (_enabled && _command != null)
+            {
+                _command.Execute();
+            }*/
         }
 
-        //Keeping this redundant method in for now in case we want to be able to add functionality later in order to 
-        //navigate the Menu's and execute commands with just the keyboard
-        public override void MenuItem_Click() 
+    //Keeping this redundant method in for now in case we want to be able to add functionality later in order to 
+    //navigate the Menu's and execute commands with just the keyboard
+    public override void MenuItem_Click() 
         {
             this.ExecuteAction();
         }

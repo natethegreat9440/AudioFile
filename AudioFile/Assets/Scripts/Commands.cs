@@ -182,7 +182,7 @@ namespace AudioFile.View
     {
         public bool IsUndo { get; set; } = false;
 
-        public Track Track { get; set; }
+        public List<Track> Tracks { get; set; } = new List<Track>();
 
         public void Execute()
         {
@@ -205,14 +205,15 @@ namespace AudioFile.View
         //public Track Track { get; }
 
         //public int Index { get; }
-        public string TrackDisplayID { get; }
+        public List<string> TrackDisplayIDs { get; }
 
-        public string Path { get; set; }
+        public List<string> Paths { get; set; }
 
-        public RemoveTrackCommand(string trackDisplayID)
+        public List<Dictionary<string, string>> TrackProperties { get; set; } //Has ability to hold Track Properties for multiple tracks
+
+        public RemoveTrackCommand(List<string> trackDisplayIDs)
         {
-            TrackDisplayID = trackDisplayID;
-            //Index = index;
+            TrackDisplayIDs = trackDisplayIDs;
         }
         public void Execute()
         {
@@ -283,12 +284,12 @@ namespace AudioFile.View
         //Will need to have a reference to the playlist once I have that class figured out
         //public Playlist Playlist { get; }
 
-        public string TrackDisplayID { get; set; } //Track reference used for execute and undo action
+        public List<string> TrackDisplayIDs { get; set; } //Track reference used for execute and undo action
 
-        public AddToPlaylistCommand(string trackDisplayID)//,Playlist playlist)
+        public AddToPlaylistCommand(List<string> trackDisplayIDs)//,Playlist playlist)
         {
             //Playlist = playlist;
-            TrackDisplayID = trackDisplayID;
+            TrackDisplayIDs = trackDisplayIDs;
         }
 
         public void Execute()

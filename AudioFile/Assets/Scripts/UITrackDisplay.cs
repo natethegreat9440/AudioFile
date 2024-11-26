@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using AudioFile.Model;
 using TagLib.Riff;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 namespace AudioFile.View
 {
@@ -123,7 +124,8 @@ namespace AudioFile.View
                     if (contextMenu != null)
                     {
                         Vector2 displayPosition = eventData.position;
-                        contextMenuInstance = contextMenu.Initialize(TrackDisplayID, displayPosition, this);
+                        var trackDisplayIDList = new List<string>() { TrackDisplayID };
+                        contextMenuInstance = contextMenu.Initialize(trackDisplayIDList, eventData.position, this); //TODO: Add Playlist as second parameter once I have that class set upTrackDisplayID, displayPosition, this);
                         Debug.Log("Context menu initialized");
 
                         // Optional: Prevent other click handlers from firing once the menu is created

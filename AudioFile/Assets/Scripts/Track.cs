@@ -58,7 +58,7 @@ namespace AudioFile.Model
             {
                 TrackIDRegistry.Instance.AddExistingIDOnStart(trackID);
             }
-            Debug.Log($"The loaded path is: {loadedPath}");
+            //Debug.Log($"The loaded path is: {loadedPath}");
 
             track.Initialize(trackID, loadedClip, trackTitle, trackArtist, trackAlbum, loadedPath);
             return track;

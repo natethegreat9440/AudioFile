@@ -55,7 +55,7 @@ namespace AudioFile.Controller
         public void Start()
         {
             TrackLibrary.Instance.Initialize();
-            LoadTracksFromFile();  //Method defaults to Documents/AudioFileTracks as the path to look for (just using this for initial development)      
+            LoadTracksFromJSON();  //Method defaults to Documents/AudioFileTracks as the path to look for (just using this for initial development)      
         }
 
         void OnApplicationQuit()
@@ -83,8 +83,18 @@ namespace AudioFile.Controller
                 ("RemoveTrackCommand", false) => () =>
                 {
                     RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
-                    string removedTrackPath = RemoveTrack(removeTrackCommand.TrackDisplayID);
-                    removeTrackCommand.Path = removedTrackPath;
+                    //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed
+                    foreach (var trackDisplayID in removeTrackCommand.TrackDisplayIDs)
+                    {
+                        var trackProperties = TrackList
+                        .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
+                        .Select(track => new Dictionary<string, string>(track.TrackProperties.GetAllProperties()));
+
+                        removeTrackCommand.TrackProperties.Add(trackProperties as Dictionary<string, string>);
+
+                        string removedTrackPath = RemoveTrack(trackDisplayID);
+                        removeTrackCommand.Paths.Add(removedTrackPath);
+                    }
                 },
                 //Add more switch arms here as needed
 
@@ -92,19 +102,36 @@ namespace AudioFile.Controller
                 ("AddTrackCommand", true) => () =>
                 {
                     AddTrackCommand addTrackCommand = request as AddTrackCommand;
-                    RemoveTrack(addTrackCommand.Track.TrackProperties.GetProperty("TrackID"));
+                    foreach (Track track in addTrackCommand.Tracks)
+                    {
+                        RemoveTrack(track.TrackProperties.GetProperty("TrackID"));
+                    }
                 },
                 ("RemoveTrackCommand", true) => () =>
                 {
                     RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
-                    string path = removeTrackCommand.Path;
-                    if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+                    //foreach (var path in removeTrackCommand.Paths)
+                    //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed
+                    foreach (var trackDisplayID in removeTrackCommand.TrackDisplayIDs)
                     {
-                        StartCoroutine(LoadAudioClipFromFile(path, null));
-                    }
-                    else
-                    {
-                        Debug.LogError("Invalid file path or file does not exist. Action can not be undone");
+                        var path = removeTrackCommand.TrackProperties
+                            .Where(properties => properties.ContainsValue(trackDisplayID))
+                            .Select(properties => properties.ContainsKey("Path") ? properties["Path"] : null)
+                            .FirstOrDefault();
+
+                        var trackProperties = removeTrackCommand.TrackProperties
+                            .Where (properties => properties.ContainsValue(trackDisplayID))
+                            .Select(properties => properties)
+                            .FirstOrDefault();
+
+                        if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+                        {
+                            StartCoroutine(LoadAudioClipFromFile(path, trackDisplayID, trackProperties));
+                        }
+                        else
+                        {
+                            Debug.LogError("Invalid file path or file does not exist. Action can not be undone");
+                        }
                     }
                 },
                 //Add more switch arms here as needed
@@ -135,79 +162,50 @@ namespace AudioFile.Controller
 
         public void LoadTrack(AddTrackCommand addTrackCommand)
         {
-            string path = OpenFileDialog();
+            string[] paths = OpenFileDialog();
 
-            if (!string.IsNullOrEmpty(path))
+            for (int i = 0; i < paths.Length; i++)
             {
-                if (System.IO.File.Exists(path))
+                if (!string.IsNullOrEmpty(paths[i]))
                 {
-                    StartCoroutine(LoadAudioClipFromFile(path, addTrackCommand));
-
-                    /*try
+                    if (System.IO.File.Exists(paths[i]))
                     {
-                        // Escape the path for UnityWebRequest
-                        string escapedPath = Uri.EscapeUriString(path);
-                        StartCoroutine(LoadAudioClipFromFile(escapedPath, addTrackCommand));
+                        StartCoroutine(LoadAudioClipFromFile(paths[i], null, null, newTrack =>
+                        {
+                            if (addTrackCommand != null)
+                            {
+                                Debug.Log($"newTrack for addTrackCommand:{newTrack}");
+                                addTrackCommand.Tracks.Add(newTrack);
+                                Debug.Log($"addTrackCommand.Tracks: {addTrackCommand.Tracks.Count}");
+                            }
+                            //TODO: Add logic to pass this AddTrackCommand reference to the CommandStackController
+                        }));
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Debug.LogError($"Error loading file: {ex.Message}");
-                    }*/
+                        Debug.LogError("Invalid file path or file does not exist.");
+                    }
                 }
                 else
                 {
-                    Debug.LogError("Invalid file path or file does not exist.");
+                    Debug.LogError("No file selected.");
                 }
             }
-            else
-            {
-                Debug.LogError("No file selected.");
-            }
         }
 
-        private List<string> ExtractFileMetadata(string filePath)
-        {
-            string trackTitle = "Untitled Track";
-            string contributingArtists = "Unknown Artist";
-            string trackAlbum = "Unknown Album";
-            List<string> metadata = new List<string>() { trackTitle, contributingArtists, trackAlbum };
-
-            try
-            {
-                var file = TagLib.File.Create(filePath);
-                trackTitle = !string.IsNullOrEmpty(file.Tag.Title) ? file.Tag.Title : Path.GetFileName(filePath);
-                trackAlbum = !string.IsNullOrEmpty(file.Tag.Album) ? file.Tag.Album : "Unknown Album";
-                contributingArtists = !string.IsNullOrEmpty(string.Join(", ", file.Tag.Performers)) ? string.Join(", ", file.Tag.Performers) //Wrapping around next line since its so goddamn long
-                    : !string.IsNullOrEmpty(string.Join(", ", file.Tag.AlbumArtists)) ? string.Join(", ", file.Tag.AlbumArtists) : "Unknown Artist";
-                metadata[0] = trackTitle;
-                metadata[1] = contributingArtists;
-                metadata[2] = trackAlbum;
-                return metadata;
-                //Looks for Tag.Performers first (this translates to the Contributing Artists property in File Explorer), then AlbumArtists, then finally Unknown Artist if nothing found
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError("Error reading metadata: " + e.Message);
-                return metadata;
-            }
-        }
         // Coroutine to load the mp3 file as an AudioClip
-        private IEnumerator LoadAudioClipFromFile(string filePath, AddTrackCommand addTrackCommand = null, string trackID = null, Dictionary<string, string> otherProperties = null)
+        private IEnumerator LoadAudioClipFromFile(string filePath, string trackID = null, Dictionary<string, string> otherProperties = null, Action<Track> onTrackLoaded = null)
         {
-
             List<string> metadata = ExtractFileMetadata(filePath); //Metadata is always extracted even when loading clips that have already been added to the Library before.
                                                                    //This is so if the user updates/fixes any mistakes in the local file themselves these will be automatically propagated on load
 
-            // Escape the path for UnityWebRequest
-            //string escapedPath = Uri.EscapeUriString(filePath);
-            // Convert the file path to a URI
-            //string escapedPath = Uri.EscapeDataString(filePath);
+            // Escape any '#' characters in the path for UnityWebRequest
             string escapedPath = filePath.Replace("#", "%23"); 
 
-            Debug.Log("Escaped path: " + escapedPath);
+            //Debug.Log("Escaped path: " + escapedPath);
 
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + escapedPath, AudioType.MPEG))
-                {
+            {
                     yield return www.SendWebRequest();
 
                     if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
@@ -239,34 +237,59 @@ namespace AudioFile.Controller
                                 }
                             }
 
-                            if (addTrackCommand != null)
-                            {
-                                addTrackCommand.Track = newTrack;
-                            }
-                            //TODO: Add logic to pass this AddTrackCommand reference to the CommandStackController
+                        // Invoke the callback with the new track
+                        onTrackLoaded?.Invoke(newTrack);
                         }
                     }
-                }
+            }
+        }
+        private List<string> ExtractFileMetadata(string filePath)
+        {
+            string trackTitle = "Untitled Track";
+            string contributingArtists = "Unknown Artist";
+            string trackAlbum = "Unknown Album";
+            List<string> metadata = new List<string>() { trackTitle, contributingArtists, trackAlbum };
+
+            try
+            {
+                var file = TagLib.File.Create(filePath);
+                trackTitle = !string.IsNullOrEmpty(file.Tag.Title) ? file.Tag.Title : Path.GetFileName(filePath);
+                trackAlbum = !string.IsNullOrEmpty(file.Tag.Album) ? file.Tag.Album : "Unknown Album";
+                contributingArtists = !string.IsNullOrEmpty(string.Join(", ", file.Tag.Performers)) ? string.Join(", ", file.Tag.Performers) //Wrapping around next line since its so goddamn long
+                    : !string.IsNullOrEmpty(string.Join(", ", file.Tag.AlbumArtists)) ? string.Join(", ", file.Tag.AlbumArtists) : "Unknown Artist";
+                metadata[0] = trackTitle;
+                metadata[1] = contributingArtists;
+                metadata[2] = trackAlbum;
+                return metadata;
+                //Looks for Tag.Performers first (this translates to the Contributing Artists property in File Explorer), then AlbumArtists, then finally Unknown Artist if nothing found
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("Error reading metadata: " + e.Message);
+                return metadata;
+            }
         }
 
         // Function to open a file dialog (example, would need a third-party library)
-        private string OpenFileDialog()
+        private string[] OpenFileDialog()
         {
             //TODO: Move this method to controller class later
             //Uses the standalone file browser (SFB) library on Github and use that to open a file dialog for selecting MP3 files
-            string[] paths = StandaloneFileBrowser.OpenFilePanel("Select an MP3 file", "", "mp3", false);
-            if (paths.Length > 0)
+            string[] paths = StandaloneFileBrowser.OpenFilePanel("Select an MP3 file", "", "mp3", true);
+            for (int i = 0; i < paths.Length; i++)
             {
-                string selectedFilePath = paths[0];
-                Debug.Log("Selected file: " + selectedFilePath);
-                // Use the selected file path in your project
-                return selectedFilePath;
+                if (paths.Length > 0)
+                {
+                    string selectedFilePath = paths[i];
+                    Debug.Log("Selected file: " + selectedFilePath);
+                }
+                else
+                {
+                    Debug.LogError("No file selected.");
+                    return Array.Empty<string>();
+                }
             }
-            else
-            {
-                Debug.LogError("No file selected.");
-                return string.Empty;
-            }
+            return paths;
         }
 
         private void SaveTracksToFile(string filePath = null)
@@ -290,32 +313,12 @@ namespace AudioFile.Controller
                     filePath = Path.Combine(defaultDirectory, "tracks.json");
                 }
 
-                /*var trackData = TrackList.Select(track =>
-                {
-                    var properties = new Dictionary<string, string>();
-                    var trackPropertiesType = track.TrackProperties.GetType();
-                    var getPropertyMethod = trackPropertiesType.GetMethod("GetProperty");
-
-                    foreach (var property in trackPropertiesType.GetProperties())
-                    {
-                        var key = property.Name;
-                        var value = getPropertyMethod.Invoke(track.TrackProperties, new object[] { key })?.ToString();
-                        properties[key] = value;
-                    }
-
-                    return properties;
-                }).ToList();*/
-
-                //var trackData = TrackList.Select(track => track.TrackProperties.GetAllProperties()).ToList();
-
-                //var json = JsonUtility.ToJson(new { Tracks = trackData });
                 var trackData = TrackList.Select(track => new TrackData
                 {
                     TrackProperties = track.TrackProperties.GetAllProperties()
                 }).ToList();
 
                 var trackLibraryData = new TrackLibraryData { Tracks = trackData };
-                //var json = JsonUtility.ToJson(trackLibraryData, true);
 
                 var json = JsonConvert.SerializeObject(trackLibraryData, Formatting.Indented);
                 System.IO.File.WriteAllText(filePath, json);
@@ -327,7 +330,7 @@ namespace AudioFile.Controller
             }
         }
 
-        private void LoadTracksFromFile(string filePath = null)
+        private void LoadTracksFromJSON(string filePath = null)
         {
             try
             {
@@ -354,14 +357,12 @@ namespace AudioFile.Controller
                 }
 
                 var json = System.IO.File.ReadAllText(filePath);
-                //var trackData = JsonUtility.FromJson<TrackLibraryData>(json);
 
                 var trackLibraryData = JsonConvert.DeserializeObject<TrackLibraryData>(json);
 
-                //TrackList = new List<Track>();
                 foreach (var data in trackLibraryData.Tracks)
                 {
-                    StartCoroutine(LoadAudioClipFromFile(data.TrackProperties["Path"], null, data.TrackProperties["TrackID"], data.TrackProperties));
+                    StartCoroutine(LoadAudioClipFromFile(data.TrackProperties["Path"], data.TrackProperties["TrackID"], data.TrackProperties));
                     Debug.Log($"Track {data.TrackProperties["Title"]}  loaded successfully.");
                 }
 
@@ -375,14 +376,14 @@ namespace AudioFile.Controller
         }
 
         [Serializable]
-        private class TrackLibraryData //Helper class for LoadTracksFromFile
+        private class TrackLibraryData //Helper class for LoadTracksFromJSON
         {
             [SerializeField]
             public List<TrackData> Tracks = new List<TrackData>();
         }
 
         [Serializable]
-        private class TrackData //Helper class for LoadTracksFromFile
+        private class TrackData //Helper class for LoadTracksFromJSON
         {
             [SerializeField]
             public Dictionary<string, string> TrackProperties = new Dictionary<string, string>
