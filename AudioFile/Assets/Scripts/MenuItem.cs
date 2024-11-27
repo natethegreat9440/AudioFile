@@ -66,16 +66,14 @@ namespace AudioFile.View
 
         public override void ExecuteAction()
         {
+            //This code ensures that a new command instance gets created each time the Menu Item is clicked/Action is executed rather than
+            //just the same command instance used for instantiating the MenuItem as this can lead to undesired behavior
             if (_enabled && _command != null)
             {
                 Type commandType = _command.GetType();
                 ICommand newCommand = (ICommand)Activator.CreateInstance(commandType);
                 newCommand.Execute();
             }
-            /*if (_enabled && _command != null)
-            {
-                _command.Execute();
-            }*/
         }
 
     //Keeping this redundant method in for now in case we want to be able to add functionality later in order to 

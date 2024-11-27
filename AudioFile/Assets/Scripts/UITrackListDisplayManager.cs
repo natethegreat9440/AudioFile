@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using AudioFile.Controller;
 using AudioFile.Model;
 using AudioFile.ObserverManager;
+using static UnityEditor.Timeline.TimelinePlaybackControls;
 //using TagLib.Riff;
 
 namespace AudioFile.View
@@ -183,12 +184,24 @@ namespace AudioFile.View
                 if (trackDisplay != null)
                 {
                     trackDisplay.Initialize(providedTrack, this);
+
+                    // Force the Grid Layout Group to recalculate layout
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(Track_List_DisplayViewportContent.gameObject.GetComponent<RectTransform>());
                 }
 
-                Debug.Log($"Content Size: {Track_List_DisplayViewportContent.GetComponent<RectTransform>().sizeDelta}");
-                Debug.Log($"Viewport Size: {Track_List_DisplayViewportContent.parent.GetComponent<RectTransform>().sizeDelta}");
+
+                //Debug.Log($"Content Size: {Track_List_DisplayViewportContent.GetComponent<RectTransform>().sizeDelta}");
+                //Debug.Log($"Viewport Size: {Track_List_DisplayViewportContent.parent.GetComponent<RectTransform>().sizeDelta}");
+
+                var layoutGroup = Track_List_DisplayViewportContent.gameObject.GetComponent<GridLayoutGroup>();
+                if (layoutGroup != null)
+                {
+                    float totalHeight = Track_List_DisplayViewportContent.gameObject.GetComponent<RectTransform>().rect.height;
+                    Debug.Log($"Content Height: {totalHeight}");
+                }
                 Debug.Log($"Child Count: {Track_List_DisplayViewportContent.childCount}");   
                 
+
                 yield return null;
             }
         }

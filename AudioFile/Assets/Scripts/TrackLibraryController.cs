@@ -363,7 +363,7 @@ namespace AudioFile.Controller
                 foreach (var data in trackLibraryData.Tracks)
                 {
                     StartCoroutine(LoadAudioClipFromFile(data.TrackProperties["Path"], data.TrackProperties["TrackID"], data.TrackProperties));
-                    Debug.Log($"Track {data.TrackProperties["Title"]}  loaded successfully.");
+                    //Debug.Log($"Track {data.TrackProperties["Title"]}  loaded successfully.");
                 }
 
                 ObserverManager.ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
