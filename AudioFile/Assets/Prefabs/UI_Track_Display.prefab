@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 271961876291552621}
   - component: {fileID: 5189994999071905039}
   - component: {fileID: 5269546618318456420}
+  - component: {fileID: 6294795785856784204}
   m_Layer: 5
   m_Name: UI_Track_Display
   m_TagString: Untagged
@@ -159,11 +160,11 @@ RectTransform:
   - {fileID: 914126932547420049}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -7.950012, y: 381}
-  m_SizeDelta: {x: 1180.1, y: 30}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -185, y: 0}
+  m_SizeDelta: {x: -370, y: 30}
+  m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &271961876291552621
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -216,6 +217,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TrackDisplayGameObject: {fileID: 2544996683617785101}
   ContextMenuPrefab: {fileID: 1576798709533892619, guid: c20de291d172e6543b3e4f720e53bc70, type: 3}
+--- !u!114 &6294795785856784204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2544996683617785101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: 1180
+  m_PreferredHeight: 30
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
 --- !u!1 &3305812749273206363
 GameObject:
   m_ObjectHideFlags: 0

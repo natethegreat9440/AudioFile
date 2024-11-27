@@ -22,10 +22,10 @@ namespace AudioFile.View
     public class UITrackDisplay : MonoBehaviour, IPointerClickHandler
     {
         public GameObject TrackDisplayGameObject;
-        public Button titleButton { get; private set; } 
-        public Button artistButton { get; private set; } 
-        public Button albumButton { get; private set; } 
-        public Button durationButton { get; private set; }
+        public Button TitleButton { get; private set; } 
+        public Button ArtistButton { get; private set; } 
+        public Button AlbumButton { get; private set; } 
+        public Button DurationButton { get; private set; }
 
         private UITrackListDisplayManager listDisplayManager;
         public GameObject ContextMenuPrefab; //Will need to drag this prefab into UI_Track_Display_Prefab
@@ -33,7 +33,7 @@ namespace AudioFile.View
                                              //so whenever the user right clicks on a track, it populates the context menu with the appropriate options
                                              // these references here should just get from the global reference when called internally here
 
-        public UIContextMenu contextMenuInstance { get; private set; }
+        public UIContextMenu ContextMenuInstance { get; private set; }
 
         public string TrackDisplayID { get; private set; }
 
@@ -80,23 +80,23 @@ namespace AudioFile.View
 
         private void InitializeButtons()
         {
-            titleButton = transform.Find("UI_Track_Title_Button").GetComponent<Button>();
-            artistButton = transform.Find("UI_Track_Artist_Button").GetComponent<Button>();
-            albumButton = transform.Find("UI_Track_Album_Button").GetComponent<Button>();
-            durationButton = transform.Find("UI_Track_Duration_Button").GetComponent<Button>();
+            TitleButton = transform.Find("UI_Track_Title_Button").GetComponent<Button>();
+            ArtistButton = transform.Find("UI_Track_Artist_Button").GetComponent<Button>();
+            AlbumButton = transform.Find("UI_Track_Album_Button").GetComponent<Button>();
+            DurationButton = transform.Find("UI_Track_Duration_Button").GetComponent<Button>();
 
             /* Disable the duration button so it cannot be clicked. 
             Uncomment out later in case I want this functionality (or lack thereof)
-            if (durationButton != null)
+            if (DurationButton != null)
             {
-                durationButton.interactable = false;
+                DurationButton.interactable = false;
             }*/
 
             // Set up onClick events for Playback buttons
-            if (titleButton != null) titleButton.onClick.AddListener(() => OnButtonClicked("Title"));
-            if (artistButton != null) artistButton.onClick.AddListener(() => OnButtonClicked("Artist"));
-            if (albumButton != null) albumButton.onClick.AddListener(() => OnButtonClicked("Album"));
-            if (durationButton != null) durationButton.onClick.AddListener(() => OnButtonClicked("Duration"));
+            if (TitleButton != null) TitleButton.onClick.AddListener(() => OnButtonClicked("Title"));
+            if (ArtistButton != null) ArtistButton.onClick.AddListener(() => OnButtonClicked("Artist"));
+            if (AlbumButton != null) AlbumButton.onClick.AddListener(() => OnButtonClicked("Album"));
+            if (DurationButton != null) DurationButton.onClick.AddListener(() => OnButtonClicked("Duration"));
         }
 
 
@@ -125,7 +125,7 @@ namespace AudioFile.View
                     {
                         Vector2 displayPosition = eventData.position;
                         var trackDisplayIDList = new List<string>() { TrackDisplayID };
-                        contextMenuInstance = contextMenu.Initialize(trackDisplayIDList, eventData.position, this); //TODO: Add Playlist as second parameter once I have that class set upTrackDisplayID, displayPosition, this);
+                        ContextMenuInstance = contextMenu.Initialize(trackDisplayIDList, eventData.position, this); //TODO: Add Playlist as second parameter once I have that class set upTrackDisplayID, displayPosition, this);
                         Debug.Log("Context menu initialized");
 
                         // Optional: Prevent other click handlers from firing once the menu is created
@@ -141,11 +141,11 @@ namespace AudioFile.View
         {
             
             Debug.Log("Delegating context menu destruction");
-            if (contextMenuInstance != null)
+            if (ContextMenuInstance != null)
             {
                 Debug.Log("All right now destroy it");
-                contextMenuInstance.DestroyContextMenu();
-                contextMenuInstance = null;
+                ContextMenuInstance.DestroyContextMenu();
+                ContextMenuInstance = null;
             }
         }
 
