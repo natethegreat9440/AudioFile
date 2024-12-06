@@ -145,7 +145,8 @@ namespace AudioFile.View
             }
             else
             {
-                listDisplayManager.TrackSelected(this.gameObject);
+                //listDisplayManager.TrackSelected(this.gameObject);
+                listDisplayManager.HandleTrackButtonClick(this, null);
             }
         }
         //This method exists to be called from the UITrackListDisplayManager,
