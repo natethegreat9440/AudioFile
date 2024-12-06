@@ -143,6 +143,10 @@ namespace AudioFile.View
                     }
                 }
             }
+            else
+            {
+                listDisplayManager.TrackSelected(this.gameObject);
+            }
         }
         //This method exists to be called from the UITrackListDisplayManager,
         //so when the track is removed it destroys the Track Displays Context Menu if it is already open

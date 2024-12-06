@@ -35,14 +35,12 @@ namespace AudioFile.View
     public class PlayCommand : ICommand
     {
         public bool IsUndo { get; set; } = false;
-        //public int Index { get; }
         public string TrackDisplayID { get; }
 
 
         public PlayCommand(string trackDisplayID)
         {
             TrackDisplayID = trackDisplayID;
-            //Index = index;
         }
 
         public void Execute()
@@ -62,7 +60,6 @@ namespace AudioFile.View
     public class PauseCommand : ICommand
     {
         public bool IsUndo { get; set; } = false;
-        //public int Index { get; }
 
         public string TrackDisplayID { get; }
 
@@ -70,7 +67,6 @@ namespace AudioFile.View
         public PauseCommand(string trackDisplayID)
         {
             TrackDisplayID = trackDisplayID;
-            //Index = index;
         }
 
         public void Execute()
@@ -94,7 +90,6 @@ namespace AudioFile.View
         public float PreviousTime { get; set; }
 
         public float NewTime { get; set; }
-
         public SeekCommand(float previousTime, float newTime)
         {
             PreviousTime = previousTime;
@@ -105,7 +100,6 @@ namespace AudioFile.View
             Debug.Log("Seek Command executed");
             PlaybackController.Instance.HandleRequest(this, IsUndo);
         }
-
         public void Undo()
         {
             Debug.Log("Seek Command undone");
@@ -118,15 +112,11 @@ namespace AudioFile.View
     {
         public bool IsUndo { get; set; } = false;
 
-        //public int Index { get; }
-
         public string TrackDisplayID { get; }
-
 
         public StopCommand(string trackDisplayID)
         {
             TrackDisplayID = trackDisplayID;
-            //Index = index;
         }
 
         public void Execute()

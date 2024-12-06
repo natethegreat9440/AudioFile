@@ -6,8 +6,6 @@ using UnityEngine.UI;
 using AudioFile.Controller;
 using AudioFile.Model;
 using AudioFile.ObserverManager;
-using static UnityEditor.Timeline.TimelinePlaybackControls;
-//using TagLib.Riff;
 
 namespace AudioFile.View
 {
@@ -66,8 +64,7 @@ namespace AudioFile.View
 
         public UIContextMenu activeContextMenu;
 
-        //public bool HasSelection { get; private set; } = false;
-
+        private List<UITrackDisplay> selectedTrackDisplays = new List<UITrackDisplay>();
         public void Start()
         {
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackAdded", this);
@@ -86,6 +83,7 @@ namespace AudioFile.View
             }
             else
             {
+                //TODO: Move this to a method that just handles clicks for the whole UITrackDisplay transform and delegate to that here
                 TrackSelected(trackDisplay.TrackDisplayGameObject);
             }
 
@@ -110,9 +108,9 @@ namespace AudioFile.View
             action();
         }
 
-        private void TrackSelected(GameObject trackDisplay)
+        public void TrackSelected(GameObject trackDisplay)
         {
-            DeselectAllTrackDisplays();
+            /*DeselectAllTrackDisplays(); //TODO: modify behavior so DeselectAllTrackDisplays() is only called when a shift+select or ctr+select is taking place
             //HasSelection = true;
             string trackDisplayID = GetTrackDisplayID(trackDisplay);
             trackDisplay.GetComponent<Image>().color = Color.blue;
@@ -120,8 +118,64 @@ namespace AudioFile.View
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayID);
             //Debug.Log("Did observers get notified?");
             //ObserverManager.ObserverManager.Instance.CheckObservers("OnTrackSelected");
-            //ObserverManager.ObserverManager.Instance.CheckObservers("OnCurrentTrackIsDone");
+            //ObserverManager.ObserverManager.Instance.CheckObservers("OnCurrentTrackIsDone");*/
+            bool isShiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            bool isCtrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 
+            if (!isShiftPressed && !isCtrlPressed)
+            {
+                DeselectAllTrackDisplays();
+                selectedTrackDisplays.Clear();
+            }
+
+            if (isShiftPressed && selectedTrackDisplays.Count > 0)
+            {
+                int startIndex = GetTrackDisplayIndex(selectedTrackDisplays[0].TrackDisplayGameObject);
+                int endIndex = GetTrackDisplayIndex(trackDisplay);
+                if (startIndex > endIndex)
+                {
+                    int temp = startIndex;
+                    startIndex = endIndex;
+                    endIndex = temp;
+                }
+
+                for (int i = startIndex; i <= endIndex; i++)
+                {
+                    var child = Track_List_DisplayViewportContent.GetChild(i).GetComponent<UITrackDisplay>();
+                    if (!selectedTrackDisplays.Contains(child))
+                    {
+                        selectedTrackDisplays.Add(child);
+                        child.IsSelected = true;
+                        child.GetComponent<Image>().color = Color.blue;
+                    }
+                }
+            }
+            else if (isCtrlPressed)
+            {
+                var trackDisplayComponent = trackDisplay.GetComponent<UITrackDisplay>();
+                if (selectedTrackDisplays.Contains(trackDisplayComponent))
+                {
+                    selectedTrackDisplays.Remove(trackDisplayComponent);
+                    trackDisplayComponent.IsSelected = false;
+                    trackDisplayComponent.GetComponent<Image>().color = Color.white;
+                }
+                else
+                {
+                    selectedTrackDisplays.Add(trackDisplayComponent);
+                    trackDisplayComponent.IsSelected = true;
+                    trackDisplayComponent.GetComponent<Image>().color = Color.blue;
+                }
+            }
+            else
+            {
+                var trackDisplayComponent = trackDisplay.GetComponent<UITrackDisplay>();
+                selectedTrackDisplays.Add(trackDisplayComponent);
+                trackDisplayComponent.IsSelected = true;
+                trackDisplayComponent.GetComponent<Image>().color = Color.blue;
+            }
+
+            string trackDisplayID = GetTrackDisplayID(trackDisplay);
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSelected", trackDisplayID);
         }
 
         private void DeselectAllTrackDisplays()
@@ -139,7 +193,6 @@ namespace AudioFile.View
         public string GetTrackDisplayID(GameObject trackDisplay)
         {
             string trackDisplayID = trackDisplay.GetComponent<UITrackDisplay>().TrackDisplayID;
-            //Debug.Log($"Getting trackDisplayID = {trackDisplayID}");
             return trackDisplayID;
         }
         public int GetTrackDisplayIndex(GameObject trackDisplay) 
