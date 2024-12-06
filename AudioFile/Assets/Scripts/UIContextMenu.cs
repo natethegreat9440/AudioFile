@@ -87,11 +87,11 @@ namespace AudioFile.View
             //TODO: Add a loop to add all Playlist Folders (sub menus) and Playlists names (Menu Items) to the addToPlaylistMenu
 
             MenuItem removeTrackMenuItem = removeTrackGameObject.AddComponent<MenuItem>();
-            removeTrackMenuItem = removeTrackMenuItem.Initialize(removeTrackButton, "Remove", "Remove Track", removeTrackCommand);
+            removeTrackMenuItem = removeTrackMenuItem.Initialize(removeTrackButton, "Remove", "Remove Track", removeTrackCommand, true);
 
             //Added for testing submenu
             MenuItem testPlaylistMenuItem = testPlaylistGameObject.AddComponent<MenuItem>();
-            testPlaylistMenuItem = testPlaylistMenuItem.Initialize(testPlaylistButton, "Playlist 1", "Dummy playlist for testing", addToPlaylistCommand);
+            testPlaylistMenuItem = testPlaylistMenuItem.Initialize(testPlaylistButton, "Playlist 1", "Dummy playlist for testing", addToPlaylistCommand, true);
             
             //Add submenus to menu items
             addToPlaylistMenu.Add(testPlaylistMenuItem);

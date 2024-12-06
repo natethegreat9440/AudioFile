@@ -207,9 +207,9 @@ namespace AudioFile.View
         //public int Index { get; }
         public List<string> TrackDisplayIDs { get; }
 
-        public List<string> Paths { get; set; }
+        public List<string> Paths { get; set; } = new List<string>();
 
-        public List<Dictionary<string, string>> TrackProperties { get; set; } //Has ability to hold Track Properties for multiple tracks
+        public List<Dictionary<string, string>> TrackProperties { get; set; } = new List<Dictionary<string, string>>(); //Has ability to hold Track Properties for multiple tracks
 
         public RemoveTrackCommand(List<string> trackDisplayIDs)
         {

@@ -126,7 +126,6 @@ namespace AudioFile.View
 
         private void DeselectAllTrackDisplays()
         {
-            //HasSelection = false;
             foreach (Transform child in Track_List_DisplayViewportContent)
             {
                 var trackDisplay = child.GetComponent<Image>();

@@ -52,7 +52,6 @@ namespace AudioFile.View
             TrackDisplayID = trackData.TrackProperties.GetProperty("TrackID");
             SetTrackData(trackData);
             InitializeButtons();
-            //TrackDisplayGameObject.onClick.AddListener(() => OnPointerClick(PointerEventData eventData);
 
         }
 
@@ -124,7 +123,17 @@ namespace AudioFile.View
                     if (contextMenu != null)
                     {
                         Vector2 displayPosition = eventData.position;
-                        var trackDisplayIDList = new List<string>() { TrackDisplayID };
+
+                        var trackDisplayIDList = new List<string>();
+
+                        foreach (Transform child in listDisplayManager.Track_List_DisplayViewportContent)
+                        {
+                            if (child.GetComponent<UITrackDisplay>().IsSelected)
+                            {
+                                trackDisplayIDList.Add(child.GetComponent<UITrackDisplay>().TrackDisplayID);
+                            }
+                        }
+
                         ContextMenuInstance = contextMenu.Initialize(trackDisplayIDList, eventData.position, this); //TODO: Add Playlist as second parameter once I have that class set upTrackDisplayID, displayPosition, this);
                         Debug.Log("Context menu initialized");
 

@@ -88,9 +88,10 @@ namespace AudioFile.Controller
                     {
                         var trackProperties = TrackList
                         .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
-                        .Select(track => new Dictionary<string, string>(track.TrackProperties.GetAllProperties()));
+                        .Select(track => new Dictionary<string, string>(track.TrackProperties.GetAllProperties()))
+                        .FirstOrDefault();
 
-                        removeTrackCommand.TrackProperties.Add(trackProperties as Dictionary<string, string>);
+                        removeTrackCommand.TrackProperties.Add(trackProperties);
 
                         string removedTrackPath = RemoveTrack(trackDisplayID);
                         removeTrackCommand.Paths.Add(removedTrackPath);
