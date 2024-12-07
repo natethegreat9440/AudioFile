@@ -119,6 +119,7 @@ m_ResolvedPackages:
     - 2.4.4
     - 2.5.1
     - 2.5.2
+    - 2.6.0
     compatible:
     - 2.2.0
     - 2.3.1
@@ -126,6 +127,7 @@ m_ResolvedPackages:
     - 2.4.4
     - 2.5.1
     - 2.5.2
+    - 2.6.0
     recommended: 2.2.0
     deprecated: []
   dependencies: []

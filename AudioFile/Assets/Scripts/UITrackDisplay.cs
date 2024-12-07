@@ -126,12 +126,13 @@ namespace AudioFile.View
 
                         var trackDisplayIDList = new List<string>();
 
-                        foreach (Transform child in listDisplayManager.Track_List_DisplayViewportContent)
+                        foreach (var trackDisplay in listDisplayManager.SelectedTrackDisplays)
                         {
-                            if (child.GetComponent<UITrackDisplay>().IsSelected)
+                            /*if (child.GetComponent<UITrackDisplay>().IsSelected)
                             {
                                 trackDisplayIDList.Add(child.GetComponent<UITrackDisplay>().TrackDisplayID);
-                            }
+                            }*/
+                            trackDisplayIDList.Add(trackDisplay.TrackDisplayID);
                         }
 
                         ContextMenuInstance = contextMenu.Initialize(trackDisplayIDList, eventData.position, this); //TODO: Add Playlist as second parameter once I have that class set upTrackDisplayID, displayPosition, this);

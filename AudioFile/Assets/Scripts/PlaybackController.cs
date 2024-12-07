@@ -37,6 +37,12 @@ namespace AudioFile.Controller
 
         public Track CurrentTrack { get; private set; } = null;
 
+        public int CurrentTrackIndex
+        {
+            get { return TrackLibrary.Instance.CurrentTrackIndex; }
+            set { TrackLibrary.Instance.CurrentTrackIndex = value; }
+        }
+
         private static PlaybackController CreateSingleton()
         {
             // Create a new GameObject to hold the singleton instance if it doesn't already exist
@@ -53,7 +59,7 @@ namespace AudioFile.Controller
 
         public void Start()
         {
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSelected", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnSingleTrackSelected", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackIsDone", this);
 
         }
@@ -70,11 +76,6 @@ namespace AudioFile.Controller
         public void Initialize()
         {
             throw new NotImplementedException();
-        }
-
-        public int GetCurrentTrackIndex()
-        {
-            return CurrentTrack != null ? Model.TrackLibrary.Instance.GetTrackIndex(CurrentTrack) : -1;
         }
 
         public string GetCurrentTrackID()
@@ -234,7 +235,7 @@ namespace AudioFile.Controller
             Action action = observationType switch
             {
                 "OnCurrentTrackIsDone" => NextItem,
-                "OnTrackSelected" => () =>
+                "OnSingleTrackSelected" => () =>
                 {
                     //Debug.Log($"CurrentTrack = {CurrentTrack}");
                     if (CurrentTrack == null)

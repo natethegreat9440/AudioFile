@@ -17,7 +17,6 @@ namespace AudioFile.View
 {
     public class UIPlaybackButtonsManager : MonoBehaviour, IAudioFileObserver //IAudioFileObserver required method AudioFileUpdate(string observationType, object data) is last method in class
     {
-        //int trackDisplayIndex;
         string trackDisplayID;
 
         readonly string previousButtonPath = "Playback_Controls/Previous_Button";
@@ -27,7 +26,7 @@ namespace AudioFile.View
 
         void Start()
         {
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSelected", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnSingleTrackSelected", this);
 
             Canvas canvas = GameObject.Find("GUI_Canvas").GetComponent<Canvas>();
 
@@ -88,7 +87,7 @@ namespace AudioFile.View
         {
             Action action = observationType switch
             {
-                "OnTrackSelected" => () => trackDisplayID = (string)data,
+                "OnSingleTrackSelected" => () => trackDisplayID = (string)data,
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };

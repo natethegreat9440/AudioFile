@@ -131,7 +131,7 @@ namespace AudioFile.View
                 },
                 "OnTrackListEnd" => () =>
                 {
-                    if (Controller.PlaybackController.Instance.GetCurrentTrackIndex() == 0)
+                    if (Controller.PlaybackController.Instance.CurrentTrackIndex == 0)
                     {
                         StartCoroutine(QuickMessage(1f, "Front of playlist"));
                     }

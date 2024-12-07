@@ -46,7 +46,7 @@ namespace AudioFile.Controller
             return singletonObject.AddComponent<TrackLibraryController>();
         }
 
-        public List<Track> TrackList { get => TrackLibrary.Instance.trackList; set => TrackLibrary.Instance.trackList = value; }
+        public List<Track> TrackList { get => TrackLibrary.Instance.TrackList; set => TrackLibrary.Instance.TrackList = value; }
 
         public void Awake()
         {
@@ -83,6 +83,22 @@ namespace AudioFile.Controller
                 ("RemoveTrackCommand", false) => () =>
                 {
                     RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
+
+                    //Changes the current track to the track before the first removed track if the first removed track is the current track
+                    if (PlaybackController.Instance.CurrentTrack.IsPlaying == true && removeTrackCommand.TrackDisplayIDs[0] == PlaybackController.Instance.CurrentTrack.TrackProperties.GetProperty("TrackID"))
+                    {
+                        if (PlaybackController.Instance.CurrentTrackIndex > 0)
+                        {
+                            PlaybackController.Instance.CurrentTrackIndex--;
+                            PlaybackController.Instance.SetCurrentTrack(TrackList[PlaybackController.Instance.CurrentTrackIndex]);
+                        }
+                        else
+                        {
+                            PlaybackController.Instance.CurrentTrackIndex++;
+                            PlaybackController.Instance.SetCurrentTrack(TrackList[PlaybackController.Instance.CurrentTrackIndex]);
+                        }
+                    }
+
                     //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed
                     foreach (var trackDisplayID in removeTrackCommand.TrackDisplayIDs)
                     {
@@ -93,8 +109,11 @@ namespace AudioFile.Controller
 
                         removeTrackCommand.TrackProperties.Add(trackProperties);
 
-                        string removedTrackPath = RemoveTrack(trackDisplayID);
+                        Track trackToRemove = TrackLibrary.Instance.GetTrackAtID(trackDisplayID);
+                        string removedTrackPath = trackToRemove.TrackProperties.GetProperty("Path");
                         removeTrackCommand.Paths.Add(removedTrackPath);
+
+                        RemoveTrack(trackDisplayID);
                     }
                 },
                 //Add more switch arms here as needed
@@ -111,7 +130,8 @@ namespace AudioFile.Controller
                 ("RemoveTrackCommand", true) => () =>
                 {
                     RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
-                    //foreach (var path in removeTrackCommand.Paths)
+
+
                     //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed
                     foreach (var trackDisplayID in removeTrackCommand.TrackDisplayIDs)
                     {
@@ -146,12 +166,9 @@ namespace AudioFile.Controller
         {
             throw new NotImplementedException();
         }
-        public string RemoveTrack(string trackDisplayID)
+        public void RemoveTrack(string trackDisplayID)
         {
-            Track trackToRemove = TrackLibrary.Instance.GetTrackAtID(trackDisplayID);
-            string trackPath = trackToRemove.TrackProperties.GetProperty("Path");
             TrackLibrary.Instance.RemoveItem(trackDisplayID);
-            return trackPath;
         }
         public string RemoveTrackAtIndex(int index)
         {
@@ -408,21 +425,21 @@ namespace AudioFile.Controller
 
     public void PlayCurrentTrack()
     {
-        if (mediaLibrary.tracks.Count > 0 && currentTrackIndex < mediaLibrary.tracks.Count)
+        if (mediaLibrary.tracks.Count > 0 && CurrentTrackIndex < mediaLibrary.tracks.Count)
         {
-            AudioClip currentTrackClip = mediaLibrary.tracks[currentTrackIndex].AudioSource.clip;
-            audioSource = mediaLibrary.tracks[currentTrackIndex].AudioSource;
+            AudioClip currentTrackClip = mediaLibrary.tracks[CurrentTrackIndex].AudioSource.clip;
+            audioSource = mediaLibrary.tracks[CurrentTrackIndex].AudioSource;
 
             if (audioSource != null)
             {
-                trackDuration = mediaLibrary.tracks[currentTrackIndex].Duration; // Get the duration of the current track
+                trackDuration = mediaLibrary.tracks[CurrentTrackIndex].Duration; // Get the duration of the current track
                 audioSource.Play();
                 OnTrackChanged?.Invoke(currentTrackClip.name); // Trigger event here
                 //CreateAndExpandVisualizers();
             }
             else
             {
-                if (currentTrackIndex == mediaLibrary.tracks.Count - 1)
+                if (CurrentTrackIndex == mediaLibrary.tracks.Count - 1)
                 {
                     Skip(false); // Skip to the previous track if the current clip is null and you are at the last track on a playlist
                 }

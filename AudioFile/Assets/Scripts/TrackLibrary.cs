@@ -34,8 +34,8 @@ namespace AudioFile.Model
 
         public static TrackLibrary Instance => _instance.Value;
 
-        public List<Track> trackList;
-        private int currentTrackIndex;
+        public List<Track> TrackList;
+        public int CurrentTrackIndex { get; set; }
 
         private static TrackLibrary CreateSingleton()
         {
@@ -54,8 +54,8 @@ namespace AudioFile.Model
         {
             //TODO: Change this method later so it initializes to what is in memory
             //and set the current track index to whatever the last played track is
-            trackList = new List<Track>();
-            currentTrackIndex = 0;
+            TrackList = new List<Track>();
+            CurrentTrackIndex = 0;
         }
 
         public override string ToString()
@@ -66,16 +66,16 @@ namespace AudioFile.Model
         #region Playback method implementations
         public Track GetTrackAtIndex(int index)
         {
-            return trackList[index];
+            return TrackList[index];
         }
         public int GetTrackIndex(Track track)
         {
-            //Debug.Log($"Track index = {trackList.IndexOf(track)}");
-            return trackList.IndexOf(track);
+            //Debug.Log($"Track index = {TrackList.IndexOf(track)}");
+            return TrackList.IndexOf(track);
         }
         public Track GetTrackAtID(string trackDisplayID)
         {
-            return trackList
+            return TrackList
                 .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
                 .FirstOrDefault();
         }
@@ -83,9 +83,9 @@ namespace AudioFile.Model
         private int GetTrackIndexAtID(string trackDisplayID)
         {
             //Debug.Log($"trackDisplayID passed = {trackDisplayID}.");
-            return trackList
+            return TrackList
                 .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
-                .Select(track => trackList.IndexOf(track))
+                .Select(track => TrackList.IndexOf(track))
                 .FirstOrDefault();
         }
 
@@ -95,35 +95,35 @@ namespace AudioFile.Model
         }
         public override void Play(string trackDisplayID)
         {
-            currentTrackIndex = GetTrackIndexAtID(trackDisplayID);
+            CurrentTrackIndex = GetTrackIndexAtID(trackDisplayID);
             try
             {
-                trackList[currentTrackIndex].Play();
+                TrackList[CurrentTrackIndex].Play();
             }
             catch (Exception ex)
             {
                 Debug.Log($"Track skipped: {ex.GetType()} - {ex.Message}");
-                Skip(currentTrackIndex);
+                Skip(CurrentTrackIndex);
             }
         }
 
         public override void Pause(string trackDisplayID)
         {
-            currentTrackIndex = GetTrackIndexAtID(trackDisplayID);
-            trackList[currentTrackIndex].Pause();
+            CurrentTrackIndex = GetTrackIndexAtID(trackDisplayID);
+            TrackList[CurrentTrackIndex].Pause();
         }
 
         public override void Stop(string trackDisplayID)
         {
-            currentTrackIndex = GetTrackIndexAtID(trackDisplayID);
-            trackList[currentTrackIndex].Stop();
+            CurrentTrackIndex = GetTrackIndexAtID(trackDisplayID);
+            TrackList[CurrentTrackIndex].Stop();
         }
         public override void Skip(int index) //Commenting this out for now as it seems to me this Skip() logic could just be implemented into the Play() method directly 
         //(and potentially other playback methods, however I'll want to test how Skip logic works inside Play before deciding if I want to add to other methods)
         {
-            if (trackList[currentTrackIndex] != null)
+            if (TrackList[CurrentTrackIndex] != null)
             {
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSkipped", trackList[currentTrackIndex]); //Passes the track name if possible when skipped
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSkipped", TrackList[CurrentTrackIndex]); //Passes the track name if possible when skipped
             }
             else
             {
@@ -134,43 +134,43 @@ namespace AudioFile.Model
 
         public override void NextItem()
         {
-            currentTrackIndex = PlaybackController.Instance.GetCurrentTrackIndex();
+            CurrentTrackIndex = GetTrackIndex(PlaybackController.Instance.CurrentTrack);
 
-            if (currentTrackIndex < trackList.Count - 1)
+            if (CurrentTrackIndex < TrackList.Count - 1)
             {
-                trackList[currentTrackIndex].Stop();
+                TrackList[CurrentTrackIndex].Stop();
 
-                currentTrackIndex++;
-                PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", currentTrackIndex);
-                trackList[currentTrackIndex].Play();
+                CurrentTrackIndex++;
+                PlaybackController.Instance.SetCurrentTrack(TrackList[CurrentTrackIndex]);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", CurrentTrackIndex);
+                TrackList[CurrentTrackIndex].Play();
             }
             else
             {
                 Debug.Log("Reached the end of the playlist.");
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", currentTrackIndex);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", CurrentTrackIndex);
             }
         }
 
         public override void PreviousItem()
         {
-            currentTrackIndex = PlaybackController.Instance.GetCurrentTrackIndex();
-            Debug.Log($"Current track index = {PlaybackController.Instance.GetCurrentTrackIndex()}");
+            CurrentTrackIndex = GetTrackIndex(PlaybackController.Instance.CurrentTrack);
+            Debug.Log($"Current track index = {CurrentTrackIndex}");
 
-            if (currentTrackIndex > 0)
+            if (CurrentTrackIndex > 0)
             {
-                trackList[currentTrackIndex].Stop();
+                TrackList[CurrentTrackIndex].Stop();
 
-                currentTrackIndex--;
-                PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", currentTrackIndex);
-                trackList[currentTrackIndex].Play();
+                CurrentTrackIndex--;
+                PlaybackController.Instance.SetCurrentTrack(TrackList[CurrentTrackIndex]);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", CurrentTrackIndex);
+                TrackList[CurrentTrackIndex].Play();
             }
             else
             {
                 Debug.Log("Reached the front of the playlist.");
                 //Same event type as NextItem(), may want to change this later
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", currentTrackIndex);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", CurrentTrackIndex);
             }
         }
         #endregion
@@ -179,7 +179,7 @@ namespace AudioFile.Model
         {
             if (newTrack is Track track)
             {
-                trackList.Add(track);
+                TrackList.Add(track);
                 Debug.Log($"Track '{track}' has been added to the media library.");
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackAdded", track);
             }
@@ -194,36 +194,29 @@ namespace AudioFile.Model
             var trackToRemove = GetTrackAtID(trackDisplayID);
 
             var trackIndex = GetTrackIndex(trackToRemove);
-            trackList[trackIndex].Stop();
+            TrackList[trackIndex].Stop();
 
-            Debug.Log($"trackToRemove = {PlaybackController.Instance.CurrentTrack}");
+            Debug.Log($"trackToRemove = {TrackList[trackIndex]}");
 
-            PlaybackController.Instance.CurrentTrack.TrackProperties.GetProperty("TrackID");
-            currentTrackIndex = GetTrackIndexAtID(trackDisplayID);
+            //PlaybackController.Instance.CurrentTrack.TrackProperties.GetProperty("TrackID");
+            //CurrentTrackIndex = GetTrackIndexAtID(trackDisplayID);
 
-            //Move the current track to the previous track
-            if (currentTrackIndex > 0)
-            {
-                currentTrackIndex--;
-            }
-
-            PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
-            trackList.Remove(trackToRemove);
+            TrackList.Remove(trackToRemove);
             Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
         }
 
         public override void RemoveItemAtIndex(int providedIndex)
         {
-            var trackToRemove = trackList[providedIndex];
+            var trackToRemove = TrackList[providedIndex];
             Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
-            trackList[providedIndex].Stop();
+            TrackList[providedIndex].Stop();
 
             //Move the current track to the previous track
-            currentTrackIndex--;
-            PlaybackController.Instance.SetCurrentTrack(trackList[currentTrackIndex]);
+            CurrentTrackIndex--;
+            PlaybackController.Instance.SetCurrentTrack(TrackList[CurrentTrackIndex]);
 
-            trackList.RemoveAt(providedIndex);
+            TrackList.RemoveAt(providedIndex);
             Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
         }
