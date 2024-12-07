@@ -143,6 +143,7 @@ namespace AudioFile.Model
                 CurrentTrackIndex++;
                 PlaybackController.Instance.SetCurrentTrack(TrackList[CurrentTrackIndex]);
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", CurrentTrackIndex);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnPlayingTrackChanged", null);
                 TrackList[CurrentTrackIndex].Play();
             }
             else
@@ -164,6 +165,7 @@ namespace AudioFile.Model
                 CurrentTrackIndex--;
                 PlaybackController.Instance.SetCurrentTrack(TrackList[CurrentTrackIndex]);
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackCycled", CurrentTrackIndex);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnPlayingTrackChanged", null);
                 TrackList[CurrentTrackIndex].Play();
             }
             else

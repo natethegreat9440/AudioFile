@@ -84,21 +84,31 @@ namespace AudioFile.Controller
                 {
                     RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
 
-                    //Changes the current track to the track before the first removed track if the first removed track is the current track
-                    if (PlaybackController.Instance.CurrentTrack.IsPlaying == true && removeTrackCommand.TrackDisplayIDs[0] == PlaybackController.Instance.CurrentTrack.TrackProperties.GetProperty("TrackID"))
+                    //Behavior for setting the current track based on whether the active playback track is within the tracks to be removed selection or not. If thre is no current track do nothing
+                    var playOrPausedTrack = TrackList.Where(track => track.IsPlaying || track.IsPaused).FirstOrDefault();
+
+                    if (playOrPausedTrack != null)
                     {
-                        if (PlaybackController.Instance.CurrentTrackIndex > 0)
+                        var playOrPausedTrackID = playOrPausedTrack.TrackProperties.GetProperty("TrackID");
+
+                        if (removeTrackCommand.TrackDisplayIDs.Contains(playOrPausedTrackID))
                         {
-                            PlaybackController.Instance.CurrentTrackIndex--;
-                            PlaybackController.Instance.SetCurrentTrack(TrackList[PlaybackController.Instance.CurrentTrackIndex]);
+                            if (PlaybackController.Instance.CurrentTrackIndex > 0)
+                            {
+                                PlaybackController.Instance.CurrentTrackIndex--;
+                                PlaybackController.Instance.SetCurrentTrack(TrackList[PlaybackController.Instance.CurrentTrackIndex]);
+                            }
+                            else
+                            {
+                                PlaybackController.Instance.CurrentTrackIndex++;
+                                PlaybackController.Instance.SetCurrentTrack(TrackList[PlaybackController.Instance.CurrentTrackIndex]);
+                            }
                         }
                         else
                         {
-                            PlaybackController.Instance.CurrentTrackIndex++;
-                            PlaybackController.Instance.SetCurrentTrack(TrackList[PlaybackController.Instance.CurrentTrackIndex]);
+                            PlaybackController.Instance.SetCurrentTrack(playOrPausedTrack);
                         }
                     }
-
                     //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed
                     foreach (var trackDisplayID in removeTrackCommand.TrackDisplayIDs)
                     {
@@ -224,41 +234,47 @@ namespace AudioFile.Controller
 
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + escapedPath, AudioType.MPEG))
             {
-                    yield return www.SendWebRequest();
+                yield return www.SendWebRequest();
 
-                    if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
+                if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
+                {
+                    Debug.LogError("Error loading audio file: " + www.error);
+                    ObserverManager.ObserverManager.Instance.NotifyObservers("AudioFileError", "Error loading audio file at path (check file path): " + "file://" + escapedPath);
+                }
+                else
+                {
+                    AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
+                    if (audioClip != null && audioClip.samples > 0)
                     {
-                        Debug.LogError("Error loading audio file: " + www.error);
+                        Debug.Log("Successfully loaded audio clip!");
+
+                        string trackTitle = metadata[0];
+                        string contributingArtists = metadata[1];
+                        string trackAlbum = metadata[2];
+
+                        Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, trackID);
+                        TrackLibrary.Instance.AddItem(newTrack);
+
+                        // Set the TrackProperties from the properties dictionary. Only happens when loading deserialized tracks
+                        if (otherProperties != null)
+                        {
+                            foreach (var property in otherProperties)
+                            {
+                                //Skips setting any properties that are not already required/set by the CreateTrack method so only "other properties" get set
+                                if (property.Key != "Title" || property.Key != "Artist" || property.Key != "Album" || property.Key != "Duration" || property.Key != "Path" || property.Key != "TrackID")
+                                    newTrack.TrackProperties.SetProperty(property.Key, property.Value);
+                            }
+                        }
+
+                    // Invoke the callback with the new track
+                    onTrackLoaded?.Invoke(newTrack);
                     }
                     else
                     {
-                        AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
-                        if (audioClip != null)
-                        {
-                            Debug.Log("Successfully loaded audio clip!");
-
-                            string trackTitle = metadata[0];
-                            string contributingArtists = metadata[1];
-                            string trackAlbum = metadata[2];
-
-                            Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, trackID);
-                            TrackLibrary.Instance.AddItem(newTrack);
-
-                            // Set the TrackProperties from the properties dictionary. Only happens when loading deserialized tracks
-                            if (otherProperties != null)
-                            {
-                                foreach (var property in otherProperties)
-                                {
-                                    //Skips setting any properties that are not already required/set by the CreateTrack method so only "other properties" get set
-                                    if (property.Key != "Title" || property.Key != "Artist" || property.Key != "Album" || property.Key != "Duration" || property.Key != "Path" || property.Key != "TrackID")
-                                        newTrack.TrackProperties.SetProperty(property.Key, property.Value);
-                                }
-                            }
-
-                        // Invoke the callback with the new track
-                        onTrackLoaded?.Invoke(newTrack);
-                        }
+                        Debug.Log($"Unknown error: Audio clip is either null or has no samples. audioClip: {audioClip} samples: {audioClip.samples}");
+                        ObserverManager.ObserverManager.Instance.NotifyObservers("AudioFileError", $"Unknown error loading/creating audio file: {metadata[0]} - {metadata[1]}");
                     }
+                }
             }
         }
         private List<string> ExtractFileMetadata(string filePath)

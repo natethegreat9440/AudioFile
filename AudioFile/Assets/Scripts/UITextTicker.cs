@@ -41,12 +41,13 @@ namespace AudioFile.View
             DisplayWelcome();
 
             //Register for these observations
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackChanged", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnPlayingTrackChanged", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackListEnd", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSkipped", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateStart", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateEnd", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("AudioFileError", this);
         }
 
         private void DisplayWelcome(string welcomeMessage = "Welcome to AudioFile!", bool isWelcomeScrolling = true)
@@ -123,7 +124,7 @@ namespace AudioFile.View
         {
             Action action = observationType switch
             {
-                "OnCurrentTrackChanged" => () =>
+                "OnPlayingTrackChanged" => () =>
                 {
                     textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
                     textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.CurrentTrack.ToString();
@@ -170,8 +171,12 @@ namespace AudioFile.View
                 "TrackDisplayPopulateEnd" => () =>
                 {
                     DisplayWelcome();
-                }
-                ,
+                },
+                "AudioFileError" => () =>
+                {
+                    string errorMessage = data as string;
+                    StartCoroutine(QuickMessage(8f, errorMessage, true));
+                },
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };
 

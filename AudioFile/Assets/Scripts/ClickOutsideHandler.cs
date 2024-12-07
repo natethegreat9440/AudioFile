@@ -25,7 +25,7 @@ public class ClickOutsideHandler : MonoBehaviour, IPointerClickHandler
 
     public void DestroyClickOutsideHandler()
     {
-        Debug.Log("Click outside detected. Destroying context menu.");
+        //Debug.Log("Click outside detected. Destroying context menu.");
         contextMenu.DestroyContextMenu();
         Destroy(gameObject);
     }

@@ -185,7 +185,7 @@ namespace AudioFile.Controller
             if (track != null)
             {
                 CurrentTrack = track;
-                //Debug.Log($"Current track set to: {CurrentTrack}");
+                Debug.Log($"Current track set to: {CurrentTrack}");
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackChanged", null);
             }
             else
@@ -197,6 +197,7 @@ namespace AudioFile.Controller
 
         public void Play(string trackDisplayID)
         {
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnPlayingTrackChanged", null);
             SetCurrentTrack(TrackLibrary.Instance.GetTrackAtID(trackDisplayID));
             TrackLibrary.Instance.Play(trackDisplayID);
         }
@@ -231,18 +232,18 @@ namespace AudioFile.Controller
         }
         public void AudioFileUpdate(string observationType, object data)
         {
-            Debug.Log(observationType);
+            //Debug.Log(observationType);
             Action action = observationType switch
             {
                 "OnCurrentTrackIsDone" => NextItem,
                 "OnSingleTrackSelected" => () =>
                 {
                     //Debug.Log($"CurrentTrack = {CurrentTrack}");
-                    if (CurrentTrack == null)
-                    {
+                    //if (CurrentTrack == null)
+                    //{
                         //Debug.Log("Setting current track to: " + (string)data);
                         SetCurrentTrack(TrackLibrary.Instance.GetTrackAtID((string)data));
-                    }
+                    //}
                 },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")

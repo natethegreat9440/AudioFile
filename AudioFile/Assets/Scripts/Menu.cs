@@ -92,13 +92,13 @@ namespace AudioFile.View
         //adding float tolerance = 0.5f or similar to OnPointerExit and subtracting/adding tolerance to rect.yMin/rect.yMax respectively.
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
-            Debug.Log("Pointer Entered: " + this.Name);
+            //Debug.Log("Pointer Entered: " + this.Name);
             Display();
         }
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
-            Debug.Log("Pointer Exited: " + this.Name);
+            //Debug.Log("Pointer Exited: " + this.Name);
 
             RectTransform rectTransform = Button.GetComponent<RectTransform>();
 
@@ -110,7 +110,7 @@ namespace AudioFile.View
             {
                 Hide();
                 //This commented out block is only for debugging. Keep here if needed for future use.
-                if (localMousePosition.y > rect.yMax + _correctYMax)
+                /*if (localMousePosition.y > rect.yMax + _correctYMax)
                 {
                     Debug.Log("Pointer Exited from the top boundary: " + this.Name);
                     Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMax: {rect.yMax} localMousePosition.y > rect.yMax??");
@@ -125,7 +125,7 @@ namespace AudioFile.View
                 {
                     Debug.Log("Something went wrong: " + this.Name);
                     Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMin: {rect.yMin} rect.yMax: {rect.yMax}");
-                }
+                }*/
             }
             // Check if mouse is exiting from the sides and top boundaries only
             else if ((localMousePosition.x < rect.xMin || localMousePosition.x > rect.xMax || localMousePosition.y > rect.yMax + _correctYMax) && _alphaMenu)

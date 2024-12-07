@@ -107,7 +107,7 @@ namespace AudioFile.View
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            Debug.Log("Pointer click detected");
+            //Debug.Log("Pointer click detected");
             // Check for right-click
             if (eventData.button == PointerEventData.InputButton.Right && IsSelected)
             {
@@ -128,10 +128,6 @@ namespace AudioFile.View
 
                         foreach (var trackDisplay in listDisplayManager.SelectedTrackDisplays)
                         {
-                            /*if (child.GetComponent<UITrackDisplay>().IsSelected)
-                            {
-                                trackDisplayIDList.Add(child.GetComponent<UITrackDisplay>().TrackDisplayID);
-                            }*/
                             trackDisplayIDList.Add(trackDisplay.TrackDisplayID);
                         }
 

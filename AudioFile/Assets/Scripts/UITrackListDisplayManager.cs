@@ -108,27 +108,15 @@ namespace AudioFile.View
             action();
         }
 
-        public void TrackSelected(GameObject trackDisplay)
+        public void TrackSelected(GameObject trackDisplayObject)
         {
             bool isShiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             bool isCtrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 
-            if (!isShiftPressed && !isCtrlPressed)
-            {
-                DeselectAllTrackDisplays();
-                SelectedTrackDisplays.Clear();
-                int trackDisplayIndex = GetTrackDisplayIndex(trackDisplay);
-                var displayToAdd = Track_List_DisplayViewportContent.GetChild(trackDisplayIndex).GetComponent<UITrackDisplay>();
-                SelectedTrackDisplays.Add(displayToAdd);
-
-                string trackDisplayID = GetTrackDisplayID(trackDisplay);
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnSingleTrackSelected", trackDisplayID);
-            }
-
             if (isShiftPressed && SelectedTrackDisplays.Count > 0)
             {
                 int startIndex = GetTrackDisplayIndex(SelectedTrackDisplays[0].TrackDisplayGameObject);
-                int endIndex = GetTrackDisplayIndex(trackDisplay);
+                int endIndex = GetTrackDisplayIndex(trackDisplayObject);
                 if (startIndex > endIndex) //If selecting from top to bottom invert startIndex and endIndex so for loop always executes and increments from the lowest index regardless of whether that index was selected first or last
                 {
                     int temp = startIndex;
@@ -149,7 +137,7 @@ namespace AudioFile.View
             }
             else if (isCtrlPressed)
             {
-                var trackDisplayComponent = trackDisplay.GetComponent<UITrackDisplay>();
+                var trackDisplayComponent = trackDisplayObject.GetComponent<UITrackDisplay>();
                 if (SelectedTrackDisplays.Contains(trackDisplayComponent))
                 {
                     SelectedTrackDisplays.Remove(trackDisplayComponent);
@@ -165,10 +153,19 @@ namespace AudioFile.View
             }
             else
             {
-                var trackDisplayComponent = trackDisplay.GetComponent<UITrackDisplay>();
+                //Single track selection
+                DeselectAllTrackDisplays();
+                SelectedTrackDisplays.Clear();
+
+                var trackDisplayComponent = trackDisplayObject.GetComponent<UITrackDisplay>();
                 SelectedTrackDisplays.Add(trackDisplayComponent);
+
                 trackDisplayComponent.IsSelected = true;
                 trackDisplayComponent.GetComponent<Image>().color = Color.blue;
+
+                string trackDisplayID = GetTrackDisplayID(trackDisplayObject);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnSingleTrackSelected", trackDisplayID);
+
             }
 
         }

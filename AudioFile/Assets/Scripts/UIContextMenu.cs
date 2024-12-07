@@ -131,7 +131,7 @@ namespace AudioFile.View
 
         public void DestroyContextMenu()
         {
-            Debug.Log("Entering DestroyContextMenu from UIContextMenu");
+            //Debug.Log("Entering DestroyContextMenu from UIContextMenu");
             if (ContextMenuGameObject != null)
             {
                 Debug.Log("Destroying Context Menu from UIContextMenu");
