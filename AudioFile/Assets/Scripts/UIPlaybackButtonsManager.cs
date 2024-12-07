@@ -24,6 +24,13 @@ namespace AudioFile.View
         readonly string nextButtonPath = "Playback_Controls/Next_Button";
         readonly string stopButtonPath = "Playback_Controls/Stop_Button";
 
+        Button prevButton;
+        Button playButton;
+        Button nextButton;
+        Button stopButton;
+
+        List<Button> buttons;
+
         void Start()
         {
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnSingleTrackSelected", this);
@@ -31,10 +38,19 @@ namespace AudioFile.View
             Canvas canvas = GameObject.Find("GUI_Canvas").GetComponent<Canvas>();
 
             //Set up Button GameObjects
-            Button prevButton = canvas.transform.Find(previousButtonPath).GetComponent<Button>();
-            Button playButton = canvas.transform.Find(playButtonPath).GetComponent<Button>();
-            Button nextButton = canvas.transform.Find(nextButtonPath).GetComponent<Button>();
-            Button stopButton = canvas.transform.Find(stopButtonPath).GetComponent<Button>();
+            prevButton = canvas.transform.Find(previousButtonPath).GetComponent<Button>();
+            playButton = canvas.transform.Find(playButtonPath).GetComponent<Button>();
+            nextButton = canvas.transform.Find(nextButtonPath).GetComponent<Button>();
+            stopButton = canvas.transform.Find(stopButtonPath).GetComponent<Button>();
+
+            // Initialize the buttons list after the buttons are assigned
+            buttons = new List<Button>()
+            {
+                prevButton,
+                playButton,
+                nextButton,
+                stopButton,
+            };
 
             //Set up onClick Listeners/events for buttons
 
@@ -83,6 +99,35 @@ namespace AudioFile.View
                 });
             }
         }
+
+        void Update()
+        {
+            if (UITrackListDisplayManager.Instance.SelectedTrackDisplays.Count > 1)
+            {
+                DisableButtons();
+            }
+            else
+            {
+                EnableButtons();
+            }
+        }
+
+        private void EnableButtons()
+        {
+            foreach (var button in buttons)
+            {
+                button.interactable = true;
+            }
+        }
+
+        private void DisableButtons()
+        {
+            foreach (var button in buttons)
+            {
+                button.interactable = false;
+            }
+        }
+
         public void AudioFileUpdate(string observationType, object data)
         {
             Action action = observationType switch
