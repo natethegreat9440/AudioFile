@@ -9,7 +9,6 @@ using UnityEngine;
 using TMPro;
 using AudioFile.ObserverManager;
 using AudioFile.Model;
-using Unity.PlasticSCM.Editor.WebApi;
 
 namespace AudioFile.View
 {

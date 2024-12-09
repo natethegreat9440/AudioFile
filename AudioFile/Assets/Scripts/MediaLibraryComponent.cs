@@ -1,12 +1,4 @@
-﻿using AudioFile.View;
-using OpenCover.Framework.Model;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AudioFile.ObserverManager;
-using AudioFile.Controller;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Playables;
 using System;
 
