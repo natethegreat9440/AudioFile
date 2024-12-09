@@ -300,18 +300,12 @@ namespace AudioFile.View
 
     public class ExitProgramCommand : ICommand
     {
-        /* TODO: Implement this later once Controller is implemented
-        private IController controller;
-        public ExitProgramCommand(IController controller)
-        {
-            this.controller = controller;
-        }
-        */
+
         public void Execute()
         {
             //controller.ExitProgram();
             Debug.Log("Exit Program Command executed");
-            throw new NotImplementedException();
+            ExitProgramController.Instance.HandleRequest(this, false);
         }
 
         public void Undo()

@@ -25,9 +25,9 @@ namespace AudioFile.View
             #region Commands
             //TrackLibraryController trackLibraryController = AudioFile.Controller.TrackLibraryController.Instance;
             AddTrackCommand addTrackCommand = new AddTrackCommand();
-            ExitProgramCommand exitProgramCommand = new ExitProgramCommand();
             AddPlaylistCommand addPlaylistCommand = new AddPlaylistCommand();
             AddPlaylistFolderCommand addPlaylistFolderCommand = new AddPlaylistFolderCommand();
+            ExitProgramCommand exitProgramCommand = new ExitProgramCommand();
             // TODO: Add more commands
 
             #endregion
