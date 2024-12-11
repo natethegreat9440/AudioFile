@@ -333,8 +333,12 @@ namespace AudioFile.Controller
                 //For initial testing/programming purposes the filePath essentially defaults to Documents/AudioFileTracks/tracks.json
                 if (string.IsNullOrEmpty(filePath))
                 {
-                    string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    string defaultDirectory = Path.Combine(documentsPath, "AudioFileTracks");
+                    #if UNITY_EDITOR //This if statement only occurs while using the Unity Editor which defaults to the One Drive/MyDocuments folder for testing. Unfortunately Environment.SpecialFolder.MyDocuments defaults to the OneDrive/MyDocuments instead of the actual Documents folder on my PC. Maybe I'll fix that later        
+                        string appDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    #else //This else statement only occurs when the program is run in the standalone build and sets appDirectory to whichever directory the program was installed in by the installer
+                        string appDirectory = AppDomain.CurrentDomain.BaseDirectory;                    
+                    #endif
+                    string defaultDirectory = Path.Combine(appDirectory, "AudioFileTracks");
                     if (!Directory.Exists(defaultDirectory))
                     {
                         Debug.Log($"Directory does not exist: {defaultDirectory}. Creating Directory.");
@@ -371,8 +375,14 @@ namespace AudioFile.Controller
                 //For initial testing/programming purposes the filePath essentially defaults to Documents/AudioFileTracks/tracks.json
                 if (string.IsNullOrEmpty(filePath))
                 {
-                    string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    string defaultDirectory = Path.Combine(documentsPath, "AudioFileTracks");
+                    //TODO: Extract seperate method for setting the directory possibly into its own class as it is possible this code could end up getting reused over and over. Maybe a Utilities class?
+                    #if UNITY_EDITOR //This if statement only occurs while using the Unity Editor which defaults to the One Drive/MyDocuments folder for testing. Unfortunately Environment.SpecialFolder.MyDocuments defaults to the OneDrive/MyDocuments instead of the actual Documents folder on my PC. Maybe I'll fix that later        
+                        string appDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    #else //This else statement only occurs when the program is run in the standalone build and sets appDirectory to whichever directory the program was installed in by the installer
+                        string appDirectory = AppDomain.CurrentDomain.BaseDirectory;                    
+                    #endif
+
+                    string defaultDirectory = Path.Combine(appDirectory, "AudioFileTracks");
                     if (!Directory.Exists(defaultDirectory))
                     {
                         Debug.LogWarning($"Directory does not exist: {defaultDirectory}");
