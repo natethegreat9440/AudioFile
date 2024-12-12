@@ -333,22 +333,18 @@ namespace AudioFile.Controller
                 //For initial testing/programming purposes the filePath essentially defaults to Documents/AudioFileTracks/tracks.json
                 if (string.IsNullOrEmpty(filePath))
                 {
-                    #if UNITY_EDITOR //This if statement only occurs while using the Unity Editor which defaults to the One Drive/MyDocuments folder for testing. Unfortunately Environment.SpecialFolder.MyDocuments defaults to the OneDrive/MyDocuments instead of the actual Documents folder on my PC. Maybe I'll fix that later        
-                        string appDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    #else //This else statement only occurs when the program is run in the standalone build and sets appDirectory to whichever directory the program was installed in by the installer
-                        string appDirectory = AppDomain.CurrentDomain.BaseDirectory;                    
-                    #endif
-                    string defaultDirectory = Path.Combine(appDirectory, "AudioFileTracks");
-                    if (!Directory.Exists(defaultDirectory))
+                    string defaultDirectory = SetTracksDirectory();
+                    string tracksDirectory = Path.Combine(defaultDirectory, "AudioFileTracks");
+                    if (!Directory.Exists(tracksDirectory))
                     {
-                        Debug.Log($"Directory does not exist: {defaultDirectory}. Creating Directory.");
-                        Directory.CreateDirectory(defaultDirectory);
-                        Debug.Log(defaultDirectory + " created");
+                        Debug.Log($"Directory does not exist: {tracksDirectory}. Creating Directory.");
+                        Directory.CreateDirectory(tracksDirectory);
+                        Debug.Log(tracksDirectory + " created");
                         // Ensure the directory exists
                         // Handle the case where the directory does not exist,
                         // which would occur whenever the program is loaded and the user has not attempted to load any files into the program
                     }
-                    filePath = Path.Combine(defaultDirectory, "tracks.json");
+                    filePath = Path.Combine(tracksDirectory, "tracks.json");
                 }
 
                 var trackData = TrackList.Select(track => new TrackData
@@ -375,22 +371,16 @@ namespace AudioFile.Controller
                 //For initial testing/programming purposes the filePath essentially defaults to Documents/AudioFileTracks/tracks.json
                 if (string.IsNullOrEmpty(filePath))
                 {
-                    //TODO: Extract seperate method for setting the directory possibly into its own class as it is possible this code could end up getting reused over and over. Maybe a Utilities class?
-                    #if UNITY_EDITOR //This if statement only occurs while using the Unity Editor which defaults to the One Drive/MyDocuments folder for testing. Unfortunately Environment.SpecialFolder.MyDocuments defaults to the OneDrive/MyDocuments instead of the actual Documents folder on my PC. Maybe I'll fix that later        
-                        string appDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    #else //This else statement only occurs when the program is run in the standalone build and sets appDirectory to whichever directory the program was installed in by the installer
-                        string appDirectory = AppDomain.CurrentDomain.BaseDirectory;                    
-                    #endif
-
-                    string defaultDirectory = Path.Combine(appDirectory, "AudioFileTracks");
-                    if (!Directory.Exists(defaultDirectory))
+                    string defaultDirectory = SetTracksDirectory();
+                    string tracksDirectory = Path.Combine(defaultDirectory, "AudioFileTracks");
+                    if (!Directory.Exists(tracksDirectory))
                     {
-                        Debug.LogWarning($"Directory does not exist: {defaultDirectory}");
+                        Debug.LogWarning($"Directory does not exist: {tracksDirectory}");
                         return;
                         // Handle the case where the directory does not exist,
                         // which would occur whenever the program is loaded and the user has not attempted to load any files into the program
                     }
-                    filePath = Path.Combine(defaultDirectory, "tracks.json");
+                    filePath = Path.Combine(tracksDirectory, "tracks.json");
                     Debug.Log("Loading tracks from " + filePath);
                 }
 
@@ -416,6 +406,26 @@ namespace AudioFile.Controller
             catch (Exception ex)
             {
                 Debug.LogError($"Error loading tracks: {ex.Message}");
+            }
+        }
+
+        private static string SetTracksDirectory()
+        {
+            try
+            {
+                Debug.Log($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}");
+                #if UNITY_EDITOR //This if statement only occurs while using the Unity Editor which defaults to the One Drive/MyDocuments folder for testing. Unfortunately Environment.SpecialFolder.MyDocuments defaults to the OneDrive/MyDocuments instead of the actual Documents folder on my PC. Maybe I'll fix that later        
+                    return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                #else //This else statement only occurs when the program is run in the standalone build and sets appDirectory to whichever directory the program was installed in by the installer
+                    //return AppDomain.CurrentDomain.BaseDirectory; //Saves to same location as the executable, but this could result in permissions issues depending on if the default install location is selected on a non-admin user profile (ProgramFiles typically requires admin privileges when writing files)
+                    return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData); //Saves to User/AppData/Roaming. This directory does not usually cause permissions issues when it comes to writing files.
+                #endif
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Debug.LogError($"Error setting tracks directory. Write access denied.");
+                ObserverManager.ObserverManager.Instance.NotifyObservers("AudioFileError", "Error writing tracks to memory. Write access denied. Please check with your system administrator.");
+                return string.Empty;
             }
         }
 

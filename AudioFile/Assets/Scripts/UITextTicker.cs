@@ -34,7 +34,6 @@ namespace AudioFile.View
         private float resetPositionX;
         private bool isScrolling;
 
-
         void Start()
         {
             DisplayWelcome();
