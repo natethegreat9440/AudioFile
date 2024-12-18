@@ -43,6 +43,11 @@ namespace AudioFile.Controller
             set { TrackLibrary.Instance.CurrentTrackIndex = value; }
         }
 
+        List<Track> TrackList 
+        {
+            get { return TrackLibrary.Instance.TrackList; }
+        }
+
         private static PlaybackController CreateSingleton()
         {
             // Create a new GameObject to hold the singleton instance if it doesn't already exist
@@ -51,11 +56,6 @@ namespace AudioFile.Controller
             // Add the PlayBackController component to the GameObject
             return singletonObject.AddComponent<PlaybackController>();
         }
-
-        /*public void Awake()
-        {
-            DontDestroyOnLoad(this.gameObject);
-        }*/
 
         public void Start()
         {
@@ -83,6 +83,17 @@ namespace AudioFile.Controller
             return CurrentTrack != null ? Model.TrackLibrary.Instance.GetTrackID(CurrentTrack) : "";
         }
 
+        private string GetActiveTrackID()
+        {
+            foreach (var track in TrackList)
+            {
+                if (track.IsPlaying || track.IsPaused)
+                {
+                    return Model.TrackLibrary.Instance.GetTrackID(track);
+                }
+            }
+            return "";
+        }
 
         public void HandlePlayPauseButton(string trackDisplayID)
         {
@@ -113,11 +124,11 @@ namespace AudioFile.Controller
                 {
                     "PlayCommand" => () =>
                     {
-                        string currentTrackID = GetCurrentTrackID();
+                        string activeTrackID = GetActiveTrackID(); //Needs to get active track being played/paused rather than current track selected
                         PlayCommand playCommand = request as PlayCommand;
-                        if (CurrentTrack != null && currentTrackID != playCommand.TrackDisplayID)
+                        if (CurrentTrack != null && activeTrackID != playCommand.TrackDisplayID)
                         {
-                            Stop(currentTrackID);
+                            Stop(activeTrackID);
                         }
                         Play(playCommand.TrackDisplayID);
                     },
@@ -169,11 +180,9 @@ namespace AudioFile.Controller
                     //Add more switch arms here as needed
                     _ => () => Debug.LogWarning($"Unhandled undo command: {request}")
                 };
-
                 action();
             }
         }
-
 
         public void Dispose()
         {
@@ -192,7 +201,6 @@ namespace AudioFile.Controller
             {
                 Debug.Log("There is no current track.");
             }
-            
         }
 
         public void Play(string trackDisplayID)
@@ -238,12 +246,7 @@ namespace AudioFile.Controller
                 "OnCurrentTrackIsDone" => NextItem,
                 "OnSingleTrackSelected" => () =>
                 {
-                    //Debug.Log($"CurrentTrack = {CurrentTrack}");
-                    //if (CurrentTrack == null)
-                    //{
-                        //Debug.Log("Setting current track to: " + (string)data);
-                        SetCurrentTrack(TrackLibrary.Instance.GetTrackAtID((string)data));
-                    //}
+                    SetCurrentTrack(TrackLibrary.Instance.GetTrackAtID((string)data));
                 },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
@@ -251,12 +254,5 @@ namespace AudioFile.Controller
 
             action();
         }
-
-        /* TODO: Move this to an exitprogram controller
-        public void ExitProgram()
-        {
-            throw new System.NotImplementedException();
-        }
-        */
     }
 }
