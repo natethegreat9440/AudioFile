@@ -59,7 +59,7 @@ namespace AudioFile.View
             {
                 prevButton.onClick.AddListener(() =>
                 {
-                    if (PlaybackController.Instance.CurrentTrack != null)
+                    if (PlaybackController.Instance.ActiveTrack != null)
                     {
                         PlaybackController.Instance.HandleRequest(new PreviousItemCommand());
                     }
@@ -71,7 +71,7 @@ namespace AudioFile.View
             {
                 nextButton.onClick.AddListener(() =>
                 {
-                    if (PlaybackController.Instance.CurrentTrack != null)
+                    if (PlaybackController.Instance.ActiveTrack != null)
                     {
                         PlaybackController.Instance.HandleRequest(new NextItemCommand());
                     }
@@ -83,7 +83,7 @@ namespace AudioFile.View
             {
                 stopButton.onClick.AddListener(() =>
                 {
-                    if (PlaybackController.Instance.CurrentTrack != null)
+                    if (PlaybackController.Instance.ActiveTrack != null)
                     {
                         PlaybackController.Instance.HandleRequest(new StopCommand(trackDisplayID));
                     }

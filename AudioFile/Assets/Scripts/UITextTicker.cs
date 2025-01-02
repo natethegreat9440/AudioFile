@@ -39,7 +39,7 @@ namespace AudioFile.View
             DisplayWelcome();
 
             //Register for these observations
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnPlayingTrackChanged", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnActiveTrackChanged", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackListEnd", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSkipped", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
@@ -113,8 +113,8 @@ namespace AudioFile.View
 
             //After waiting the coroutine resets the beahvior. Moving this outside of the coroutine will now work.
             //If this method is to be abstracted then it needs additional parameter(s) to specify reset behavior
-            if (Controller.PlaybackController.Instance.CurrentTrack != null)
-                textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.CurrentTrack.ToString();
+            if (Controller.PlaybackController.Instance.ActiveTrack != null)
+                textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.ActiveTrack.ToString();
             isScrolling = true;
         }
 
@@ -122,15 +122,22 @@ namespace AudioFile.View
         {
             Action action = observationType switch
             {
-                "OnPlayingTrackChanged" => () =>
+                "OnActiveTrackChanged" => () =>
                 {
                     textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
-                    textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.CurrentTrack.ToString();
+                    if (Controller.PlaybackController.Instance.ActiveTrack != null)
+                    {
+                        textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.ActiveTrack.ToString();
+                    }
+                    else
+                    {
+                        textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.SelectedTrack.ToString(); ;
+                    }
                     isScrolling = true;
                 },
                 "OnTrackListEnd" => () =>
                 {
-                    if (Controller.PlaybackController.Instance.CurrentTrackIndex == 0)
+                    if (Controller.PlaybackController.Instance.ActiveTrackIndex == 0)
                     {
                         StartCoroutine(QuickMessage(1f, "Front of playlist"));
                     }

@@ -148,7 +148,7 @@ namespace AudioFile.Model
 
         public override void Pause(string trackDisplayID="")
         {
-            //Pausing does not affect which track is known as the current track by the PlaybackController
+            //Pausing does not affect which track is known as the active track by the PlaybackController
             //_playableGraph.Stop();
             _audioSource.Pause();
             Debug.Log($"Track {this} has been paused at {FormatTime((float)_audioSource.time)}");

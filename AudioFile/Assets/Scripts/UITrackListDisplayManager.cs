@@ -69,7 +69,7 @@ namespace AudioFile.View
         {
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackAdded", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackCycled", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnActiveTrackCycled", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("TracksDeserialized", this);
         }
 
@@ -313,18 +313,18 @@ namespace AudioFile.View
                 "OnTrackAdded" => () => StartCoroutine(AddTrackOnUpdate(data)),
                 "OnTrackRemoved" => () =>
                 {
-                    //Select the current track ID, which is now the track before the track that was removed
-                    string currentTrackID = PlaybackController.Instance.CurrentTrack.TrackProperties.GetProperty("TrackID");
-                    Transform currentTrackDisplay = GetTrackDisplay(currentTrackID);
-                    TrackSelected(currentTrackDisplay.gameObject);
+                    //Select the active track ID, which is now the track before the track that was removed
+                    string activeTrackID = PlaybackController.Instance.ActiveTrack.TrackProperties.GetProperty("TrackID");
+                    Transform selectedTrackDisplay = GetTrackDisplay(activeTrackID);
+                    TrackSelected(selectedTrackDisplay.gameObject);
                     StartCoroutine(RemoveTrackOnUpdate(data));
                 },
-                "OnCurrentTrackCycled" => () =>
+                "OnActiveTrackCycled" => () =>
                 {
-                    if (data is int currentTrackIndex)
+                    if (data is int activeTrackIndex)
                     {
-                        GameObject currentTrackDisplay = Track_List_DisplayViewportContent.GetChild(currentTrackIndex).gameObject;
-                        TrackSelected(currentTrackDisplay);
+                        GameObject selectedTrackDisplay = Track_List_DisplayViewportContent.GetChild(activeTrackIndex).gameObject;
+                        TrackSelected(selectedTrackDisplay);
                     }
                 },
                 //Add more switch arms here as needed

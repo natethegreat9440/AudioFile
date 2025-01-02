@@ -55,7 +55,7 @@ namespace AudioFile.ObserverManager
                 //{"OnTrackAdded", new List<IAudioFileObserver>() { _UITrackListDisplayManager } },
                 //{"OnTrackRemoved", new List<IAudioFileObserver>() { _UITrackListDisplayManager } },
                 //{"OnQueueUpdate", new List<IAudioFileObserver>() { QueueDisplay } }
-                //{"OnCurrentTrackIsDone", new List<IAudioFileObserver>() {  new TrackLibrary() } } //, NowPlayingDisplay, QueueDisplay} }
+                //{"OnActiveTrackIsDone", new List<IAudioFileObserver>() {  new TrackLibrary() } } //, NowPlayingDisplay, QueueDisplay} }
                 //{"OnTrackPropertyUpdate", new List<IAudioFileObserver>() { NowPlayingDisplay, TrackListDisplay, QueueDisplay, SampleDisplay, TabDisplay, LyricsDisplay } }
                 //{"OnTrackLibraryFilter", new List<IAudioFileObserver>() { TrackListDisplay } }
             };

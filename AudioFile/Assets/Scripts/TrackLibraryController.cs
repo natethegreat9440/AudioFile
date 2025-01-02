@@ -48,6 +48,7 @@ namespace AudioFile.Controller
 
         public List<Track> TrackList { get => TrackLibrary.Instance.TrackList; set => TrackLibrary.Instance.TrackList = value; }
 
+        Track ActiveTrack { get => PlaybackController.Instance.ActiveTrack; }
         public void Awake()
         {
             DontDestroyOnLoad(this.gameObject);
@@ -84,29 +85,31 @@ namespace AudioFile.Controller
                 {
                     RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
 
-                    //Behavior for setting the current track based on whether the active playback track is within the tracks to be removed selection or not. If thre is no current track do nothing
-                    var playOrPausedTrack = TrackList.Where(track => track.IsPlaying || track.IsPaused).FirstOrDefault();
+                    //Behavior for setting the selected track based on whether the active playback track is within the tracks to be removed selection or not. If there is no active track do nothing
+                    //var playOrPausedTrack = TrackList.Where(track => track.IsPlaying || track.IsPaused).FirstOrDefault();
 
-                    if (playOrPausedTrack != null)
+                    if (ActiveTrack != null)
                     {
-                        var playOrPausedTrackID = playOrPausedTrack.TrackProperties.GetProperty("TrackID");
+                        var activeTrackID = ActiveTrack.TrackProperties.GetProperty("TrackID");
 
-                        if (removeTrackCommand.TrackDisplayIDs.Contains(playOrPausedTrackID))
+                        if (removeTrackCommand.TrackDisplayIDs.Contains(activeTrackID))
                         {
-                            if (PlaybackController.Instance.CurrentTrackIndex > 0)
+                            if (PlaybackController.Instance.ActiveTrackIndex > 0)
                             {
-                                PlaybackController.Instance.CurrentTrackIndex--;
-                                PlaybackController.Instance.SetCurrentTrack(TrackList[PlaybackController.Instance.CurrentTrackIndex]);
+                                PlaybackController.Instance.ActiveTrackIndex--;
+                                PlaybackController.Instance.SetActiveTrack(TrackList[PlaybackController.Instance.ActiveTrackIndex]);
+                                PlaybackController.Instance.SetSelectedTrack(TrackList[PlaybackController.Instance.ActiveTrackIndex]);
                             }
                             else
                             {
-                                PlaybackController.Instance.CurrentTrackIndex++;
-                                PlaybackController.Instance.SetCurrentTrack(TrackList[PlaybackController.Instance.CurrentTrackIndex]);
+                                PlaybackController.Instance.ActiveTrackIndex++;
+                                PlaybackController.Instance.SetActiveTrack(TrackList[PlaybackController.Instance.ActiveTrackIndex]);
+                                PlaybackController.Instance.SetSelectedTrack(TrackList[PlaybackController.Instance.ActiveTrackIndex]);
                             }
                         }
                         else
                         {
-                            PlaybackController.Instance.SetCurrentTrack(playOrPausedTrack);
+                            //PlaybackController.Instance.SetSelectedTrack(ActiveTrack);
                         }
                     }
                     //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed

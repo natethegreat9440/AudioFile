@@ -16,7 +16,7 @@ namespace AudioFile.Controller
     /// <remarks>
     /// May be modified later to control synchronization of track and visualizer playback. 
     /// Will be modified to pass along all commands to the CommandStackController for undo/redo operations.
-    /// Members: CurrentTrack, CreateSingleton(), GetCurentTrackIndex(), HandlePlayPauseButton(), SetCurrentTrack(), Play(), Pause(), Stop(), NextItem(), PreviousItem().
+    /// Members: ActiveTrack, SelectedTrack, CreateSingleton(), GetCurentTrackIndex(), HandlePlayPauseButton(), SetActiveTrack(), SetSelectedTrack(), Play(), Pause(), Stop(), NextItem(), PreviousItem().
     /// Implements Awake(), Start(), and Update() from MonoBehaviour. Implements AudioFileUpdate() from IAudioFileObserver. Implements HandleRequest() from IController.
     /// This controller has no implementation for IController methods Initialize() or Dispose() (yet).
     /// </remarks>
@@ -35,12 +35,14 @@ namespace AudioFile.Controller
 
         public static PlaybackController Instance => _instance.Value;
 
-        public Track CurrentTrack { get; private set; } = null;
+        public Track ActiveTrack { get; private set; } = null;
 
-        public int CurrentTrackIndex
+        public Track SelectedTrack { get; private set; } = null;
+
+        public int ActiveTrackIndex
         {
-            get { return TrackLibrary.Instance.CurrentTrackIndex; }
-            set { TrackLibrary.Instance.CurrentTrackIndex = value; }
+            get { return TrackLibrary.Instance.ActiveTrackIndex; }
+            set { TrackLibrary.Instance.ActiveTrackIndex = value; }
         }
 
         List<Track> TrackList 
@@ -60,16 +62,16 @@ namespace AudioFile.Controller
         public void Start()
         {
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnSingleTrackSelected", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnCurrentTrackIsDone", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnActiveTrackIsDone", this);
 
         }
 
         void Update()
         {
-            if (CurrentTrack != null && CurrentTrack.IsDone())
+            if (ActiveTrack != null && ActiveTrack.IsDone())
             {
                 Debug.Log("Track has finished playing.");
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackIsDone", null);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackIsDone", null);
             }
         }
 
@@ -78,9 +80,9 @@ namespace AudioFile.Controller
             throw new NotImplementedException();
         }
 
-        public string GetCurrentTrackID()
+        public string GetSelectedTrackID()
         {
-            return CurrentTrack != null ? Model.TrackLibrary.Instance.GetTrackID(CurrentTrack) : "";
+            return SelectedTrack != null ? Model.TrackLibrary.Instance.GetTrackID(SelectedTrack) : "";
         }
 
         private string GetActiveTrackID()
@@ -97,19 +99,19 @@ namespace AudioFile.Controller
 
         public void HandlePlayPauseButton(string trackDisplayID)
         {
-            if (CurrentTrack == null)
+            if (ActiveTrack == null)
             {
                 // Play the selected track
                 HandleRequest(new PlayCommand(trackDisplayID));
             }
-            else if (CurrentTrack != null && GetCurrentTrackID() == trackDisplayID && CurrentTrack.IsPlaying)
+            else if (ActiveTrack != null && GetActiveTrackID() == trackDisplayID && SelectedTrack.IsPlaying) //TODO: see if third condition is necessary or if it is just redundant
             {
-                // Pause the current track
+                // Pause the active track
                 HandleRequest(new PauseCommand(trackDisplayID));
             }
             else
             {
-                // Play the selected track
+                // Play the active/selected track
                 HandleRequest(new PlayCommand(trackDisplayID));
             }
         }
@@ -124,9 +126,9 @@ namespace AudioFile.Controller
                 {
                     "PlayCommand" => () =>
                     {
-                        string activeTrackID = GetActiveTrackID(); //Needs to get active track being played/paused rather than current track selected
+                        string activeTrackID = GetActiveTrackID(); 
                         PlayCommand playCommand = request as PlayCommand;
-                        if (CurrentTrack != null && activeTrackID != playCommand.TrackDisplayID)
+                        if (ActiveTrack != null && activeTrackID != playCommand.TrackDisplayID)
                         {
                             Stop(activeTrackID);
                         }
@@ -189,24 +191,38 @@ namespace AudioFile.Controller
             throw new NotImplementedException();
         }
 
-        public void SetCurrentTrack(Track track)
+        public void SetActiveTrack(Track track)
         {
             if (track != null)
             {
-                CurrentTrack = track;
-                Debug.Log($"Current track set to: {CurrentTrack}");
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCurrentTrackChanged", null);
+                ActiveTrack = track;
+                Debug.Log($"Active track set to: {ActiveTrack}");
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
             }
             else
             {
-                Debug.Log("There is no current track.");
+                Debug.Log("There is no active track.");
+            }
+        }
+
+        public void SetSelectedTrack(Track track)
+        {
+            if (track != null)
+            {
+                SelectedTrack = track;
+                Debug.Log($"Selected track set to: {SelectedTrack}");
+                //ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
+            }
+            else
+            {
+                Debug.Log("There is no active track.");
             }
         }
 
         public void Play(string trackDisplayID)
         {
-            ObserverManager.ObserverManager.Instance.NotifyObservers("OnPlayingTrackChanged", null);
-            SetCurrentTrack(TrackLibrary.Instance.GetTrackAtID(trackDisplayID));
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
+            SetActiveTrack(TrackLibrary.Instance.GetTrackAtID(trackDisplayID));
             TrackLibrary.Instance.Play(trackDisplayID);
         }
 
@@ -231,22 +247,22 @@ namespace AudioFile.Controller
 
         public void Seek(float newTime)
         {
-            CurrentTrack.SetTime(newTime);
+            ActiveTrack.SetTime(newTime);
         }
 
         public float GetTime()
         {
-            return CurrentTrack.GetTime();
+            return ActiveTrack.GetTime();
         }
         public void AudioFileUpdate(string observationType, object data)
         {
             //Debug.Log(observationType);
             Action action = observationType switch
             {
-                "OnCurrentTrackIsDone" => NextItem,
+                "OnActiveTrackIsDone" => NextItem,
                 "OnSingleTrackSelected" => () =>
                 {
-                    SetCurrentTrack(TrackLibrary.Instance.GetTrackAtID((string)data));
+                    SelectedTrack = TrackLibrary.Instance.GetTrackAtID((string)data);
                 },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
