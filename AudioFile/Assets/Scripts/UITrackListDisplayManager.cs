@@ -134,7 +134,7 @@ namespace AudioFile.View
                         SelectedTrackDisplays.Add(child);
                         child.IsSelected = true;
                         //child.GetComponent<Image>().color = Color.blue;
-                        child.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#457B9D"); //dusty-blue
+                        child.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#A8DADC"); //Soft cyan
                     }
                 }
             }
@@ -151,7 +151,7 @@ namespace AudioFile.View
                 {
                     SelectedTrackDisplays.Add(trackDisplayComponent);
                     trackDisplayComponent.IsSelected = true;
-                    trackDisplayComponent.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#457B9D"); //dusty-blue
+                    trackDisplayComponent.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#A8DADC"); //Soft cyan
                 }
             }
             else
@@ -164,7 +164,7 @@ namespace AudioFile.View
                 SelectedTrackDisplays.Add(trackDisplayComponent);
 
                 trackDisplayComponent.IsSelected = true;
-                trackDisplayComponent.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#457B9D"); //dusty-blue
+                trackDisplayComponent.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#A8DADC"); //Soft cyan
 
                 string trackDisplayID = GetTrackDisplayID(trackDisplayObject);
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnSingleTrackSelected", trackDisplayID);
