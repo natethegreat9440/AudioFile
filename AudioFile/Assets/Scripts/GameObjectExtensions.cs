@@ -16,5 +16,19 @@ namespace AudioFile.Utilities
             }
             return null;
         }
+
+        public static Color SetHexColor(string hexColor)
+        {
+            if (ColorUtility.TryParseHtmlString(hexColor, out Color newColor))
+            {
+                return newColor;
+
+            }
+            else
+            {
+                Debug.LogError("Invalid hex color string");
+                return Color.magenta;
+            }
+        }
     }
 }

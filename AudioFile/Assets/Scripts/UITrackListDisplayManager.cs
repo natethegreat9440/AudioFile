@@ -6,6 +6,8 @@ using UnityEngine.UI;
 using AudioFile.Controller;
 using AudioFile.Model;
 using AudioFile.ObserverManager;
+using AudioFile.Utilities;
+using Unity.VisualScripting;
 
 namespace AudioFile.View
 {
@@ -131,7 +133,8 @@ namespace AudioFile.View
                     {
                         SelectedTrackDisplays.Add(child);
                         child.IsSelected = true;
-                        child.GetComponent<Image>().color = Color.blue;
+                        //child.GetComponent<Image>().color = Color.blue;
+                        child.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#457B9D"); //dusty-blue
                     }
                 }
             }
@@ -142,13 +145,13 @@ namespace AudioFile.View
                 {
                     SelectedTrackDisplays.Remove(trackDisplayComponent);
                     trackDisplayComponent.IsSelected = false;
-                    trackDisplayComponent.GetComponent<Image>().color = Color.white;
+                    trackDisplayComponent.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#F1FAEE"); //panache white
                 }
                 else
                 {
                     SelectedTrackDisplays.Add(trackDisplayComponent);
                     trackDisplayComponent.IsSelected = true;
-                    trackDisplayComponent.GetComponent<Image>().color = Color.blue;
+                    trackDisplayComponent.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#457B9D"); //dusty-blue
                 }
             }
             else
@@ -161,7 +164,7 @@ namespace AudioFile.View
                 SelectedTrackDisplays.Add(trackDisplayComponent);
 
                 trackDisplayComponent.IsSelected = true;
-                trackDisplayComponent.GetComponent<Image>().color = Color.blue;
+                trackDisplayComponent.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#457B9D"); //dusty-blue
 
                 string trackDisplayID = GetTrackDisplayID(trackDisplayObject);
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnSingleTrackSelected", trackDisplayID);
@@ -178,7 +181,7 @@ namespace AudioFile.View
                 if (trackDisplay != null)
                 {
                     child.GetComponent<UITrackDisplay>().IsSelected = false;
-                    trackDisplay.color = Color.white;
+                    trackDisplay.color = GameObjectExtensions.SetHexColor("#F1FAEE"); //panache white
                 }
             }
         }
