@@ -28,6 +28,7 @@ namespace AudioFile.View
 
             //Gets the track list display Game Object
             var trackDisplay = UITrackListDisplayManager.Instance.gameObject;
+            var sortButtons = UISortButtonsManager.Instance.gameObject;
 
             //Add code to turn on the Visualizer Display when Track Display is turned off
             if (IsTrackDisplayActive)
@@ -35,6 +36,7 @@ namespace AudioFile.View
                 Debug.Log("Track List display active");
                 this.gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Hide Tracks";
                 trackDisplay.SetActive(true);
+                sortButtons.SetActive(true);
                 Display_Slider.gameObject.SetActive(true);
                 Display_Slider.value = 1f;
             }
@@ -44,6 +46,7 @@ namespace AudioFile.View
                 this.gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Show Tracks";
                 //Display_Slider.value = 0.2f;
                 trackDisplay.SetActive(false);
+                sortButtons.SetActive(false);
                 Display_Slider.gameObject.SetActive(false);
             }
         }
