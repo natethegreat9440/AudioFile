@@ -49,6 +49,7 @@ namespace AudioFile.Controller
             var trackLibrary = TrackLibrary.Instance;
             var trackListDisplayManager = UITrackListDisplayManager.Instance;
             var sortButtonManager = UISortButtonsManager.Instance;
+            var sortController = SortController.Instance;
             var contextMenu = UIContextMenu.Instance;
         }
         public void Initialize()

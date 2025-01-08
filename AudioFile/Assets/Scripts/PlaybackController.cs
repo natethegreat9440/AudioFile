@@ -177,8 +177,7 @@ namespace AudioFile.Controller
                     {
                         SeekCommand seekCommand = request as SeekCommand;
                         Seek(seekCommand.PreviousTime);
-                    }
-                    ,
+                    },
                     //Add more switch arms here as needed
                     _ => () => Debug.LogWarning($"Unhandled undo command: {request}")
                 };

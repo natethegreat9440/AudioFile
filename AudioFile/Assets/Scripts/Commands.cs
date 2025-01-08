@@ -10,6 +10,7 @@ using AudioFile.Controller;
 using AudioFile.Model;
 using System;
 using UnityEngine;
+using System.Collections;
 
 namespace AudioFile.View
 {
@@ -166,6 +167,36 @@ namespace AudioFile.View
             Debug.Log("New Previous Item Command undone");
             IsUndo = true;
             PlaybackController.Instance.HandleRequest(this, IsUndo);
+        }
+    }
+
+    public class SortCommand : ICommand
+    {
+        public bool IsUndo { get; set; } = false;
+
+        public SortButtonState State { get; }
+
+        public string CollectionToSort { get; }
+
+        public string SortBy { get; }
+
+        public SortCommand(SortButtonState state, string collection, string sortProperty)
+        {
+            State = state;
+            CollectionToSort = collection;
+            SortBy = sortProperty;
+        }
+        public void Execute()
+        {
+            Debug.Log("New Sort Command executed");
+            TrackLibraryController.Instance.HandleRequest(this, IsUndo);
+        }
+
+        public void Undo()
+        {
+            Debug.Log("New Sort Command undone");
+            IsUndo = true;
+            TrackLibraryController.Instance.HandleRequest(this, IsUndo);
         }
     }
     public class AddTrackCommand : ICommand

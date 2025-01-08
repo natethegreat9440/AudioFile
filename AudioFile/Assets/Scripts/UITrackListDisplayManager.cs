@@ -55,6 +55,8 @@ namespace AudioFile.View
         public GameObject UI_Track_DisplayPrefab;
         public Transform Track_List_DisplayViewportContent;
 
+        public string TracksDisplayed { get; set; } = "library";
+
         private const float doubleClickThreshold = 0.3f;
         private float lastClickTime = 0f;
         private string lastButtonClicked = "";
