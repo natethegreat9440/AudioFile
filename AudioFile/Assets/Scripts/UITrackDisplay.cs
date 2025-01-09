@@ -57,7 +57,13 @@ namespace AudioFile.View
 
         private void SetTrackData(Track trackData)
         {
-            SetText(listDisplayManager.titleTextPath, trackData.TrackProperties.GetProperty("Title"));
+            //Temporary for testing purposes
+            string titleText = trackData.TrackProperties.GetProperty("Title");
+             if (trackData.TrackProperties.GetProperty("TrackID") != null)
+                titleText += " (" + trackData.TrackProperties.GetProperty("TrackID") + ")";
+             //Temporary for testing purposes
+
+            SetText(listDisplayManager.titleTextPath, titleText);
             SetText(listDisplayManager.artistTextPath, trackData.TrackProperties.GetProperty("Artist"));
             SetText(listDisplayManager.albumTextPath, trackData.TrackProperties.GetProperty("Album"));
             SetText(listDisplayManager.durationTextPath, trackData.TrackProperties.GetProperty("Duration"));
@@ -75,6 +81,20 @@ namespace AudioFile.View
                     textComponent.text = "  " + value; // Adding some space for aesthetic reasons.
                 }
             }
+        }
+
+        public string GetText(string path)
+        {
+            var textTransform = transform.Find(path);
+            if (textTransform != null)
+            {
+                var textComponent = textTransform.GetComponent<Text>();
+                if (textComponent != null)
+                {
+                    return textComponent.text;
+                }
+            }
+            return "";
         }
 
         private void InitializeButtons()
@@ -142,7 +162,7 @@ namespace AudioFile.View
             }
             else
             {
-                //listDisplayManager.TrackSelected(this.gameObject);
+                //listDisplayManager.OnTrackSelection(this.gameObject);
                 listDisplayManager.HandleTrackButtonClick(this, null);
             }
         }

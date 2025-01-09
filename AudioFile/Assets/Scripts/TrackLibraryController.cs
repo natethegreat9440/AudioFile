@@ -271,12 +271,12 @@ namespace AudioFile.Controller
                             foreach (var property in otherProperties)
                             {
                                 //Skips setting any properties that are not already required/set by the CreateTrack method so only "other properties" get set
-                                if (property.Key != "Title" || property.Key != "Artist" || property.Key != "Album" || property.Key != "Duration" || property.Key != "Path" || property.Key != "TrackID" || property.Key != "AlbumTrackNumber")
-                                    /*if (!new[] { "Title", "Artist", "Album", "Duration", "Path", "TrackID", "AlbumTrackNumber" }.Contains(property.Key))
+                                //if (property.Key != "Title" || property.Key != "Artist" || property.Key != "Album" || property.Key != "Duration" || property.Key != "Path" || property.Key != "TrackID" || property.Key != "AlbumTrackNumber")
+                                    if (!new[] { "Title", "Artist", "Album", "Duration", "Path", "TrackID", "AlbumTrackNumber" }.Contains(property.Key))
                                     {
                                         trackToAdd.TrackProperties.SetProperty(property.Key, property.Value);
-                                    }*/
-                                    trackToAdd.TrackProperties.SetProperty(property.Key, property.Value);
+                                    }
+                                    //trackToAdd.TrackProperties.SetProperty(property.Key, property.Value);
                             }
                         }
 

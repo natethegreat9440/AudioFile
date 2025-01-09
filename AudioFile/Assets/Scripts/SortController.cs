@@ -94,48 +94,61 @@ namespace AudioFile.Controller
         private void SortForward(string collectionToSort, string sortProperty)
         {
             Debug.Log($"Sorting {collectionToSort} in forward order by {sortProperty}");
+            var sortedTrackList = new List<Track>();
 
             if (collectionToSort == "library") 
             {
-                var sortedTrackList = TrackLibrary.Instance.TrackList
+                sortedTrackList = TrackLibrary.Instance.TrackList
                     .OrderBy(track => track.TrackProperties.GetProperty(sortProperty)) //OrderBy defaults to ascending
                     .ToList();
 
                 TrackLibrary.Instance.TrackList = sortedTrackList;
             }
+
+            if (sortedTrackList.Count > 0)
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackList);
         }
         private void SortReverse(string collectionToSort, string sortProperty)
         {
             Debug.Log($"Sorting {collectionToSort} in forward order by {sortProperty}");
+            var sortedTrackList = new List<Track>();
 
             if (collectionToSort == "library")
             {
-                var sortedTrackList = TrackLibrary.Instance.TrackList
+                sortedTrackList = TrackLibrary.Instance.TrackList
                     .OrderBy(track => track.TrackProperties.GetProperty(sortProperty)).Reverse()
                     .ToList();
 
                 TrackLibrary.Instance.TrackList = sortedTrackList;
             }
+
+            if (sortedTrackList.Count > 0)
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackList);
+
         }
         public void RestoreDefaultOrder(string collectionToSort)
         {
             Debug.Log($"Setting {collectionToSort} in default order");
+            var sortedTrackList = new List<Track>();
 
             if (collectionToSort == "library") //Library default order is by TrackID. May change this to a new field called CustomOrderIndex later
             {
-                var sortedTrackList = TrackLibrary.Instance.TrackList
+                sortedTrackList = TrackLibrary.Instance.TrackList
                     .OrderBy(track => track.TrackProperties.GetProperty("TrackID")) //OrderBy defaults to ascending
                     .ToList();
 
                 TrackLibrary.Instance.TrackList = sortedTrackList;
             }
 
-            Debug.Log($"Track Library count is: {TrackLibrary.Instance.TrackList.Count}");
+            if (sortedTrackList.Count > 0)
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackList);
+
+            /*Debug.Log($"Track Library count is: {TrackLibrary.Instance.TrackList.Count}");
 
             foreach (var track in TrackLibrary.Instance.TrackList)
             {
                 Debug.Log($"{track.TrackProperties.GetProperty("Title")} is index: {TrackLibrary.Instance.TrackList.IndexOf(track)}");
-            }
+            }*/
         }
 
         public void Dispose()

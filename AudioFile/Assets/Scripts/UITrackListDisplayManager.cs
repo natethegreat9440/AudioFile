@@ -8,6 +8,7 @@ using AudioFile.Model;
 using AudioFile.ObserverManager;
 using AudioFile.Utilities;
 using Unity.VisualScripting;
+using System.Linq;
 
 namespace AudioFile.View
 {
@@ -16,7 +17,7 @@ namespace AudioFile.View
     /// <remarks>
     /// Needs method to instantiate the display with all tracks saved to PC memory down the road.
     /// Members: AddTrackOnUpdate() and RemoveTrackOnUpdate() coroutines. Has HandleTrackButtonClick(), and OnTrackDisplayDoubleClick().
-    /// Has GetTrackDisplayIndex(), TrackSelected(), DeselectAllTrackDisplays() methods. Click interaction methods 
+    /// Has GetTrackDisplayIndex(), OnTrackSelection(), DeselectAllTrackDisplays() methods. Click interaction methods 
     /// Implements Start() from MonoBehaviour. Implements AudioFileUpdate() from IAudioFileObserver. 
     /// </remarks>
     /// <see cref="MonoBehaviour"/>
@@ -69,12 +70,15 @@ namespace AudioFile.View
         public UIContextMenu activeContextMenu;
 
         public List<UITrackDisplay> SelectedTrackDisplays { get; private set; } = new List<UITrackDisplay>();
+
+        public List<Transform> AllTrackDisplayTransforms { get => GetAllTrackDisplays(); } //Not currently referenced but may have some viability later
         public void Start()
         {
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnNewTrackAdded", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnActiveTrackCycled", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("TracksDeserialized", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnCollectionReordered", this);
         }
 
         public void HandleTrackButtonClick(UITrackDisplay trackDisplay, string buttonType)
@@ -88,7 +92,7 @@ namespace AudioFile.View
             else
             {
                 //TODO: Move this to a method that just handles clicks for the whole UITrackDisplay transform and delegate to that here
-                TrackSelected(trackDisplay.TrackDisplayGameObject);
+                OnTrackSelection(trackDisplay.TrackDisplayGameObject);
             }
 
             lastClickTime = Time.time;
@@ -112,7 +116,7 @@ namespace AudioFile.View
             action();
         }
 
-        public void TrackSelected(GameObject trackDisplayObject)
+        public void OnTrackSelection(GameObject trackDisplayObject)
         {
             bool isShiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             bool isCtrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
@@ -223,6 +227,12 @@ namespace AudioFile.View
             return trackDisplayTransform;
         }
 
+        private List<Transform> GetAllTrackDisplays()
+        {
+            var allTrackDisplayTransforms = Track_List_DisplayViewportContent.Cast<Transform>().ToList();
+            return allTrackDisplayTransforms;
+        }
+
         private IEnumerator AddTrackOnUpdate(object data)
         {
             if (data is Track providedTrack && UI_Track_DisplayPrefab != null && Track_List_DisplayViewportContent != null)
@@ -238,7 +248,6 @@ namespace AudioFile.View
                     LayoutRebuilder.ForceRebuildLayoutImmediate(Track_List_DisplayViewportContent.gameObject.GetComponent<RectTransform>());
                 }
 
-
                 //Debug.Log($"Content Size: {Track_List_DisplayViewportContent.GetComponent<RectTransform>().sizeDelta}");
                 //Debug.Log($"Viewport Size: {Track_List_DisplayViewportContent.parent.GetComponent<RectTransform>().sizeDelta}");
 
@@ -249,7 +258,6 @@ namespace AudioFile.View
                     //Debug.Log($"Content Height: {totalHeight}");
                 }
                 //Debug.Log($"Child Count: {Track_List_DisplayViewportContent.childCount}");   
-                
 
                 yield return null;
             }
@@ -280,6 +288,7 @@ namespace AudioFile.View
                 var trackDisplayGameObject = trackDisplayTransformToRemove.gameObject;
                 activeContextMenu.DestroyContextMenu();
                 Destroy(trackDisplayTransformToRemove.gameObject);
+
                 yield break;
             }
 
@@ -299,6 +308,42 @@ namespace AudioFile.View
             }
             yield return null; // Ensure the final yield return is executed before notifying observers
             ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateEnd");
+        }
+
+        private IEnumerator UpdateDisplay(List<Track> sortedTrackList) 
+        {
+            //Essentially this method just tries to make the display order match the order of how the provided sortedTrackList (from SortController) is ordered
+            
+            // Step 1: Create a dictionary to map track IDs to their corresponding Transform objects
+
+            Dictionary<string, Transform> trackIDToTransformMap = new Dictionary<string, Transform>();
+            foreach (Transform child in Track_List_DisplayViewportContent)
+            {
+                var trackDisplay = child.GetComponent<UITrackDisplay>();
+                if (trackDisplay != null)
+                {
+                    trackIDToTransformMap[trackDisplay.TrackDisplayID] = child;
+                }
+            }
+
+            // Step 2: Iterate through the sortedTrackList and get the corresponding Transform for each track
+            List<Transform> sortedTransforms = new List<Transform>();
+            foreach (var track in sortedTrackList)
+            {
+                string trackID = track.TrackProperties.GetProperty("TrackID");
+                if (trackIDToTransformMap.TryGetValue(trackID, out Transform trackTransform))
+                {
+                    sortedTransforms.Add(trackTransform);
+                }
+            }
+
+            // Step 3: Reorder the children of Track_List_DisplayViewportContent based on the sorted list
+            for (int i = 0; i < sortedTransforms.Count; i++)
+            {
+                sortedTransforms[i].SetSiblingIndex(i);
+            }
+
+            yield return null;
         }
 
         public void AudioFileUpdate(string observationType, object data)
@@ -322,7 +367,7 @@ namespace AudioFile.View
                     {
                         string activeTrackID = PlaybackController.Instance.ActiveTrack.TrackProperties.GetProperty("TrackID");
                         Transform selectedTrackDisplay = GetTrackDisplay(activeTrackID);
-                        TrackSelected(selectedTrackDisplay.gameObject);
+                        OnTrackSelection(selectedTrackDisplay.gameObject);
                     }
                     StartCoroutine(RemoveTrackOnUpdate(data));
                 },
@@ -331,8 +376,13 @@ namespace AudioFile.View
                     if (data is int activeTrackIndex)
                     {
                         GameObject selectedTrackDisplay = Track_List_DisplayViewportContent.GetChild(activeTrackIndex).gameObject;
-                        TrackSelected(selectedTrackDisplay);
+                        OnTrackSelection(selectedTrackDisplay);
                     }
+                },
+                "OnCollectionReordered" => () =>
+                {
+                    if (data is List<Track> sortedTrackList)
+                        StartCoroutine(UpdateDisplay(sortedTrackList));
                 },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
