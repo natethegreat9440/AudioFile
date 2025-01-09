@@ -246,9 +246,9 @@ namespace AudioFile.View
                 if (layoutGroup != null)
                 {
                     float totalHeight = Track_List_DisplayViewportContent.gameObject.GetComponent<RectTransform>().rect.height;
-                    Debug.Log($"Content Height: {totalHeight}");
+                    //Debug.Log($"Content Height: {totalHeight}");
                 }
-                Debug.Log($"Child Count: {Track_List_DisplayViewportContent.childCount}");   
+                //Debug.Log($"Child Count: {Track_List_DisplayViewportContent.childCount}");   
                 
 
                 yield return null;
@@ -319,9 +319,12 @@ namespace AudioFile.View
                 "OnTrackRemoved" => () =>
                 {
                     //Select the active track ID, which is now the track before the track that was removed
-                    string activeTrackID = PlaybackController.Instance.ActiveTrack.TrackProperties.GetProperty("TrackID");
-                    Transform selectedTrackDisplay = GetTrackDisplay(activeTrackID);
-                    TrackSelected(selectedTrackDisplay.gameObject);
+                    if (PlaybackController.Instance.ActiveTrack != null)
+                    {
+                        string activeTrackID = PlaybackController.Instance.ActiveTrack.TrackProperties.GetProperty("TrackID");
+                        Transform selectedTrackDisplay = GetTrackDisplay(activeTrackID);
+                        TrackSelected(selectedTrackDisplay.gameObject);
+                    }
                     StartCoroutine(RemoveTrackOnUpdate(data));
                 },
                 "OnActiveTrackCycled" => () =>

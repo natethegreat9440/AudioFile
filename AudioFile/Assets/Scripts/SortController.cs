@@ -8,6 +8,8 @@ using AudioFile.ObserverManager;
 using System;
 using UnityEngine;
 using System.Windows.Forms.VisualStyles;
+using System.Linq;
+using Unity.VisualScripting.Antlr3.Runtime.Collections;
 
 
 namespace AudioFile.Controller
@@ -92,20 +94,55 @@ namespace AudioFile.Controller
         private void SortForward(string collectionToSort, string sortProperty)
         {
             Debug.Log($"Sorting {collectionToSort} in forward order by {sortProperty}");
+
+            if (collectionToSort == "library") 
+            {
+                var sortedTrackList = TrackLibrary.Instance.TrackList
+                    .OrderBy(track => track.TrackProperties.GetProperty(sortProperty)) //OrderBy defaults to ascending
+                    .ToList();
+
+                TrackLibrary.Instance.TrackList = sortedTrackList;
+            }
         }
         private void SortReverse(string collectionToSort, string sortProperty)
         {
             Debug.Log($"Sorting {collectionToSort} in forward order by {sortProperty}");
+
+            if (collectionToSort == "library")
+            {
+                var sortedTrackList = TrackLibrary.Instance.TrackList
+                    .OrderBy(track => track.TrackProperties.GetProperty(sortProperty)).Reverse()
+                    .ToList();
+
+                TrackLibrary.Instance.TrackList = sortedTrackList;
+            }
         }
-        private void RestoreDefaultOrder(string collectionToSort)
+        public void RestoreDefaultOrder(string collectionToSort)
         {
             Debug.Log($"Setting {collectionToSort} in default order");
+
+            if (collectionToSort == "library") //Library default order is by TrackID. May change this to a new field called CustomOrderIndex later
+            {
+                var sortedTrackList = TrackLibrary.Instance.TrackList
+                    .OrderBy(track => track.TrackProperties.GetProperty("TrackID")) //OrderBy defaults to ascending
+                    .ToList();
+
+                TrackLibrary.Instance.TrackList = sortedTrackList;
+            }
+
+            Debug.Log($"Track Library count is: {TrackLibrary.Instance.TrackList.Count}");
+
+            foreach (var track in TrackLibrary.Instance.TrackList)
+            {
+                Debug.Log($"{track.TrackProperties.GetProperty("Title")} is index: {TrackLibrary.Instance.TrackList.IndexOf(track)}");
+            }
         }
 
         public void Dispose()
         {
             throw new NotImplementedException();
         }
+
 
     }
 }

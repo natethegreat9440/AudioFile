@@ -30,12 +30,13 @@ namespace AudioFile.Model
             {"Duration", "--:--"},
             {"BPM", "--"},
             {"Path", "Unknown Path"},
-            {"TrackID", "Error: No Track ID" }
+            {"TrackID", "Error: No Track ID" },
+            {"AlbumTrackNumber", "0" }
         };
 
         private readonly HashSet<string> cantRemoveProperties = new HashSet<string>()
         {
-            "Title", "Artist", "Album", "Duration", "BPM", "Path", "TrackID"
+            "Title", "Artist", "Album", "Duration", "BPM", "Path", "TrackID", "AlbumTrackNumber"
         };
 
         public string GetProperty(string key)

@@ -61,6 +61,7 @@ namespace AudioFile.Controller
 
         void OnApplicationQuit()
         {
+            Debug.Log($"Track Library count on exit is: {TrackLibrary.Instance.TrackList.Count}");
             Debug.Log("Saving tracks on application exit");
             SaveTracksToFile();  //Method defaults to Documents/AudioFileTracks as the path to look for (just using this for initial development)      
         }
@@ -254,8 +255,9 @@ namespace AudioFile.Controller
                         string trackTitle = metadata[0];
                         string contributingArtists = metadata[1];
                         string trackAlbum = metadata[2];
+                        string albumTrackNumber = metadata[3];
 
-                        Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, trackID);
+                        Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, trackID, albumTrackNumber);
                         TrackLibrary.Instance.AddItem(newTrack);
 
                         // Set the TrackProperties from the properties dictionary. Only happens when loading deserialized tracks
@@ -264,7 +266,7 @@ namespace AudioFile.Controller
                             foreach (var property in otherProperties)
                             {
                                 //Skips setting any properties that are not already required/set by the CreateTrack method so only "other properties" get set
-                                if (property.Key != "Title" || property.Key != "Artist" || property.Key != "Album" || property.Key != "Duration" || property.Key != "Path" || property.Key != "TrackID")
+                                if (property.Key != "Title" || property.Key != "Artist" || property.Key != "Album" || property.Key != "Duration" || property.Key != "Path" || property.Key != "TrackID" || property.Key != "AlbumTrackNumber")
                                     newTrack.TrackProperties.SetProperty(property.Key, property.Value);
                             }
                         }
@@ -285,7 +287,8 @@ namespace AudioFile.Controller
             string trackTitle = "Untitled Track";
             string contributingArtists = "Unknown Artist";
             string trackAlbum = "Unknown Album";
-            List<string> metadata = new List<string>() { trackTitle, contributingArtists, trackAlbum };
+            var albumTrackNumber = 0;
+            List<string> metadata = new List<string>() { trackTitle, contributingArtists, trackAlbum, albumTrackNumber.ToString() };
 
             try
             {
@@ -294,9 +297,13 @@ namespace AudioFile.Controller
                 trackAlbum = !string.IsNullOrEmpty(file.Tag.Album) ? file.Tag.Album : "Unknown Album";
                 contributingArtists = !string.IsNullOrEmpty(string.Join(", ", file.Tag.Performers)) ? string.Join(", ", file.Tag.Performers) //Wrapping around next line since its so goddamn long
                     : !string.IsNullOrEmpty(string.Join(", ", file.Tag.AlbumArtists)) ? string.Join(", ", file.Tag.AlbumArtists) : "Unknown Artist";
+                albumTrackNumber = file.Tag.Track != null ? (int)file.Tag.Track : 0;
+
                 metadata[0] = trackTitle;
                 metadata[1] = contributingArtists;
                 metadata[2] = trackAlbum;
+                metadata[3] = albumTrackNumber.ToString();
+
                 return metadata;
                 //Looks for Tag.Performers first (this translates to the Contributing Artists property in File Explorer), then AlbumArtists, then finally Unknown Artist if nothing found
             }
@@ -403,6 +410,11 @@ namespace AudioFile.Controller
                     //Debug.Log($"Track {data.TrackProperties["Title"]}  loaded successfully.");
                 }
 
+                //Initializes TrackList (currently just the TrackLibrary.TrackList) to sort by TrackID (default order)
+
+                //TODO: Figure out why this method doesn't work and why TrackList.Count is always 0 after this method is called
+                SortController.Instance.RestoreDefaultOrder(UITrackListDisplayManager.Instance.TracksDisplayed);
+                
                 ObserverManager.ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
 
             }
@@ -451,7 +463,8 @@ namespace AudioFile.Controller
                 { "Duration", string.Empty },
                 { "BPM", string.Empty },
                 { "Path", string.Empty },
-                { "TrackID", string.Empty }
+                { "TrackID", string.Empty },
+                { "AlbumTrackNumber", string.Empty },
             };
         }
     }

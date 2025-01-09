@@ -47,7 +47,7 @@ namespace AudioFile.Model
         #region Setup/Unity methods
         // Static factory method to create and initialize Track
         public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
-                                        string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string loadedPath = "Unknown Path", string trackID = null)
+                                        string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string loadedPath = "Unknown Path", string trackID = null, string albumTrackNumber = "0")
         {
             // Create a new GameObject and attach Track as a component
             GameObject trackObject = new GameObject("Track_" + trackTitle);
@@ -60,12 +60,12 @@ namespace AudioFile.Model
             }
             //Debug.Log($"The loaded path is: {loadedPath}");
 
-            track.Initialize(trackID, loadedClip, trackTitle, trackArtist, trackAlbum, loadedPath);
+            track.Initialize(trackID, loadedClip, trackTitle, trackArtist, trackAlbum, loadedPath, albumTrackNumber);
             return track;
         }
 
         // Initialize method to set up properties
-        private void Initialize(string trackID, AudioClip loadedClip, string trackTitle, string trackArtist, string trackAlbum, string loadedPath)
+        private void Initialize(string trackID, AudioClip loadedClip, string trackTitle, string trackArtist, string trackAlbum, string loadedPath, string albumTrackNumber)
         {
             _audioSource = gameObject.AddComponent<AudioSource>();
             _audioSource.clip = loadedClip;
@@ -77,6 +77,7 @@ namespace AudioFile.Model
             //Debug.Log($"{this.TrackProperties.GetProperty("Path")} path added to {this}");
             //Debug.Log($"The loaded path is: {loadedPath}");
             TrackProperties.SetProperty("TrackID", trackID);
+            TrackProperties.SetProperty("AlbumTrackNumber", albumTrackNumber);
 
             _playableGraph = PlayableGraph.Create();
             _audioPlayableOutput = AudioPlayableOutput.Create(_playableGraph, "Audio", _audioSource);

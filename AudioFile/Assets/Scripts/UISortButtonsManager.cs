@@ -114,13 +114,11 @@ namespace AudioFile.View
                     else if (button.State == SortButtonState.Forward)
                     {
                         button.State = SortButtonState.Reverse;
-                        button.GetComponentInChildren<Text>().text = $"{button.SortProperty} ↓";
                         SortController.Instance.HandleRequest(new SortCommand(button.State, TracksDisplayed, button.SortProperty), false);
                     }
                     else if (button.State == SortButtonState.Reverse)
                     {
                         button.State = SortButtonState.Default;
-                        button.GetComponentInChildren<Text>().text = button.SortProperty;
                         SortController.Instance.HandleRequest(new SortCommand(button.State, TracksDisplayed, button.SortProperty), false);
                     }
 
