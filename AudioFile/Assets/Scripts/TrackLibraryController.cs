@@ -20,7 +20,7 @@ namespace AudioFile.Controller
     /// <summary>
     /// Singleton Track Library Controller in AudioFile used for controlling loading and removing tracks from the Track Library as well as Initializing the Track Library
     /// <remarks>
-    /// Members: LoadTrack(), RemoveTrack(), RemoveTrackAtIndex(), OpenFileDialog(). Coroutine LoadAudioClipFromFile(). Implements Awake() and Start() from MonoBehaviour. Implements HandleRequest() from IController.
+    /// Members: LoadNewTrack(), RemoveTrack(), RemoveTrackAtIndex(), OpenFileDialog(). Coroutine LoadAudioClipFromFile(). Implements Awake() and Start() from MonoBehaviour. Implements HandleRequest() from IController.
     /// This controller has no implementation for IController methods Initialize() or Dispose() (yet).
     /// </remarks>
     /// <see cref="MonoBehaviour"/>
@@ -49,6 +49,8 @@ namespace AudioFile.Controller
         public List<Track> TrackList { get => TrackLibrary.Instance.TrackList; set => TrackLibrary.Instance.TrackList = value; }
 
         Track ActiveTrack { get => PlaybackController.Instance.ActiveTrack; }
+
+        private int loadingCoroutinesCount = 0;
         public void Awake()
         {
             DontDestroyOnLoad(this.gameObject);
@@ -80,7 +82,7 @@ namespace AudioFile.Controller
                 ("AddTrackCommand", false) => () =>
                 {
                     AddTrackCommand addTrackCommand = request as AddTrackCommand;
-                    LoadTrack(addTrackCommand);
+                    LoadNewTrack(addTrackCommand);
                 },
                 ("RemoveTrackCommand", false) => () =>
                 {
@@ -192,7 +194,7 @@ namespace AudioFile.Controller
             return trackPath; //Returns Track's path so Handle Request can log this path to the RemoveTrackCommand that initiates this method
         }
 
-        public void LoadTrack(AddTrackCommand addTrackCommand)
+        public void LoadNewTrack(AddTrackCommand addTrackCommand)
         {
             string[] paths = OpenFileDialog();
 
@@ -204,9 +206,10 @@ namespace AudioFile.Controller
                     {
                         StartCoroutine(LoadAudioClipFromFile(paths[i], null, null, newTrack =>
                         {
+                            //This lambda expression is passed as a callback function to the LoadAudioClipFromFile coroutine
                             if (addTrackCommand != null)
                             {
-                                Debug.Log($"newTrack for addTrackCommand:{newTrack}");
+                                Debug.Log($"trackToAdd for addTrackCommand:{newTrack}");
                                 addTrackCommand.Tracks.Add(newTrack);
                                 Debug.Log($"addTrackCommand.Tracks: {addTrackCommand.Tracks.Count}");
                             }
@@ -257,22 +260,32 @@ namespace AudioFile.Controller
                         string trackAlbum = metadata[2];
                         string albumTrackNumber = metadata[3];
 
-                        Track newTrack = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, trackID, albumTrackNumber);
-                        TrackLibrary.Instance.AddItem(newTrack);
+                        Track trackToAdd = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, trackID, albumTrackNumber);
 
+                        bool isTrackNew = true;
                         // Set the TrackProperties from the properties dictionary. Only happens when loading deserialized tracks
                         if (otherProperties != null)
                         {
+                            isTrackNew = false;
+
                             foreach (var property in otherProperties)
                             {
                                 //Skips setting any properties that are not already required/set by the CreateTrack method so only "other properties" get set
                                 if (property.Key != "Title" || property.Key != "Artist" || property.Key != "Album" || property.Key != "Duration" || property.Key != "Path" || property.Key != "TrackID" || property.Key != "AlbumTrackNumber")
-                                    newTrack.TrackProperties.SetProperty(property.Key, property.Value);
+                                    /*if (!new[] { "Title", "Artist", "Album", "Duration", "Path", "TrackID", "AlbumTrackNumber" }.Contains(property.Key))
+                                    {
+                                        trackToAdd.TrackProperties.SetProperty(property.Key, property.Value);
+                                    }*/
+                                    trackToAdd.TrackProperties.SetProperty(property.Key, property.Value);
                             }
                         }
 
-                    // Invoke the callback with the new track
-                    onTrackLoaded?.Invoke(newTrack);
+                        TrackLibrary.Instance.AddItem(trackToAdd, isTrackNew);
+
+                        // Invoke the callback with the new track.
+                        // If an existing track is being loaded then trackToAdd will not be used in the callback function OnAllTracksDeserialized
+                        //However trackToAdd will be used from within LoadNewTrack to set the Tracks associated with the AddTrackCommand (for undo operations later)
+                        onTrackLoaded?.Invoke(trackToAdd);
                     }
                     else
                     {
@@ -282,6 +295,7 @@ namespace AudioFile.Controller
                 }
             }
         }
+
         private List<string> ExtractFileMetadata(string filePath)
         {
             string trackTitle = "Untitled Track";
@@ -404,23 +418,33 @@ namespace AudioFile.Controller
 
                 var trackLibraryData = JsonConvert.DeserializeObject<TrackLibraryData>(json);
 
+                loadingCoroutinesCount = trackLibraryData.Tracks.Count;
+
                 foreach (var data in trackLibraryData.Tracks)
                 {
-                    StartCoroutine(LoadAudioClipFromFile(data.TrackProperties["Path"], data.TrackProperties["TrackID"], data.TrackProperties));
+                    StartCoroutine(LoadAudioClipFromFile(data.TrackProperties["Path"], data.TrackProperties["TrackID"], data.TrackProperties, OnTracksDeserialized)); //OnTracksDeserialized is passed as a callback function
                     //Debug.Log($"Track {data.TrackProperties["Title"]}  loaded successfully.");
                 }
-
-                //Initializes TrackList (currently just the TrackLibrary.TrackList) to sort by TrackID (default order)
-
-                //TODO: Figure out why this method doesn't work and why TrackList.Count is always 0 after this method is called
-                SortController.Instance.RestoreDefaultOrder(UITrackListDisplayManager.Instance.TracksDisplayed);
-                
-                ObserverManager.ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
 
             }
             catch (Exception ex)
             {
                 Debug.LogError($"Error loading tracks: {ex.Message}");
+            }
+        }
+        private void OnTracksDeserialized(Track unusedTrackParameter)
+        {
+            //This function gets called whenever LoadAudioClipFromFile coroutine gets called from LoadTracksFromJSON (each time).
+            //Doesn't do anything but decrement loadingCoroutinesCount until all loading coroutines have completed
+            //Doesn't need to do anything with the unusedTrackParameter parameter, but it is required in the callback function so thats why it is there
+
+            loadingCoroutinesCount--;
+
+            if (loadingCoroutinesCount == 0)
+            {
+                // All coroutines have completed
+                SortController.Instance.RestoreDefaultOrder(UITrackListDisplayManager.Instance.TracksDisplayed);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
             }
         }
 

@@ -94,7 +94,7 @@ namespace AudioFile.Model
         }
         #endregion
         #region Model control methods
-        public virtual void AddItem(MediaLibraryComponent mediaLibraryComponent)
+        public virtual void AddItem(MediaLibraryComponent mediaLibraryComponent, bool isItemNew)
         {
             throw new NotImplementedException();
         }

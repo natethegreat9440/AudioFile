@@ -172,13 +172,18 @@ namespace AudioFile.Model
         }
         #endregion
         #region Model control methods
-        public override void AddItem(MediaLibraryComponent newTrack)
+        public override void AddItem(MediaLibraryComponent trackToAdd, bool isTrackNew)
         {
-            if (newTrack is Track track)
-            {
+            if (trackToAdd is Track track)
+            { 
+                if (isTrackNew)
+                {
+                    ObserverManager.ObserverManager.Instance.NotifyObservers("OnNewTrackAdded", track);
+                    Debug.Log($"New track '{track}' has been added to the media library.");
+                }
+
                 TrackList.Add(track);
-                Debug.Log($"Track '{track}' has been added to the media library.");
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackAdded", track);
+                Debug.Log($"Track '{track}' has been loaded");
             }
             else
             {

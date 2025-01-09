@@ -52,7 +52,7 @@ namespace AudioFile.ObserverManager
 
 
                 //{"OnProgramStart", new List<IAudioFileObserver>() { TrackListDisplay } }
-                //{"OnTrackAdded", new List<IAudioFileObserver>() { _UITrackListDisplayManager } },
+                //{"OnNewTrackAdded", new List<IAudioFileObserver>() { _UITrackListDisplayManager } },
                 //{"OnTrackRemoved", new List<IAudioFileObserver>() { _UITrackListDisplayManager } },
                 //{"OnQueueUpdate", new List<IAudioFileObserver>() { QueueDisplay } }
                 //{"OnActiveTrackIsDone", new List<IAudioFileObserver>() {  new TrackLibrary() } } //, NowPlayingDisplay, QueueDisplay} }

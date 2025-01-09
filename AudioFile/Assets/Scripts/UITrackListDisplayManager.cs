@@ -71,7 +71,7 @@ namespace AudioFile.View
         public List<UITrackDisplay> SelectedTrackDisplays { get; private set; } = new List<UITrackDisplay>();
         public void Start()
         {
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackAdded", this);
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnNewTrackAdded", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnActiveTrackCycled", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("TracksDeserialized", this);
@@ -294,7 +294,7 @@ namespace AudioFile.View
             }
             foreach (var track in initialTrackList)
             {
-                Debug.Log($"Adding {track} on load");
+                Debug.Log($"Adding TrackDisplay for {track} on program start");
                 yield return AddTrackOnUpdate(track);
             }
             yield return null; // Ensure the final yield return is executed before notifying observers
@@ -309,13 +309,12 @@ namespace AudioFile.View
                 {
                     if (data is List<Track> initialTrackList)
                     {
-                        Debug.Log("Calling PopulateOnStart");
+                        Debug.Log("Calling PopulateOnStart in TrackListDisplayManager");
                         ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateStart");
                         StartCoroutine(PopulateOnStart(initialTrackList));
-
                     }
                 },
-                "OnTrackAdded" => () => StartCoroutine(AddTrackOnUpdate(data)),
+                "OnNewTrackAdded" => () => StartCoroutine(AddTrackOnUpdate(data)),
                 "OnTrackRemoved" => () =>
                 {
                     //Select the active track ID, which is now the track before the track that was removed
