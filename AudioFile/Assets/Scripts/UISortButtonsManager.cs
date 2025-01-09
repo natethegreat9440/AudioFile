@@ -11,14 +11,6 @@ using Unity.VisualScripting;
 
 namespace AudioFile.View
 {
-    public enum SortButtonState { Default, Forward, Reverse, }
-
-    public class SortButton : Button
-    {
-        public SortButtonState State { get; set; }
-
-        public string SortProperty { get; set; }
-    }
     public class UISortButtonsManager : MonoBehaviour
     {
         private static readonly Lazy<UISortButtonsManager> _instance = new Lazy<UISortButtonsManager>(CreateSingleton);
@@ -48,7 +40,7 @@ namespace AudioFile.View
             return instance;
         }
 
-        readonly string titleSortButtonPath = "Sort_Buttons/Sort_Track_Button";
+        readonly string titleSortButtonPath = "Sort_Buttons/Sort_Title_Button";
         readonly string artistSortButtonPath = "Sort_Buttons/Sort_Artist_Button";
         readonly string albumSortButtonPath = "Sort_Buttons/Sort_Album_Button";
         readonly string durationSortButtonPath = "Sort_Buttons/Sort_Duration_Button";
@@ -78,13 +70,12 @@ namespace AudioFile.View
             Canvas canvas = GameObject.Find("GUI_Canvas").GetComponent<Canvas>();
 
             //Set up Button GameObjects
-            titleSortButton = (SortButton)canvas.transform.Find(titleSortButtonPath).GetComponent<Button>();
-            artistSortButton = (SortButton)canvas.transform.Find(artistSortButtonPath).GetComponent<Button>();
-            albumSortButton = (SortButton)canvas.transform.Find(albumSortButtonPath).GetComponent<Button>();
-            durationSortButton = (SortButton)canvas.transform.Find(durationSortButtonPath).GetComponent<Button>();
+            titleSortButton = canvas.transform.Find(titleSortButtonPath).GetComponent<SortButton>();
+            artistSortButton = canvas.transform.Find(artistSortButtonPath).GetComponent<SortButton>();
+            albumSortButton = canvas.transform.Find(albumSortButtonPath).GetComponent<SortButton>();
+            durationSortButton = canvas.transform.Find(durationSortButtonPath).GetComponent<SortButton>();
 
             //Assign SortProperties to buttons
-
             titleSortButton.SortProperty = "Title";
             artistSortButton.SortProperty = "Artist";
             albumSortButton.SortProperty = "Album";
@@ -113,7 +104,7 @@ namespace AudioFile.View
             {
                 button.onClick.AddListener(() =>
                 {
-                    Debug.Log($"{button.SortProperty} sort button clicked. Sort method is {button.State}");
+                    Debug.Log($"{button.SortProperty} sort button clicked.");
 
                     if (button.State == SortButtonState.Default)
                     {
@@ -123,14 +114,46 @@ namespace AudioFile.View
                     else if (button.State == SortButtonState.Forward)
                     {
                         button.State = SortButtonState.Reverse;
+                        button.GetComponentInChildren<Text>().text = $"{button.SortProperty} ↓";
                         SortController.Instance.HandleRequest(new SortCommand(button.State, TracksDisplayed, button.SortProperty), false);
                     }
                     else if (button.State == SortButtonState.Reverse)
                     {
                         button.State = SortButtonState.Default;
+                        button.GetComponentInChildren<Text>().text = button.SortProperty;
                         SortController.Instance.HandleRequest(new SortCommand(button.State, TracksDisplayed, button.SortProperty), false);
                     }
+
+                    Debug.Log($"Sort method is {button.State}");
+
+                    SetAllButtonText(button);
+
                 });
+            }
+        }
+
+        private static void SetAllButtonText(SortButton passedButton)
+        {
+            switch (passedButton.State)
+            {
+                case SortButtonState.Forward:
+                    passedButton.GetComponentInChildren<Text>().text = passedButton.SortProperty == "Duration" ? "Time ↑" : $"{passedButton.SortProperty} ↑";
+                    break;
+                case SortButtonState.Reverse:
+                    passedButton.GetComponentInChildren<Text>().text = passedButton.SortProperty == "Duration" ? "Time ↓" : $"{passedButton.SortProperty} ↓";
+                    break;
+                case SortButtonState.Default:
+                    passedButton.GetComponentInChildren<Text>().text = passedButton.SortProperty == "Duration" ? "Time" : $"{passedButton.SortProperty}";
+                    break;
+            }
+
+            foreach (var button in Instance.buttons) //Sets all other buttons state and text to default
+            {
+                if (button != passedButton)
+                {
+                    button.State = SortButtonState.Default;
+                    button.GetComponentInChildren<Text>().text = button.SortProperty == "Duration" ? "Time" : $"{button.SortProperty}";
+                }
             }
         }
 
@@ -148,7 +171,7 @@ namespace AudioFile.View
 
         private void EnableButtons()
         {
-            foreach (var button in buttons)
+            foreach (var button in Instance.buttons)
             {
                 button.interactable = true;
             }
@@ -156,7 +179,7 @@ namespace AudioFile.View
 
         private void DisableButtons()
         {
-            foreach (var button in buttons)
+            foreach (var button in Instance.buttons)
             {
                 button.interactable = false;
             }

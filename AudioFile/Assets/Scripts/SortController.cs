@@ -7,6 +7,7 @@ using AudioFile.View;
 using AudioFile.ObserverManager;
 using System;
 using UnityEngine;
+using System.Windows.Forms.VisualStyles;
 
 
 namespace AudioFile.Controller
@@ -90,15 +91,15 @@ namespace AudioFile.Controller
 
         private void SortForward(string collectionToSort, string sortProperty)
         {
-            throw new NotImplementedException();
+            Debug.Log($"Sorting {collectionToSort} in forward order by {sortProperty}");
         }
         private void SortReverse(string collectionToSort, string sortProperty)
         {
-            throw new NotImplementedException();
+            Debug.Log($"Sorting {collectionToSort} in forward order by {sortProperty}");
         }
         private void RestoreDefaultOrder(string collectionToSort)
         {
-            throw new NotImplementedException();
+            Debug.Log($"Setting {collectionToSort} in default order");
         }
 
         public void Dispose()
