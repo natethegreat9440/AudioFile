@@ -52,7 +52,7 @@ namespace AudioFile.View
 
         string TracksDisplayed => UITrackListDisplayManager.Instance.TracksDisplayed;
 
-        List<SortButton> buttons;
+        public List<SortButton> SortButtons;
 
 
         //TODO:
@@ -75,14 +75,14 @@ namespace AudioFile.View
             albumSortButton = canvas.transform.Find(albumSortButtonPath).GetComponent<SortButton>();
             durationSortButton = canvas.transform.Find(durationSortButtonPath).GetComponent<SortButton>();
 
-            //Assign SortProperties to buttons
+            //Assign SortProperties to SortButtons
             titleSortButton.SortProperty = "Title";
             artistSortButton.SortProperty = "Artist";
             albumSortButton.SortProperty = "Album";
             durationSortButton.SortProperty = "Duration";
 
-            // Initialize the buttons list after the buttons are assigned
-            buttons = new List<SortButton>()
+            // Initialize the SortButtons list after the SortButtons are assigned
+            SortButtons = new List<SortButton>()
             {
                 titleSortButton,
                 artistSortButton,
@@ -90,8 +90,8 @@ namespace AudioFile.View
                 durationSortButton,
             };
 
-            //Set up onClick Listeners/events for buttons
-            foreach (var button in buttons)
+            //Set up onClick Listeners/events for SortButtons
+            foreach (var button in SortButtons)
             {
                 ConfigureSortButton(button);
             }
@@ -145,7 +145,7 @@ namespace AudioFile.View
                     break;
             }
 
-            foreach (var button in Instance.buttons) //Sets all other buttons state and text to default
+            foreach (var button in Instance.SortButtons) //Sets all other SortButtons state and text to default
             {
                 if (button != passedButton)
                 {
@@ -169,7 +169,7 @@ namespace AudioFile.View
 
         private void EnableButtons()
         {
-            foreach (var button in Instance.buttons)
+            foreach (var button in Instance.SortButtons)
             {
                 button.interactable = true;
             }
@@ -177,7 +177,7 @@ namespace AudioFile.View
 
         private void DisableButtons()
         {
-            foreach (var button in Instance.buttons)
+            foreach (var button in Instance.SortButtons)
             {
                 button.interactable = false;
             }

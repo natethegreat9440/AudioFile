@@ -15,7 +15,7 @@ using Unity.VisualScripting.Antlr3.Runtime.Collections;
 namespace AudioFile.Controller
 {
     public enum LibrarySortProperties { AlbumTrackNumber, Title, Album, Artist } //AlbumTrackNumber intentionally at the front here
-    public class SortController : MonoBehaviour, IController
+    public class SortController : MonoBehaviour, IController, IAudioFileObserver
     {
         // Lazy<T> ensures that the instance is created in a thread-safe manner
         private static readonly Lazy<SortController> _instance = new Lazy<SortController>(CreateSingleton);
@@ -39,7 +39,10 @@ namespace AudioFile.Controller
         {
             throw new NotImplementedException();
         }
-
+        public void Start()
+        {
+            ObserverManager.ObserverManager.Instance.RegisterObserver("OnNewTrackAdded", this);
+        }
         public void HandleRequest(object request, bool isUndo)
         {
             //Add methods to log these commands with the UndoController
@@ -221,9 +224,52 @@ namespace AudioFile.Controller
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackList);
         }
 
+        private void RefreshSorting()
+        {
+            SortButton buttonToSortBy = null;
+
+            foreach (var button in UISortButtonsManager.Instance.SortButtons)
+            {
+                if (button.State != SortButtonState.Default)
+                {
+                    buttonToSortBy = button;
+                }
+            }
+
+            if (buttonToSortBy == null)
+            {
+                RestoreDefaultOrder(UITrackListDisplayManager.Instance.TracksDisplayed);
+            }
+            else
+            {
+                if (buttonToSortBy.State == SortButtonState.Forward)
+                {
+                    SortForward(UITrackListDisplayManager.Instance.TracksDisplayed, buttonToSortBy.SortProperty);
+                }
+                else if (buttonToSortBy.State == SortButtonState.Reverse)
+                {
+                    SortReverse(UITrackListDisplayManager.Instance.TracksDisplayed, buttonToSortBy.SortProperty);
+                }
+            }
+        }
         public void Dispose()
         {
             throw new NotImplementedException();
+        }
+
+        public void AudioFileUpdate(string observationType, object data)
+        {
+            Action action = observationType switch
+            {
+                "OnNewTrackAdded" => () =>
+                {
+                    RefreshSorting();
+                },
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
         }
 
 
