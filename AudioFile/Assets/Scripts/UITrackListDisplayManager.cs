@@ -354,8 +354,6 @@ namespace AudioFile.View
                 {
                     if (data is List<Track> initialTrackList)
                     {
-                        Debug.Log("Calling PopulateOnStart in TrackListDisplayManager");
-                        ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateStart");
                         StartCoroutine(PopulateOnStart(initialTrackList));
                     }
                 },

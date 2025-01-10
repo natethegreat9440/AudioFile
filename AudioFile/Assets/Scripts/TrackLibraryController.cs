@@ -420,6 +420,13 @@ namespace AudioFile.Controller
 
                 loadingCoroutinesCount = trackLibraryData.Tracks.Count;
 
+                Debug.Log("Calling PopulateOnStart in TrackLibraryController");
+                ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateStart");
+
+                //This is the spot where things start to hang up on load.
+                //Used to think it was in TrackListDisplayManager.PopulateOnStart due to Unity's way of Instatiating game objects (i.e., the TrackDisplays)
+                //But it must be in the loading process of the TrackLibraryController from JSON or metadata extraction or new Track creation
+
                 foreach (var data in trackLibraryData.Tracks)
                 {
                     StartCoroutine(LoadAudioClipFromFile(data.TrackProperties["Path"], data.TrackProperties["TrackID"], data.TrackProperties, OnTracksDeserialized)); //OnTracksDeserialized is passed as a callback function
