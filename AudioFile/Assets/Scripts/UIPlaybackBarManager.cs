@@ -24,12 +24,25 @@ namespace AudioFile.View
     {
         public Slider slider;
         bool isUpdatingFromObservation = false;
-        public void Start()
+        void Start()
         {
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackFrameUpdate", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackStopped", this);
 
             slider.onValueChanged.AddListener(SeekPosition);
+        }
+
+        void Update()
+        {
+            if (PlaybackController.Instance.ActiveTrack == null)
+            {
+                slider.value = 0;
+                slider.interactable = false;
+            }
+            else
+            {
+                slider.interactable = true;
+            }
         }
 
         private void SeekPosition(float sliderValue) //This method can only be called if the slider is interacted with by the user and not from "OnTrackFrameUpdate"

@@ -57,17 +57,10 @@ namespace AudioFile.View
 
         private void SetTrackData(Track trackData)
         {
-            //Temporary for testing purposes
-            string titleText = trackData.TrackProperties.GetProperty("Title");
-             if (trackData.TrackProperties.GetProperty("TrackID") != null)
-                titleText += " (" + trackData.TrackProperties.GetProperty("TrackID") + ")";
-             //Temporary for testing purposes
-
-            SetText(listDisplayManager.titleTextPath, titleText);
+            SetText(listDisplayManager.titleTextPath, trackData.TrackProperties.GetProperty("Title"));
             SetText(listDisplayManager.artistTextPath, trackData.TrackProperties.GetProperty("Artist"));
             SetText(listDisplayManager.albumTextPath, trackData.TrackProperties.GetProperty("Album"));
             SetText(listDisplayManager.durationTextPath, trackData.TrackProperties.GetProperty("Duration"));
-            
         }
 
         private void SetText(string path, string value)
