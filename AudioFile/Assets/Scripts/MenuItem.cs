@@ -57,6 +57,10 @@ namespace AudioFile.View
             if (_enabled == true)
             {
                 Button.gameObject.SetActive(true); //set button when Display is called
+
+                //Set as last sibling makes it so the menu renders above the click catcher so the click 
+                //catcher doesn't intercept mouse behavior
+                //this.gameObject.transform.SetAsLastSibling();
             }
             else
             {
