@@ -83,7 +83,7 @@ namespace AudioFile.View
                 MenuComponent child = this.GetChild(i);
                 child.Button.gameObject.SetActive(false);
                 Debug.Log($"{child} was hidden");
-                //child.Hide(); Don't call this or else you will get full recursion
+                child.Hide(); //Recursively calls all children under the menu and children of any sub-menus
             }
         }
 
