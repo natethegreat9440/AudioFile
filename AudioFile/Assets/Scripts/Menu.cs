@@ -146,6 +146,12 @@ namespace AudioFile.View
             {
                 Debug.Log("Pointer Exited from the top/left/right boundary: " + this.Name);
                 Hide();
+
+
+                if (ClickOutsideHandler != null)
+                {
+                    ClickOutsideHandler.DestroyClickOutsideHandler();
+                }
             }
             else
             {
@@ -154,10 +160,6 @@ namespace AudioFile.View
                 Debug.Log($"localMousePosition.y: {localMousePosition.y} rect.yMin: {rect.yMin} rect.yMax: {rect.yMax}");
             }
 
-            if (ClickOutsideHandler != null)
-            {
-                ClickOutsideHandler.DestroyClickOutsideHandler();
-            }
         }
 
         //ClickCatcher is used to detect clicks outside the menu's transform
