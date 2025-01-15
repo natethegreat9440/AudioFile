@@ -211,11 +211,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2544996683617785101}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cedec32b4d138de4a85fc5fff6be1fda, type: 3}
+  m_Script: {fileID: 11500000, guid: 20a9cf96fbf29e84e9242caa43d71cff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TrackDisplayGameObject: {fileID: 2544996683617785101}
-  ContextMenuPrefab: {fileID: 1576798709533892619, guid: c20de291d172e6543b3e4f720e53bc70, type: 3}
+  TrackDisplayGameObject: {fileID: 0}
+  ContextMenuPrefab: {fileID: 0}
 --- !u!1 &3305812749273206363
 GameObject:
   m_ObjectHideFlags: 0

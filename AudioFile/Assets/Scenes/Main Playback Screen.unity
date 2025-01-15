@@ -172,7 +172,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 26986027}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14adcd361e2528a478c22d5ffae81e60, type: 3}
+  m_Script: {fileID: 11500000, guid: 666f7606e4d1bc7479a4f9aa19551a88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Display_Slider: {fileID: 26986030}
@@ -1252,7 +1252,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 419777647}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ab63ec34f0eeee4faa7c6aaeaf68a8e, type: 3}
+  m_Script: {fileID: 11500000, guid: d8c008e7290d56f4aaeb51a37017e3f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &419777649
@@ -4112,7 +4112,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1273054109}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 314e1f5c70d465a4e906e6cbe9dd9dc8, type: 3}
+  m_Script: {fileID: 11500000, guid: 972105060752b3648be809d752ce0823, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   slider: {fileID: 1878783612}
@@ -6212,7 +6212,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1846812491}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7bbe2efcb47f4ea4584ebc7706ef04bb, type: 3}
+  m_Script: {fileID: 11500000, guid: f8f356edfa1a90343a753672ec1255a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   scrollSpeed: 50
@@ -6361,7 +6361,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1855644552}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef5522997dc72bd49a4ec2189bc27dec, type: 3}
+  m_Script: {fileID: 11500000, guid: fc0c106ce61994e48acf83d937671683, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Display_Slider: {fileID: 26986030}
@@ -6857,7 +6857,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1917368895}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8739dd0d5e486864abdbc3e3f7cfac19, type: 3}
+  m_Script: {fileID: 11500000, guid: 528fc86749688d6408dcd017c24360dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   UI_Track_DisplayPrefab: {fileID: 2544996683617785101, guid: 78ce12c110b0f0741b40cc35c0869c73, type: 3}
@@ -7250,20 +7250,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2044487755}
   m_CullTransparentMesh: 1
---- !u!114 &2508295651543059346
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5242143641216997627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cedec32b4d138de4a85fc5fff6be1fda, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  TrackDisplayGameObject: {fileID: 5242143641216997627}
-  ContextMenuPrefab: {fileID: 1576798709533892619, guid: c20de291d172e6543b3e4f720e53bc70, type: 3}
 --- !u!114 &2587566294566312185
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7328,7 +7314,6 @@ GameObject:
   - component: {fileID: 4861161922062743898}
   - component: {fileID: 7505322185793505435}
   - component: {fileID: 2587566294566312185}
-  - component: {fileID: 2508295651543059346}
   - component: {fileID: 7505322185793505436}
   m_Layer: 5
   m_Name: Sort_Buttons
@@ -7354,7 +7339,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5242143641216997627}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c780d61852aced46a8550895c621e1d, type: 3}
+  m_Script: {fileID: 11500000, guid: bb178076d2d918c49b2114e286b124a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   SortButtons: []
