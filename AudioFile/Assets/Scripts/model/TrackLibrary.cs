@@ -39,6 +39,8 @@ namespace AudioFile.Model
         public List<Track> TrackList;
         public int ActiveTrackIndex { get; set; }
 
+        public string ConnectionString => SetupController.Instance.ConnectionString;
+
         private static TrackLibrary CreateSingleton()
         {
             // Create a new GameObject to hold the singleton instance if it doesn't already exist
@@ -47,12 +49,37 @@ namespace AudioFile.Model
             return singletonObject.AddComponent<TrackLibrary>();
         }
 
-        public void Initialize()
+        /*public void Initialize()
         {
             //TODO: Change this method later so it initializes to what is in memory
             //and set the active and selected track index to whatever the last played track is
             TrackList = new List<Track>();
             ActiveTrackIndex = 0;
+        }*/
+
+        public void Initialize()
+        {
+            ActiveTrackIndex = 0;
+
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                    CREATE TABLE IF NOT EXISTS Tracks (
+                        TrackID TEXT PRIMARY KEY AUTO_INCREMENT,
+                        Title TEXT NOT NULL DEFAULT 'Untitled Track',
+                        Artist TEXT NOT NULL DEFAULT 'Unknown Artist',
+                        Album TEXT NOT NULL DEFAULT 'Unknown Album',
+                        Duration TEXT NOT NULL DEFAULT '--:--',
+                        BPM INT,
+                        Path TEXT NOT NULL DEFAULT 'Unknown Path',
+                        AlbumTrackNumber INT NOT NULL DEFAULT 0
+                    );";
+                    command.ExecuteNonQuery();
+                }
+            }
         }
 
         public override string ToString()
@@ -174,7 +201,7 @@ namespace AudioFile.Model
         }
         #endregion
         #region Model control methods
-        public override void AddItem(MediaLibraryComponent trackToAdd, bool isTrackNew)
+        /*public override void AddItem(MediaLibraryComponent trackToAdd, bool isTrackNew)
         {
             if (trackToAdd is Track track)
             { 
@@ -190,6 +217,31 @@ namespace AudioFile.Model
             else
             {
                 Debug.LogError("The provided item is not a Track.");
+            }
+        }*/
+
+        public override void AddItem(MediaLibraryComponent trackToAdd, bool isTrackNew)
+        {
+            Track track = (Track)trackToAdd;
+
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                    INSERT INTO Tracks (TrackID, Title, Artist, Album, Duration, BPM, Path, AlbumTrackNumber)
+                    VALUES (@TrackID, @Title, @Artist, @Album, @Duration, @BPM, @Path, @AlbumTrackNumber);";
+                    command.Parameters.AddWithValue("@TrackID", track.TrackProperties.GetProperty("TrackID"));
+                    command.Parameters.AddWithValue("@Title", track.TrackProperties.GetProperty("Title"));
+                    command.Parameters.AddWithValue("@Artist", track.TrackProperties.GetProperty("Artist"));
+                    command.Parameters.AddWithValue("@Album", track.TrackProperties.GetProperty("Album"));
+                    command.Parameters.AddWithValue("@Duration", track.TrackProperties.GetProperty("Duration"));
+                    command.Parameters.AddWithValue("@BPM", track.TrackProperties.GetProperty("BPM"));
+                    command.Parameters.AddWithValue("@Path", track.TrackProperties.GetProperty("Path"));
+                    command.Parameters.AddWithValue("@AlbumTrackNumber", track.TrackProperties.GetProperty("AlbumTrackNumber"));
+                    command.ExecuteNonQuery();
+                }
             }
         }
 

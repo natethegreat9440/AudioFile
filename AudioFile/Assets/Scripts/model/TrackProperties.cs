@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Playables;
 using System.Collections.Generic;
+using Mono.Data.Sqlite;
+using AudioFile.Controller;
 
 
 namespace AudioFile.Model
@@ -21,7 +23,80 @@ namespace AudioFile.Model
     [Serializable]
     public class TrackProperties
     {
-        [SerializeField]
+        public string ConnectionString => SetupController.Instance.ConnectionString;
+
+        private readonly HashSet<string> validProperties = new HashSet<string>()
+        {
+            "Title", "Artist", "Album", "Duration", "BPM", "Path", "TrackID", "AlbumTrackNumber"
+        };
+        public string GetProperty(string trackID, string property)
+        {
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    if (!validProperties.Contains(property)) //Security check to prevent SQL injection attacks
+                    {
+                        throw new ArgumentException("Invalid property name");
+                    }
+
+                    command.CommandText = $"SELECT {property} FROM Tracks WHERE TrackID = @TrackID;";
+                    command.Parameters.AddWithValue("@TrackID", trackID); //Security measure to prevent SQL injection attacks
+                    return command.ExecuteScalar()?.ToString();
+                }
+            }
+        }
+
+        public Dictionary<string, string> GetAllProperties(string trackID)
+        {
+            var properties = new Dictionary<string, string>();
+
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT * FROM Tracks WHERE TrackID = @TrackID;";
+                    command.Parameters.AddWithValue("@TrackID", trackID);
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            foreach (var property in validProperties)
+                            {
+                                properties[property] = reader[property]?.ToString();
+                            }
+                        }
+                    }
+                }
+            }
+
+            return properties;
+        }
+
+        public void SetProperty(string trackID, string property, string value)
+        {
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    if (!validProperties.Contains(property)) //Security check to prevent SQL injection attacks
+                    {
+                        throw new ArgumentException("Invalid property name");
+                    }
+
+                    command.CommandText = $"UPDATE Tracks SET {property} = @Value WHERE TrackID = @TrackID;";
+                    command.Parameters.AddWithValue("@Value", value); //Security measure to prevent SQL injection attacks
+                    command.Parameters.AddWithValue("@TrackID", trackID); //Security measure to prevent SQL injection attacks
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /*[SerializeField]
         Dictionary<string, string> trackProperties = new Dictionary<string, string>()
         {
             {"Title", "Untitled Track"},
@@ -78,6 +153,7 @@ namespace AudioFile.Model
                 trackProperties.Remove(key);
             }
         }
+        */
 
     }
 }

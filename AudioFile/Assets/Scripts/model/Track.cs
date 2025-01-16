@@ -7,6 +7,8 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Playables;
+using Mono.Data.Sqlite;
+using AudioFile.Controller;
 
 namespace AudioFile.Model
 {
@@ -43,10 +45,72 @@ namespace AudioFile.Model
 
         bool _isPaused = false;
         public bool IsPaused { get { return _isPaused; } private set { _isPaused = value; } }
+        public string ConnectionString => SetupController.Instance.ConnectionString;
+
+        public string TrackID { get; private set; }
 
         #region Setup/Unity methods
         // Static factory method to create and initialize Track
         public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
+                                string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album",
+                                string loadedPath = "Unknown Path", int albumTrackNumber = 0)
+        {
+            //trackID = TrackIDRegistry.Instance.GenerateNewTrackID();
+
+            // Add track to the database table Tracks
+            Track track = null;
+
+            using (var connection = new SqliteConnection(SetupController.Instance.ConnectionString))
+                {
+                    connection.Open();
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                        INSERT INTO Tracks (Title, Artist, Album, Duration, Path, AlbumTrackNumber)
+                        VALUES (@Title, @Artist, @Album, @Duration, @Path, @AlbumTrackNumber);
+                        SELECT last_insert_rowid();";
+                        command.Parameters.AddWithValue("@Title", trackTitle);
+                        command.Parameters.AddWithValue("@Artist", trackArtist);
+                        command.Parameters.AddWithValue("@Album", trackAlbum);
+                        command.Parameters.AddWithValue("@Path", loadedPath);
+                        command.Parameters.AddWithValue("@AlbumTrackNumber", albumTrackNumber);
+                        var trackID = command.ExecuteScalar().ToString();
+
+                        // Create the track object
+                        GameObject trackObject = new GameObject("Track_" + trackTitle);
+                        track = trackObject.AddComponent<Track>();
+                        track.Initialize(trackID, loadedClip);
+                        return track;
+                    }
+                }
+            
+            //TrackLibrary.Instance.AddItem(track);
+
+        }
+
+        // Initialize method to set up properties
+        private void Initialize(string trackID, AudioClip loadedClip)
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.clip = loadedClip;
+            TrackProperties = new TrackProperties();
+
+            _playableGraph = PlayableGraph.Create();
+            _audioPlayableOutput = AudioPlayableOutput.Create(_playableGraph, "Audio", _audioSource);
+            _audioPlayable = AudioClipPlayable.Create(_playableGraph, _audioSource.clip, false);
+            _audioPlayableOutput.SetSourcePlayable(_audioPlayable);
+            _playableHandle = _audioPlayable.GetHandle();
+
+            _trackDuration = FormatTime(GetDuration());
+            TrackProperties.SetProperty(trackID, "Duration", _trackDuration);
+
+            TrackID = trackID;
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnNewTrackAdded", this);
+
+
+        }
+
+        /*public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
                                         string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string loadedPath = "Unknown Path", string trackID = null, string albumTrackNumber = "0")
         {
             // Create a new GameObject and attach Track as a component
@@ -62,33 +126,9 @@ namespace AudioFile.Model
 
             track.Initialize(trackID, loadedClip, trackTitle, trackArtist, trackAlbum, loadedPath, albumTrackNumber);
             return track;
-        }
+        }*/
 
-        // Initialize method to set up properties
-        private void Initialize(string trackID, AudioClip loadedClip, string trackTitle, string trackArtist, string trackAlbum, string loadedPath, string albumTrackNumber)
-        {
-            _audioSource = gameObject.AddComponent<AudioSource>();
-            _audioSource.clip = loadedClip;
-            TrackProperties = new TrackProperties();
-            TrackProperties.SetProperty("Title", trackTitle);
-            TrackProperties.SetProperty("Artist", trackArtist);
-            TrackProperties.SetProperty("Album", trackAlbum);
-            TrackProperties.SetProperty("Path", loadedPath);
-            //Debug.Log($"{this.TrackProperties.GetProperty("Path")} path added to {this}");
-            //Debug.Log($"The loaded path is: {loadedPath}");
-            TrackProperties.SetProperty("TrackID", trackID);
-            TrackProperties.SetProperty("AlbumTrackNumber", albumTrackNumber);
 
-            _playableGraph = PlayableGraph.Create();
-            _audioPlayableOutput = AudioPlayableOutput.Create(_playableGraph, "Audio", _audioSource);
-            _audioPlayable = AudioClipPlayable.Create(_playableGraph, _audioSource.clip, false);
-            _audioPlayableOutput.SetSourcePlayable(_audioPlayable);
-            _playableHandle = _audioPlayable.GetHandle();
-
-            _trackDuration = FormatTime(GetDuration());
-            TrackProperties.SetProperty("Duration", _trackDuration);
-
-        }
 
         void Update()
         {
@@ -114,7 +154,7 @@ namespace AudioFile.Model
         }
         public override string ToString()
         {
-            return $"{TrackProperties.GetProperty("Title")} - {TrackProperties.GetProperty("Artist")}";
+            return $"{TrackProperties.GetProperty(TrackID, "Title")} - {TrackProperties.GetProperty(TrackID, "Artist")}";
         }
         #endregion
         #region Playback method implementations

@@ -35,6 +35,7 @@ namespace AudioFile.Controller
 
         //No CreateSingleton() method needed for this controller as it is already attached to a GameObject in the scene
 
+        public string ConnectionString = "URI=file:" + UnityEngine.Application.persistentDataPath + "/AudioFile.db";
         public void Awake()
         {
             DontDestroyOnLoad(this.gameObject);
@@ -51,6 +52,8 @@ namespace AudioFile.Controller
             var sortButtonManager = UISortButtonsManager.Instance;
             var sortController = SortController.Instance;
             var contextMenu = UIContextMenu.Instance;
+
+            Debug.Log($"AudioFile.db located here {ConnectionString}");
         }
         public void Initialize()
         {
