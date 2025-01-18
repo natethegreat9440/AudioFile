@@ -82,7 +82,7 @@ namespace AudioFile.Controller
 
         public string GetSelectedTrackID()
         {
-            return SelectedTrack != null ? Model.TrackLibrary.Instance.GetTrackID(SelectedTrack) : "";
+            return SelectedTrack != null ? SelectedTrack.TrackID : "";
         }
 
         private string GetActiveTrackID()
@@ -91,7 +91,7 @@ namespace AudioFile.Controller
             {
                 if (track.IsPlaying || track.IsPaused)
                 {
-                    return Model.TrackLibrary.Instance.GetTrackID(track);
+                    return track.TrackID;
                 }
             }
             return "";
@@ -221,7 +221,7 @@ namespace AudioFile.Controller
         public void Play(string trackDisplayID)
         {
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
-            SetActiveTrack(TrackLibrary.Instance.GetTrackAtID(trackDisplayID));
+            SetActiveTrack(TrackLibraryController.Instance.GetTrackAtID(trackDisplayID));
             TrackLibrary.Instance.Play(trackDisplayID);
         }
 
@@ -261,7 +261,7 @@ namespace AudioFile.Controller
                 "OnActiveTrackIsDone" => NextItem,
                 "OnSingleTrackSelected" => () =>
                 {
-                    SelectedTrack = TrackLibrary.Instance.GetTrackAtID((string)data);
+                    SelectedTrack = TrackLibraryController.Instance.GetTrackAtID((string)data);
                 },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")

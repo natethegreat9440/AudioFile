@@ -307,6 +307,9 @@ namespace AudioFile.View
                 yield return AddTrackOnUpdate(track);
             }
             yield return null; // Ensure the final yield return is executed before notifying observers
+
+            SortController.Instance.RefreshSorting(); //Essentially delegates directly to RestoreDefaultOrder, but if I do decide to have the program save Sort Button states after a session then RefreshSorting will handle accordingly
+
             ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateEnd");
         }
 
@@ -330,7 +333,7 @@ namespace AudioFile.View
             List<Transform> sortedTransforms = new List<Transform>();
             foreach (var track in sortedTrackList)
             {
-                string trackID = track.TrackProperties.GetProperty("TrackID");
+                string trackID = track.TrackID;
                 if (trackIDToTransformMap.TryGetValue(trackID, out Transform trackTransform))
                 {
                     sortedTransforms.Add(trackTransform);

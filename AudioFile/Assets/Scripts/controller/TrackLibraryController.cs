@@ -67,7 +67,7 @@ namespace AudioFile.Controller
                 {
                     command.CommandText = @"
                     CREATE TABLE IF NOT EXISTS Tracks (
-                        TrackID TEXT PRIMARY KEY AUTO_INCREMENT,
+                        TrackID INT PRIMARY KEY AUTO_INCREMENT,
                         Title TEXT NOT NULL DEFAULT 'Untitled Track',
                         Artist TEXT NOT NULL DEFAULT 'Unknown Artist',
                         Album TEXT NOT NULL DEFAULT 'Unknown Album',
@@ -85,8 +85,8 @@ namespace AudioFile.Controller
 
         void OnApplicationQuit()
         {
-            Debug.Log($"Track Library count on exit is: {TrackLibrary.Instance.TrackList.Count}");
-            Debug.Log("Saving tracks on application exit");
+            //Debug.Log($"Track Library count on exit is: {TrackLibrary.Instance.TrackList.Count}");
+            //Debug.Log("Saving tracks on application exit");
             //SaveTracksToFile();  //Method defaults to Documents/AudioFileTracks as the path to look for (just using this for initial development)      
         }
 
@@ -147,7 +147,7 @@ namespace AudioFile.Controller
 
                         removeTrackCommand.TrackProperties.Add(trackProperties);
 
-                        Track trackToRemove = TrackLibrary.Instance.GetTrackAtID(trackDisplayID);
+                        Track trackToRemove = GetTrackAtID(trackDisplayID);
                         string removedTrackPath = trackToRemove.TrackProperties.GetProperty(trackToRemove.TrackID, "Path");
                         removeTrackCommand.Paths.Add(removedTrackPath);
 
@@ -205,7 +205,7 @@ namespace AudioFile.Controller
             throw new NotImplementedException();
         }
 
-        public Track FindTrackByID(string trackID)
+        public Track GetTrackAtID(string trackID)
         {
             // Find all Track components in the scene
             Track[] allTracks = FindObjectsOfType<Track>();
@@ -241,13 +241,13 @@ namespace AudioFile.Controller
             // Remove the Track object reference from the TrackLibrary
             //TrackLibrary.Instance.RemoveItem(trackDisplayID);
 
-            Track trackToRemove = FindTrackByID(trackDisplayID);
+            Track trackToRemove = GetTrackAtID(trackDisplayID);
 
             Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
 
             //Destroy Track Game Object
-            Destroy(FindTrackByID(trackDisplayID).gameObject);
+            Destroy(GetTrackAtID(trackDisplayID).gameObject);
         }
 
         /*public string RemoveTrackAtIndex(int index)

@@ -57,7 +57,7 @@ namespace AudioFile.Model
             ActiveTrackIndex = 0;
         }*/
 
-        public void Initialize()
+        /*public void Initialize()
         {
             ActiveTrackIndex = 0;
 
@@ -80,7 +80,7 @@ namespace AudioFile.Model
                     command.ExecuteNonQuery();
                 }
             }
-        }
+        }*/
 
         public override string ToString()
         {
@@ -97,26 +97,37 @@ namespace AudioFile.Model
             //Debug.Log($"Track index = {TrackList.IndexOf(track)}");
             return TrackList.IndexOf(track);
         }
-        public Track GetTrackAtID(string trackDisplayID)
+        /*public Track GetTrackAtID(string trackDisplayID)
         {
             return TrackList
                 .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
                 .FirstOrDefault();
-        }
+        }*/
 
         private int GetTrackIndexAtID(string trackDisplayID)
         {
-            //Debug.Log($"trackDisplayID passed = {trackDisplayID}.");
-            return TrackList
-                .Where(track => track.TrackProperties.GetProperty("TrackID") == trackDisplayID)
-                .Select(track => TrackList.IndexOf(track))
-                .FirstOrDefault();
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                    SELECT rowid - 1
+                    FROM Tracks
+                    WHERE TrackID = @TrackID
+                    ORDER BY rowid;";
+                    command.Parameters.AddWithValue("@TrackID", trackDisplayID);
+                    var result = command.ExecuteScalar();
+                    return result != null ? Convert.ToInt32(result) : -1;
+                }
+            }
         }
 
-        public string GetTrackID(Track track)
+        /*public string GetTrackID(Track track)
         {
             return track.TrackProperties.GetProperty("TrackID");
-        }
+        }*/
+
         public override void Play(string trackDisplayID)
         {
             ActiveTrackIndex = GetTrackIndexAtID(trackDisplayID);

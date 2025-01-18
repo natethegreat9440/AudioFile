@@ -10,6 +10,9 @@ using UnityEngine;
 using System.Windows.Forms.VisualStyles;
 using System.Linq;
 using Unity.VisualScripting.Antlr3.Runtime.Collections;
+using Mono.Data.Sqlite;
+using Unity.VisualScripting;
+
 
 
 namespace AudioFile.Controller
@@ -35,6 +38,12 @@ namespace AudioFile.Controller
         }
 
         //TODO: Add reference variables for the Sorted State and Sorted Property??
+
+        public string ConnectionString => SetupController.Instance.ConnectionString;
+
+        public List<string> CurrentSortOrdering { get; private set; } //CurrentSQLQueryInject refers to this. Don't remove. May not need as a public property however, but we'll keep it this way for now
+
+        public string CurrentSQLQueryInject { get; private set; } //Used by PlaybackController to ensure next, previous, and auto-play functions know how the current display is ordered
         public void Initialize()
         {
             throw new NotImplementedException();
@@ -94,8 +103,201 @@ namespace AudioFile.Controller
                 action();
             }
         }
-
         private void SortForward(string collectionToSort, string mainSortProperty)
+        {
+            //Note that if AlbumTrackNumber is passed to this ever as the mainSortProperty it will cause some issues. However, that's not likely to happen with the current interface
+            Debug.Log($"Sorting {collectionToSort} in forward order by {mainSortProperty}");
+            var sortedTrackIDs = new List<int>();
+
+            if (collectionToSort == "library")
+            {
+                //Note that LibrarySortProperties { AlbumTrackNumber, Title, Album, Artist } and the odd order of CurrentSortOrdering is intentional/correct
+                //TODO: Maybe a cleaner way to do it, but this was all I could think of when I initially wrote this pre-SQLite refactoring
+
+                var sortProperties = Enum.GetValues(typeof(LibrarySortProperties))
+                    .Cast<LibrarySortProperties>()
+                    .Select(e => e.ToString())
+                    .Where(e => e != mainSortProperty)
+                    .ToList();
+
+                CurrentSortOrdering = new List<string> { mainSortProperty, sortProperties[2], sortProperties[0], sortProperties[1] };
+
+                using (var connection = new SqliteConnection(ConnectionString))
+                {
+                    connection.Open();
+
+                    //ASC = ascending
+                    string query = $@"
+                        SELECT * FROM Tracks
+                        ORDER BY 
+                            {CurrentSortOrdering[0]} ASC,
+                            {CurrentSortOrdering[1]} ASC,
+                            {CurrentSortOrdering[2]} ASC,
+                            {CurrentSortOrdering[3]} ASC";
+
+                    CurrentSQLQueryInject = query;
+
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var trackID = (int)reader["TrackID"];
+                                sortedTrackIDs.Add(trackID);
+                            }
+                        }
+                    }
+                }
+
+                if (sortedTrackIDs.Count > 0)
+                    ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
+            }
+        }
+
+        private void SortReverse(string collectionToSort, string mainSortProperty)
+        {
+            //Note that if AlbumTrackNumber is passed to this ever as the mainSortProperty it will cause some issues. However, that's not likely to happen with the current interface
+            Debug.Log($"Sorting {collectionToSort} in reverse order by {mainSortProperty}");
+            var sortedTrackIDs = new List<int>();
+
+            if (collectionToSort == "library")
+            {
+                //Note that LibrarySortProperties { AlbumTrackNumber, Title, Album, Artist } and the odd order of CurrentSortOrdering is intentional/correct
+                //TODO: Maybe a cleaner way to do it, but this was all I could think of when I initially wrote this pre-SQLite refactoring
+
+                var sortProperties = Enum.GetValues(typeof(LibrarySortProperties))
+                    .Cast<LibrarySortProperties>()
+                    .Select(e => e.ToString())
+                    .Where(e => e != mainSortProperty)
+                    .ToList();
+
+                CurrentSortOrdering = new List<string> { mainSortProperty, sortProperties[2], sortProperties[0], sortProperties[1] };
+
+                using (var connection = new SqliteConnection(ConnectionString))
+                {
+                    connection.Open();
+
+                    //ASC = ascending
+                    //DESC = descending (not Describe as this is not MySQL)
+                    string query = $@"
+                        SELECT * FROM Tracks
+                        ORDER BY 
+                            {CurrentSortOrdering[0]} DESC,
+                            {CurrentSortOrdering[1]} DESC,
+                            {CurrentSortOrdering[2]} ASC,
+                            {CurrentSortOrdering[3]} ASC";
+
+                    CurrentSQLQueryInject = query;
+
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var trackID = (int)reader["TrackID"];
+                                sortedTrackIDs.Add(trackID);
+                            }
+                        }
+                    }
+                }
+
+                if (sortedTrackIDs.Count > 0)
+                    ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
+            }
+        }
+
+        public void RestoreDefaultOrder(string collectionToSort)
+        {
+            Debug.Log($"Setting {collectionToSort} in default order");
+            var sortedTrackIDs = new List<int>();
+
+            if (collectionToSort == "library") 
+            {
+                using (var connection = new SqliteConnection(ConnectionString))
+                {
+                    connection.Open();
+
+                    //ASC = ascending
+                    string query = $@"
+                        SELECT * FROM Tracks
+                        ORDER BY 
+                            Artist ASC,
+                            Album ASC,
+                            AlbumTrackNumber ASC,
+                            Title ASC";
+
+                    CurrentSQLQueryInject = query;
+
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var trackID = (int)reader["TrackID"];
+                                sortedTrackIDs.Add(trackID);
+                            }
+                        }
+                    }
+                }
+
+                if (sortedTrackIDs.Count > 0)
+                    ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
+            }
+        }
+
+        public void RefreshSorting()
+        {
+            SortButton buttonToSortBy = null;
+
+            foreach (var button in UISortButtonsManager.Instance.SortButtons)
+            {
+                if (button.State != SortButtonState.Default)
+                {
+                    buttonToSortBy = button;
+                }
+            }
+
+            if (buttonToSortBy == null)
+            {
+                RestoreDefaultOrder(UITrackListDisplayManager.Instance.TracksDisplayed);
+            }
+            else
+            {
+                if (buttonToSortBy.State == SortButtonState.Forward)
+                {
+                    SortForward(UITrackListDisplayManager.Instance.TracksDisplayed, buttonToSortBy.SortProperty);
+                }
+                else if (buttonToSortBy.State == SortButtonState.Reverse)
+                {
+                    SortReverse(UITrackListDisplayManager.Instance.TracksDisplayed, buttonToSortBy.SortProperty);
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AudioFileUpdate(string observationType, object data)
+        {
+            Action action = observationType switch
+            {
+                "OnNewTrackAdded" => () =>
+                {
+                    RefreshSorting();
+                },
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
+        }
+
+        /*private void SortForward(string collectionToSort, string mainSortProperty)
         {
             //Note that if AlbumTrackNumber is passed to this ever as the mainSortProperty it will cause some issues. However, that's not likely to happen with the current interface
             Debug.Log($"Sorting {collectionToSort} in forward order by {mainSortProperty}");
@@ -145,8 +347,9 @@ namespace AudioFile.Controller
 
             if (sortedTrackList.Count > 0)
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackList);
-        }
-        private void SortReverse(string collectionToSort, string mainSortProperty)
+        }*/
+
+        /*private void SortReverse(string collectionToSort, string mainSortProperty)
         {
             Debug.Log($"Sorting {collectionToSort} in forward order by {mainSortProperty}");
             var sortedTrackList = new List<Track>();
@@ -196,13 +399,14 @@ namespace AudioFile.Controller
             if (sortedTrackList.Count > 0)
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackList);
 
-        }
-        public void RestoreDefaultOrder(string collectionToSort)
+        }*/
+
+        /*public void RestoreDefaultOrder(string collectionToSort)
         {
             Debug.Log($"Setting {collectionToSort} in default order");
             var sortedTrackList = new List<Track>();
 
-            if (collectionToSort == "library") //Library default order is by TrackID. May change this to a new field called CustomOrderIndex later
+            if (collectionToSort == "library") 
             {
                 sortedTrackList = TrackLibrary.Instance.TrackList
                     .OrderBy(track => track.TrackProperties.GetProperty(Enum.GetName(typeof(LibrarySortProperties), 3))) //OrderBy defaults to ascending; Artist
@@ -222,9 +426,9 @@ namespace AudioFile.Controller
 
             if (sortedTrackList.Count > 0)
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackList);
-        }
+        }*/
 
-        private void RefreshSorting()
+        /*private void RefreshSorting()
         {
             SortButton buttonToSortBy = null;
 
@@ -251,26 +455,7 @@ namespace AudioFile.Controller
                     SortReverse(UITrackListDisplayManager.Instance.TracksDisplayed, buttonToSortBy.SortProperty);
                 }
             }
-        }
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void AudioFileUpdate(string observationType, object data)
-        {
-            Action action = observationType switch
-            {
-                "OnNewTrackAdded" => () =>
-                {
-                    RefreshSorting();
-                },
-                //Add more switch arms here as needed
-                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
-            };
-
-            action();
-        }
+        }*/
 
 
     }
