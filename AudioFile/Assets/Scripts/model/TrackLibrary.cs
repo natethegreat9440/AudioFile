@@ -231,7 +231,7 @@ namespace AudioFile.Model
             }
         }*/
 
-        public override void AddItem(MediaLibraryComponent trackToAdd, bool isTrackNew)
+        /*public override void AddItem(MediaLibraryComponent trackToAdd, bool isTrackNew)
         {
             Track track = (Track)trackToAdd;
 
@@ -243,20 +243,20 @@ namespace AudioFile.Model
                     command.CommandText = @"
                     INSERT INTO Tracks (TrackID, Title, Artist, Album, Duration, BPM, Path, AlbumTrackNumber)
                     VALUES (@TrackID, @Title, @Artist, @Album, @Duration, @BPM, @Path, @AlbumTrackNumber);";
-                    command.Parameters.AddWithValue("@TrackID", track.TrackProperties.GetProperty("TrackID"));
-                    command.Parameters.AddWithValue("@Title", track.TrackProperties.GetProperty("Title"));
-                    command.Parameters.AddWithValue("@Artist", track.TrackProperties.GetProperty("Artist"));
-                    command.Parameters.AddWithValue("@Album", track.TrackProperties.GetProperty("Album"));
-                    command.Parameters.AddWithValue("@Duration", track.TrackProperties.GetProperty("Duration"));
-                    command.Parameters.AddWithValue("@BPM", track.TrackProperties.GetProperty("BPM"));
-                    command.Parameters.AddWithValue("@Path", track.TrackProperties.GetProperty("Path"));
-                    command.Parameters.AddWithValue("@AlbumTrackNumber", track.TrackProperties.GetProperty("AlbumTrackNumber"));
+                    command.Parameters.AddWithValue("@TrackID", track.TrackID);
+                    command.Parameters.AddWithValue("@Title", track.TrackProperties.GetProperty(track.TrackID, "Title"));
+                    command.Parameters.AddWithValue("@Artist", track.TrackProperties.GetProperty(track.TrackID, "Artist"));
+                    command.Parameters.AddWithValue("@Album", track.TrackProperties.GetProperty(track.TrackID, "Album"));
+                    command.Parameters.AddWithValue("@Duration", track.TrackProperties.GetProperty(track.TrackID, "Duration"));
+                    command.Parameters.AddWithValue("@BPM", track.TrackProperties.GetProperty(track.TrackID, "BPM"));
+                    command.Parameters.AddWithValue("@Path", track.TrackProperties.GetProperty(track.TrackID, "Path"));
+                    command.Parameters.AddWithValue("@AlbumTrackNumber", track.TrackProperties.GetProperty(track.TrackID, "AlbumTrackNumber"));
                     command.ExecuteNonQuery();
                 }
             }
-        }
+        }*/
 
-        public override void RemoveItem(string trackDisplayID)
+        /*public override void RemoveItem(string trackDisplayID)
         {
             var trackToRemove = GetTrackAtID(trackDisplayID);
 
@@ -268,7 +268,7 @@ namespace AudioFile.Model
             TrackList.Remove(trackToRemove);
             Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
-        }
+        }*/
 
         public override void RemoveItemAtIndex(int providedIndex)
         {

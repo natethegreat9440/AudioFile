@@ -49,7 +49,7 @@ namespace AudioFile.View
             listDisplayManager = manager;
 
             //Set TrackDisplayID to match TrackID so these can be compared later with LINQ queries
-            TrackDisplayID = trackData.TrackProperties.GetProperty("TrackID");
+            TrackDisplayID = trackData.TrackID;
             SetTrackData(trackData);
             InitializeButtons();
 
@@ -57,10 +57,10 @@ namespace AudioFile.View
 
         private void SetTrackData(Track trackData)
         {
-            SetText(listDisplayManager.titleTextPath, trackData.TrackProperties.GetProperty("Title"));
-            SetText(listDisplayManager.artistTextPath, trackData.TrackProperties.GetProperty("Artist"));
-            SetText(listDisplayManager.albumTextPath, trackData.TrackProperties.GetProperty("Album"));
-            SetText(listDisplayManager.durationTextPath, trackData.TrackProperties.GetProperty("Duration"));
+            SetText(listDisplayManager.titleTextPath, trackData.TrackProperties.GetProperty(trackData.TrackID, "Title"));
+            SetText(listDisplayManager.artistTextPath, trackData.TrackProperties.GetProperty(trackData.TrackID, "Artist"));
+            SetText(listDisplayManager.albumTextPath, trackData.TrackProperties.GetProperty(trackData.TrackID, "Album"));
+            SetText(listDisplayManager.durationTextPath, trackData.TrackProperties.GetProperty(trackData.TrackID, "Duration"));
         }
 
         private void SetText(string path, string value)

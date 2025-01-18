@@ -276,7 +276,7 @@ namespace AudioFile.View
                 yield break;  // Exit if there’s no track data or prefab reference
             }
 
-            var providedTrackID = providedTrack.TrackProperties.GetProperty("TrackID");
+            var providedTrackID = providedTrack.TrackID;
 
             Transform trackDisplayTransformToRemove = GetTrackDisplay(providedTrackID);
 
@@ -297,18 +297,22 @@ namespace AudioFile.View
 
         private IEnumerator PopulateOnStart(List<Track> initialTrackList)
         {
-            if (initialTrackList == null || initialTrackList.Count == 0)
-            {
-                Debug.Log("initialTrackList is empty/null");
-            }
+
             foreach (var track in initialTrackList)
             {
                 Debug.Log($"Adding TrackDisplay for {track} on program start");
                 yield return AddTrackOnUpdate(track);
             }
-            yield return null; // Ensure the final yield return is executed before notifying observers
 
-            SortController.Instance.RefreshSorting(); //Essentially delegates directly to RestoreDefaultOrder, but if I do decide to have the program save Sort Button states after a session then RefreshSorting will handle accordingly
+            if (initialTrackList == null || initialTrackList.Count == 0)
+            {
+                Debug.Log("initialTrackList is empty/null");
+            }
+            else
+            {
+                SortController.Instance.RefreshSorting(); //Essentially delegates directly to RestoreDefaultOrder, but if I do decide to have the program save Sort Button states after a session then RefreshSorting will handle accordingly
+            }
+            yield return null; // Ensure the final yield return is executed before notifying observers
 
             ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateEnd");
         }
@@ -366,7 +370,7 @@ namespace AudioFile.View
                     //Select the active track ID, which is now the track before the track that was removed
                     if (PlaybackController.Instance.ActiveTrack != null)
                     {
-                        string activeTrackID = PlaybackController.Instance.ActiveTrack.TrackProperties.GetProperty("TrackID");
+                        string activeTrackID = PlaybackController.Instance.ActiveTrack.TrackID;
                         Transform selectedTrackDisplay = GetTrackDisplay(activeTrackID);
                         OnTrackSelection(selectedTrackDisplay.gameObject);
                     }

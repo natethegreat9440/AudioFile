@@ -72,6 +72,7 @@ namespace AudioFile.Model
                         command.Parameters.AddWithValue("@Title", trackTitle);
                         command.Parameters.AddWithValue("@Artist", trackArtist);
                         command.Parameters.AddWithValue("@Album", trackAlbum);
+                        command.Parameters.AddWithValue("@Duration", ""); //Initialize() will add this
                         command.Parameters.AddWithValue("@Path", loadedPath);
                         command.Parameters.AddWithValue("@AlbumTrackNumber", albumTrackNumber);
                         var trackID = command.ExecuteScalar().ToString();
@@ -106,7 +107,6 @@ namespace AudioFile.Model
 
             TrackID = trackID;
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnNewTrackAdded", this);
-
 
         }
 

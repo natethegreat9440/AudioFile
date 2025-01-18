@@ -51,7 +51,7 @@ namespace AudioFile.Controller
 
         Track ActiveTrack { get => PlaybackController.Instance.ActiveTrack; }
 
-        private int loadingCoroutinesCount = 0;
+        //private int loadingCoroutinesCount = 0;
         public string ConnectionString => SetupController.Instance.ConnectionString;
         public void Awake()
         {
@@ -60,21 +60,22 @@ namespace AudioFile.Controller
         public void Start()
         {
             //TrackLibrary.Instance.Initialize();
+
             using (var connection = new SqliteConnection(ConnectionString))
             {
-                connection.Open();
+                connection.Open(); //Will create the database if it doesn't already exist otherwise it opens it
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = @"
                     CREATE TABLE IF NOT EXISTS Tracks (
-                        TrackID INT PRIMARY KEY AUTO_INCREMENT,
+                        TrackID INTEGER PRIMARY KEY AUTOINCREMENT,
                         Title TEXT NOT NULL DEFAULT 'Untitled Track',
                         Artist TEXT NOT NULL DEFAULT 'Unknown Artist',
                         Album TEXT NOT NULL DEFAULT 'Unknown Album',
                         Duration TEXT NOT NULL DEFAULT '--:--',
-                        BPM INT,
+                        BPM INTEGER,
                         Path TEXT NOT NULL DEFAULT 'Unknown Path',
-                        AlbumTrackNumber INT NOT NULL DEFAULT 0
+                        AlbumTrackNumber INTEGER NOT NULL DEFAULT 0
                     );";
                     command.ExecuteNonQuery();
                 }

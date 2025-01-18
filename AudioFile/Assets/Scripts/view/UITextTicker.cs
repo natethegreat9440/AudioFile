@@ -150,7 +150,7 @@ namespace AudioFile.View
                 {
                     if (data is Track trackRemoved)
                     {
-                        StartCoroutine(QuickMessage(4f, $"{trackRemoved.TrackProperties.GetProperty("Title")} removed from library", true));
+                        StartCoroutine(QuickMessage(4f, $"{trackRemoved.TrackProperties.GetProperty(trackRemoved.TrackID, "Title")} removed from library", true));
                     }
                 }
                 ,
@@ -158,7 +158,7 @@ namespace AudioFile.View
                 {
                     if (data is Track trackSkipped)
                     {
-                        StartCoroutine(QuickMessage(4f, $"{trackSkipped.TrackProperties.GetProperty("Title")} skipped due to error", true));
+                        StartCoroutine(QuickMessage(4f, $"{trackSkipped.TrackProperties.GetProperty(trackSkipped.TrackID, "Title")} skipped due to error", true));
                     }
                     else if (data is null)
                     {
