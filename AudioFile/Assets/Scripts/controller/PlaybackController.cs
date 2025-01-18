@@ -7,6 +7,10 @@ using AudioFile.View;
 using AudioFile.ObserverManager;
 using System;
 using UnityEngine;
+using Mono.Data.Sqlite;
+using Unity.VisualScripting.Dependencies.Sqlite;
+using Unity.VisualScripting.Antlr3.Runtime.Collections;
+
 
 
 namespace AudioFile.Controller
@@ -39,16 +43,20 @@ namespace AudioFile.Controller
 
         public Track SelectedTrack { get; private set; } = null;
 
-        public int ActiveTrackIndex
-        {
-            get { return TrackLibrary.Instance.ActiveTrackIndex; }
-            set { TrackLibrary.Instance.ActiveTrackIndex = value; }
-        }
+        private string CurrentSQLQueryInject => SortController.Instance.CurrentSQLQueryInject;
 
-        List<Track> TrackList 
+        public int ActiveTrackIndex;
+        //{
+        //    get { return TrackLibrary.Instance.ActiveTrackIndex; }
+        //    set { TrackLibrary.Instance.ActiveTrackIndex = value; }
+        //}
+
+        public string ConnectionString => SetupController.Instance.ConnectionString;
+
+        /*List<Track> TrackList 
         {
             get { return TrackLibrary.Instance.TrackList; }
-        }
+        }*/
 
         private static PlaybackController CreateSingleton()
         {
@@ -80,9 +88,9 @@ namespace AudioFile.Controller
             throw new NotImplementedException();
         }
 
-        public string GetSelectedTrackID()
+        public int GetSelectedTrackID()
         {
-            return SelectedTrack != null ? SelectedTrack.TrackID : "";
+            return SelectedTrack != null ? SelectedTrack.TrackID : -1;
         }
 
         private string GetActiveTrackID()
@@ -96,6 +104,10 @@ namespace AudioFile.Controller
             }
             return "";
         }
+
+
+
+
 
         public void HandlePlayPauseButton(string trackDisplayID)
         {
@@ -214,34 +226,72 @@ namespace AudioFile.Controller
             }
             else
             {
-                Debug.Log("There is no active track.");
+                Debug.Log("There is no selected track.");
             }
         }
 
-        public void Play(string trackDisplayID)
+        public void Play(int trackDisplayID)
         {
-            ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
             SetActiveTrack(TrackLibraryController.Instance.GetTrackAtID(trackDisplayID));
-            TrackLibrary.Instance.Play(trackDisplayID);
+            ActiveTrack.Play();
         }
 
-        public void Pause(string trackDisplayID)
+        public void Pause()
         {
-            TrackLibrary.Instance.Pause(trackDisplayID);
+            ActiveTrack.Pause();
         }
 
-        public void Stop(string trackDisplayID)
+        public void Stop()
         {
-            TrackLibrary.Instance.Stop(trackDisplayID);
+            ActiveTrack.Stop();
         }
 
         public void NextItem()
         {
-            TrackLibrary.Instance.NextItem();
+            int nextTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, true); //True indicates to grab the index of next track in table
+            int tracksLength = TrackLibraryController.Instance.GetTracksLength(); 
+
+            if (nextTrackIndex < tracksLength - 1)
+            {
+                Stop();
+
+                int nextTrackID = TrackLibraryController.Instance.GetTrackIDAtIndex(nextTrackIndex);
+                Track nextTrack = TrackLibraryController.Instance.GetTrackAtID(nextTrackID);
+                SetActiveTrack(nextTrack);
+
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
+                
+                Play(nextTrackID);
+            }
+            else
+            {
+                Debug.Log("Reached the end of the playlist.");
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", ActiveTrackIndex);
+            }
         }
         public void PreviousItem()
         {
-            TrackLibrary.Instance.PreviousItem();
+            int prevTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, false, true); //False and then true indicates to grab the index of previous track in table
+
+            if (prevTrackIndex > 1)
+            {
+                Stop();
+
+                int prevTrackID = TrackLibraryController.Instance.GetTrackIDAtIndex(prevTrackIndex);
+                Track prevTrack = TrackLibraryController.Instance.GetTrackAtID(prevTrackID);
+                SetActiveTrack(prevTrack);
+
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
+
+                Play(prevTrackID);
+            }
+            else
+            {
+                Debug.Log("Reached the end of the playlist.");
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", ActiveTrackIndex);
+            }
         }
 
         public void Seek(float newTime)
@@ -261,7 +311,7 @@ namespace AudioFile.Controller
                 "OnActiveTrackIsDone" => NextItem,
                 "OnSingleTrackSelected" => () =>
                 {
-                    SelectedTrack = TrackLibraryController.Instance.GetTrackAtID((string)data);
+                    SelectedTrack = TrackLibraryController.Instance.GetTrackAtID((int)data);
                 },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")

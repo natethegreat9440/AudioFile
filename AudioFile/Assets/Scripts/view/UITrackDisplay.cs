@@ -35,7 +35,7 @@ namespace AudioFile.View
 
         public UIContextMenu ContextMenuInstance { get; private set; }
 
-        public string TrackDisplayID { get; private set; }
+        public int TrackDisplayID { get; private set; }
 
         public bool IsSelected { get; set; } = false; //TrackListDisplayManager gets and sets these for individual instances
 

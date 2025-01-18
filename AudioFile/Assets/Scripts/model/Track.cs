@@ -47,7 +47,7 @@ namespace AudioFile.Model
         public bool IsPaused { get { return _isPaused; } private set { _isPaused = value; } }
         public string ConnectionString => SetupController.Instance.ConnectionString;
 
-        public string TrackID { get; private set; }
+        public int TrackID { get; private set; }
 
         #region Setup/Unity methods
         // Static factory method to create and initialize Track

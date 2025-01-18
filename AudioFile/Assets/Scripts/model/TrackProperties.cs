@@ -29,7 +29,7 @@ namespace AudioFile.Model
         {
             "Title", "Artist", "Album", "Duration", "BPM", "Path", "TrackID", "AlbumTrackNumber"
         };
-        public string GetProperty(string trackID, string property)
+        public string GetProperty(int trackID, string property)
         {
             using (var connection = new SqliteConnection(ConnectionString))
             {

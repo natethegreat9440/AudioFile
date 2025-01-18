@@ -53,6 +53,9 @@ namespace AudioFile.Controller
 
         //private int loadingCoroutinesCount = 0;
         public string ConnectionString => SetupController.Instance.ConnectionString;
+
+        private string CurrentSQLQueryInject => SortController.Instance.CurrentSQLQueryInject;
+
         public void Awake()
         {
             DontDestroyOnLoad(this.gameObject);
@@ -95,6 +98,120 @@ namespace AudioFile.Controller
         {
             throw new NotImplementedException();
         }
+
+        public Track GetTrackAtID(int trackID)
+        {
+            // Find all Track components in the scene
+            Track[] allTracks = FindObjectsOfType<Track>();
+
+            // Use LINQ to find the track with the specified TrackID
+            Track track = allTracks.FirstOrDefault(t => t.TrackID == trackID);
+
+            if (track != null)
+            {
+                Debug.Log($"Track found: {track.TrackProperties.GetProperty(trackID, "Title")}");
+            }
+            else
+            {
+                Debug.LogWarning($"Track with ID {trackID} not found.");
+            }
+
+            return track;
+        }
+
+        public int GetTrackIndex(int trackID, bool isNext = false, bool isPrevious = false)
+        {
+            int rowIndex = -1; // Default value if trackID is not found
+            int currentRow = 0;
+            int indexAdjust = 0;
+
+            //TODO: Likely need to adjust this method once shuffle is introduced
+            if (isNext)
+            {
+                indexAdjust = 1;
+            }
+            else if (isPrevious)
+            {
+                indexAdjust = -1;
+            }
+
+
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqliteCommand(CurrentSQLQueryInject, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            currentRow++;
+                            if ((int)reader["TrackID"] == trackID)
+                            {
+                                rowIndex = currentRow + indexAdjust;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return rowIndex;
+        }
+
+        public int GetTrackIDAtIndex(int index)
+        {
+            int trackID = -1; // Default value if index is not found
+            int currentRow = 0;
+
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqliteCommand(CurrentSQLQueryInject, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            if (currentRow == index)
+                            {
+                                trackID = (int)reader["TrackID"];
+                                break;
+                            }
+                            currentRow++;
+                        }
+                    }
+                }
+            }
+
+            return trackID;
+        }
+
+        public int GetTracksLength()
+        {
+            int tracksLength = 0;
+
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqliteCommand(CurrentSQLQueryInject, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            tracksLength++;
+                        }
+                    }
+                }
+            }
+
+            return tracksLength;
+        }
+
 
         public void HandleRequest(object request, bool isUndo)
         {
@@ -206,26 +323,7 @@ namespace AudioFile.Controller
             throw new NotImplementedException();
         }
 
-        public Track GetTrackAtID(string trackID)
-        {
-            // Find all Track components in the scene
-            Track[] allTracks = FindObjectsOfType<Track>();
-
-            // Use LINQ to find the track with the specified TrackID
-            Track track = allTracks.FirstOrDefault(t => t.TrackID == trackID);
-
-            if (track != null)
-            {
-                Debug.Log($"Track found: {track.TrackProperties.GetProperty(trackID, "Title")}");
-            }
-            else
-            {
-                Debug.LogWarning($"Track with ID {trackID} not found.");
-            }
-
-            return track;
-        }
-        public void RemoveTrack(string trackDisplayID)
+        public void RemoveTrack(int trackDisplayID)
         {
             // Remove the track entry from the Tracks table in the database
             using (var connection = new SqliteConnection(ConnectionString))

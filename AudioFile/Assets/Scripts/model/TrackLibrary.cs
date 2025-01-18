@@ -82,16 +82,16 @@ namespace AudioFile.Model
             }
         }*/
 
-        public override string ToString()
+        /*public override string ToString()
         {
             return $"{_name}";
-        }
+        }*/
 
         #region Playback method implementations
-        public Track GetTrackAtIndex(int index)
+        /*public Track GetTrackAtIndex(int index)
         {
             return TrackList[index];
-        }
+        }*/
         public int GetTrackIndex(Track track)
         {
             //Debug.Log($"Track index = {TrackList.IndexOf(track)}");
@@ -104,7 +104,7 @@ namespace AudioFile.Model
                 .FirstOrDefault();
         }*/
 
-        private int GetTrackIndexAtID(string trackDisplayID)
+        /*private int GetTrackIndexAtID(string trackDisplayID)
         {
             using (var connection = new SqliteConnection(ConnectionString))
             {
@@ -121,7 +121,7 @@ namespace AudioFile.Model
                     return result != null ? Convert.ToInt32(result) : -1;
                 }
             }
-        }
+        }*/
 
         /*public string GetTrackID(Track track)
         {
@@ -130,7 +130,7 @@ namespace AudioFile.Model
 
         public override void Play(string trackDisplayID)
         {
-            ActiveTrackIndex = GetTrackIndexAtID(trackDisplayID);
+            //ActiveTrackIndex = GetTrackIndexAtID(trackDisplayID);
             try
             {
                 TrackList[ActiveTrackIndex].Play();
