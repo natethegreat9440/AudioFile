@@ -29,7 +29,7 @@ namespace AudioFile.Model
         {
             "Title", "Artist", "Album", "Duration", "BPM", "Path", "TrackID", "AlbumTrackNumber"
         };
-        public string GetProperty(int trackID, string property)
+        public object GetProperty(int trackID, string property)
         {
             using (var connection = new SqliteConnection(ConnectionString))
             {
@@ -43,14 +43,14 @@ namespace AudioFile.Model
 
                     command.CommandText = $"SELECT {property} FROM Tracks WHERE TrackID = @TrackID;";
                     command.Parameters.AddWithValue("@TrackID", trackID); //Security measure to prevent SQL injection attacks
-                    return command.ExecuteScalar()?.ToString();
+                    return command.ExecuteScalar();
                 }
             }
         }
 
-        public Dictionary<string, string> GetAllProperties(string trackID)
+        public Dictionary<string, object> GetAllProperties(int trackID)
         {
-            var properties = new Dictionary<string, string>();
+            var properties = new Dictionary<string, object>();
 
             using (var connection = new SqliteConnection(ConnectionString))
             {
@@ -66,7 +66,8 @@ namespace AudioFile.Model
                         {
                             foreach (var property in validProperties)
                             {
-                                properties[property] = reader[property]?.ToString();
+                                var value = reader[property];
+                                properties[property] = value != DBNull.Value ? value : null;
                             }
                         }
                     }
@@ -76,7 +77,7 @@ namespace AudioFile.Model
             return properties;
         }
 
-        public void SetProperty(string trackID, string property, string value)
+        public void SetProperty(int trackID, string property, object value)
         {
             using (var connection = new SqliteConnection(ConnectionString))
             {
@@ -95,65 +96,5 @@ namespace AudioFile.Model
                 }
             }
         }
-
-        /*[SerializeField]
-        Dictionary<string, string> trackProperties = new Dictionary<string, string>()
-        {
-            {"Title", "Untitled Track"},
-            {"Artist", "Unknown Artist"},
-            {"Album", "Unknown Album"},
-            {"Duration", "--:--"},
-            {"BPM", "--"},
-            {"Path", "Unknown Path"},
-            {"TrackID", "Error: No Track ID" },
-            {"AlbumTrackNumber", "0" }
-        };
-
-        private readonly HashSet<string> cantRemoveProperties = new HashSet<string>()
-        {
-            "Title", "Artist", "Album", "Duration", "BPM", "Path", "TrackID", "AlbumTrackNumber"
-        };
-
-        public string GetProperty(string key)
-        {
-            if (trackProperties.ContainsKey(key))
-            {
-                return trackProperties[key];
-            }
-            else { Debug.Log($"Property: {key} does not exist."); }
-
-            return null;
-        }
-        public Dictionary<string, string> GetAllProperties()
-        {
-            return new Dictionary<string, string>(trackProperties);
-        }
-        public void SetProperty(string key, string value)
-        {
-            if (trackProperties.ContainsKey(key))
-            {
-                trackProperties[key] = value;
-            }
-            else { Debug.Log($"Property: {key} does not exist."); }
-
-        }
-
-        public void AddProperty(string key, string value)
-        {
-            if (!trackProperties.ContainsKey(key))
-            {
-                trackProperties.Add(key, value);
-            }
-        }
-
-        public void RemoveProperty(string key)
-        {
-            if (!cantRemoveProperties.Contains(key) && trackProperties.ContainsKey(key))
-            {
-                trackProperties.Remove(key);
-            }
-        }
-        */
-
     }
 }

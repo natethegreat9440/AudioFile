@@ -57,10 +57,13 @@ namespace AudioFile.View
 
         private void SetTrackData(Track trackData)
         {
-            SetText(listDisplayManager.titleTextPath, trackData.TrackProperties.GetProperty(trackData.TrackID, "Title"));
-            SetText(listDisplayManager.artistTextPath, trackData.TrackProperties.GetProperty(trackData.TrackID, "Artist"));
-            SetText(listDisplayManager.albumTextPath, trackData.TrackProperties.GetProperty(trackData.TrackID, "Album"));
-            SetText(listDisplayManager.durationTextPath, trackData.TrackProperties.GetProperty(trackData.TrackID, "Duration"));
+            //Testing
+            string title = (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Title") + " " + trackData.TrackID + " " + trackData.TrackProperties.GetProperty(trackData.TrackID, "AlbumTrackNumber");
+
+            SetText(listDisplayManager.titleTextPath, title);
+            SetText(listDisplayManager.artistTextPath, (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Artist"));
+            SetText(listDisplayManager.albumTextPath, (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Album"));
+            SetText(listDisplayManager.durationTextPath, (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Duration"));
         }
 
         private void SetText(string path, string value)
@@ -137,7 +140,7 @@ namespace AudioFile.View
                     {
                         Vector2 displayPosition = eventData.position;
 
-                        var trackDisplayIDList = new List<string>();
+                        var trackDisplayIDList = new List<int>();
 
                         foreach (var trackDisplay in listDisplayManager.SelectedTrackDisplays)
                         {

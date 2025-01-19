@@ -78,14 +78,14 @@ namespace AudioFile.Controller
             ConnectionString = SetSQLLiteDBLocation();
             Debug.Log($"AudioFile.db located here {ConnectionString}");
 
-            var newInstance = TrackLibraryController.Instance;
             var observerManager = ObserverManager.ObserverManager.Instance; //Only assigned to a reference variable here to wake it up for all of it's dependents
-            var playbackController = PlaybackController.Instance;
-            var trackLibrary = TrackLibrary.Instance;
-            var trackListDisplayManager = UITrackListDisplayManager.Instance;
-            var sortButtonManager = UISortButtonsManager.Instance;
             var sortController = SortController.Instance;
+            var trackLibraryController = TrackLibraryController.Instance;
+            var playbackController = PlaybackController.Instance;
+            var sortButtonManager = UISortButtonsManager.Instance;
             var contextMenu = UIContextMenu.Instance;
+            var trackListDisplayManager = UITrackListDisplayManager.Instance;
+
             SetupFileMenu();
         }
 

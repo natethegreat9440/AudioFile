@@ -45,18 +45,13 @@ namespace AudioFile.Controller
 
         private string CurrentSQLQueryInject => SortController.Instance.CurrentSQLQueryInject;
 
-        public int ActiveTrackIndex;
+        public int ActiveTrackIndex => TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID);
         //{
         //    get { return TrackLibrary.Instance.ActiveTrackIndex; }
         //    set { TrackLibrary.Instance.ActiveTrackIndex = value; }
         //}
 
         public string ConnectionString => SetupController.Instance.ConnectionString;
-
-        /*List<Track> TrackList 
-        {
-            get { return TrackLibrary.Instance.TrackList; }
-        }*/
 
         private static PlaybackController CreateSingleton()
         {
@@ -93,30 +88,14 @@ namespace AudioFile.Controller
             return SelectedTrack != null ? SelectedTrack.TrackID : -1;
         }
 
-        private string GetActiveTrackID()
-        {
-            foreach (var track in TrackList)
-            {
-                if (track.IsPlaying || track.IsPaused)
-                {
-                    return track.TrackID;
-                }
-            }
-            return "";
-        }
-
-
-
-
-
-        public void HandlePlayPauseButton(string trackDisplayID)
+        public void HandlePlayPauseButton(int trackDisplayID)
         {
             if (ActiveTrack == null)
             {
                 // Play the selected track
                 HandleRequest(new PlayCommand(trackDisplayID));
             }
-            else if (ActiveTrack != null && GetActiveTrackID() == trackDisplayID && SelectedTrack.IsPlaying) //TODO: see if third condition is necessary or if it is just redundant
+            else if (ActiveTrack != null && ActiveTrack.TrackID == trackDisplayID && SelectedTrack.IsPlaying) //TODO: see if third condition is necessary or if it is just redundant
             {
                 // Pause the active track
                 HandleRequest(new PauseCommand(trackDisplayID));
@@ -138,26 +117,28 @@ namespace AudioFile.Controller
                 {
                     "PlayCommand" => () =>
                     {
-                        string activeTrackID = GetActiveTrackID(); 
                         PlayCommand playCommand = request as PlayCommand;
-                        if (ActiveTrack != null && activeTrackID != playCommand.TrackDisplayID)
+                        if (ActiveTrack != null)
                         {
-                            Stop(activeTrackID);
+                            if (ActiveTrack.TrackID != playCommand.TrackDisplayID)
+                            {
+                                Stop();
+                            }
                         }
                         Play(playCommand.TrackDisplayID);
                     },
                     "PauseCommand" => () =>
                     {
                         PauseCommand pauseCommand = request as PauseCommand;
-                        Pause(pauseCommand.TrackDisplayID);
+                        Pause();
                     },
                     "StopCommand" => () =>
                     {
                         StopCommand stopCommand = request as StopCommand;
-                        Stop(stopCommand.TrackDisplayID);
+                        Stop();
                     },
-                    "NextItemCommand" => NextItem,
-                    "PreviousItemCommand" => PreviousItem,
+                    "NextItemCommand" => () => { NextItem(); },
+                    "PreviousItemCommand" => () => { PreviousItem(); },
                     "SeekCommand" => () =>
                     {
                         SeekCommand seekCommand = request as SeekCommand;
@@ -176,15 +157,15 @@ namespace AudioFile.Controller
                     "PlayCommand" => () =>
                     {
                         PlayCommand undoPlayCommand = request as PlayCommand;
-                        Pause(undoPlayCommand.TrackDisplayID);
+                        Pause();
                     },
                     "PauseCommand" => () =>
                     {
                         PauseCommand undoPauseCommand = request as PauseCommand;
                         Play(undoPauseCommand.TrackDisplayID);
                     },
-                    "NextItemCommand" => PreviousItem,
-                    "PreviousItemCommand" => NextItem,
+                    "NextItemCommand" => () => { PreviousItem(); },
+                    "PreviousItemCommand" => () => { NextItem(); },
                     "SeekCommand" => () => 
                     {
                         SeekCommand seekCommand = request as SeekCommand;
@@ -233,7 +214,16 @@ namespace AudioFile.Controller
         public void Play(int trackDisplayID)
         {
             SetActiveTrack(TrackLibraryController.Instance.GetTrackAtID(trackDisplayID));
-            ActiveTrack.Play();
+
+            try
+            {
+                ActiveTrack.Play();
+            }
+            catch (Exception ex)
+            {
+                Debug.Log($"Track skipped: {ex.GetType()} - {ex.Message}");
+                Skip();
+            }
         }
 
         public void Pause()
@@ -246,12 +236,14 @@ namespace AudioFile.Controller
             ActiveTrack.Stop();
         }
 
-        public void NextItem()
+        public bool NextItem()
         {
+            //int activeTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID); //Testing
+
             int nextTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, true); //True indicates to grab the index of next track in table
             int tracksLength = TrackLibraryController.Instance.GetTracksLength(); 
 
-            if (nextTrackIndex < tracksLength - 1)
+            if (nextTrackIndex < tracksLength + 1)
             {
                 Stop();
 
@@ -263,18 +255,20 @@ namespace AudioFile.Controller
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
                 
                 Play(nextTrackID);
+                return true;
             }
             else
             {
                 Debug.Log("Reached the end of the playlist.");
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", ActiveTrackIndex);
+                return false;
             }
         }
         public void PreviousItem()
         {
             int prevTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, false, true); //False and then true indicates to grab the index of previous track in table
 
-            if (prevTrackIndex > 1)
+            if (prevTrackIndex > 0)
             {
                 Stop();
 
@@ -289,9 +283,21 @@ namespace AudioFile.Controller
             }
             else
             {
-                Debug.Log("Reached the end of the playlist.");
+                Debug.Log("Reached the front of the playlist.");
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", ActiveTrackIndex);
             }
+        }
+
+        public void Skip() //Commenting this out for now as it seems to me this Skip() logic could just be implemented into the Play() method directly 
+        //(and potentially other playback methods, however I'll want to test how Skip logic works inside Play before deciding if I want to add to other methods)
+        {
+            if (ActiveTrack != null && !NextItem())
+            {
+                Debug.Log("Delegating to PreviousItem() because the end of the playlist was reached.");
+                PreviousItem(); // Fallback to previous item
+            }
+
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSkipped", ActiveTrack); //Passes the track name if possible when skipped
         }
 
         public void Seek(float newTime)
@@ -308,7 +314,7 @@ namespace AudioFile.Controller
             //Debug.Log(observationType);
             Action action = observationType switch
             {
-                "OnActiveTrackIsDone" => NextItem,
+                "OnActiveTrackIsDone" => () => { NextItem(); },
                 "OnSingleTrackSelected" => () =>
                 {
                     SelectedTrack = TrackLibraryController.Instance.GetTrackAtID((int)data);

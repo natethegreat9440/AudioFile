@@ -143,7 +143,10 @@ namespace AudioFile.Controller
                         {
                             while (reader.Read())
                             {
-                                var trackID = (int)reader["TrackID"];
+                                //var trackID = (int)reader["TrackID"];
+                                var result = reader["TrackID"];
+                                var trackID = Convert.ToInt32(result);
+
                                 sortedTrackIDs.Add(trackID);
                             }
                         }
@@ -196,7 +199,9 @@ namespace AudioFile.Controller
                         {
                             while (reader.Read())
                             {
-                                var trackID = (int)reader["TrackID"];
+                                var result = reader["TrackID"];
+                                int trackID = Convert.ToInt32(result);
+
                                 sortedTrackIDs.Add(trackID);
                             }
                         }

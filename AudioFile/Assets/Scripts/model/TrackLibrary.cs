@@ -128,7 +128,7 @@ namespace AudioFile.Model
             return track.TrackProperties.GetProperty("TrackID");
         }*/
 
-        public override void Play(string trackDisplayID)
+        /*public override void Play(string trackDisplayID)
         {
             //ActiveTrackIndex = GetTrackIndexAtID(trackDisplayID);
             try
@@ -140,19 +140,19 @@ namespace AudioFile.Model
                 Debug.Log($"Track skipped: {ex.GetType()} - {ex.Message}");
                 Skip(ActiveTrackIndex);
             }
-        }
+        }*/
 
-        public override void Pause(string trackDisplayID)
+        /*public override void Pause(string trackDisplayID)
         {
             ActiveTrackIndex = GetTrackIndexAtID(trackDisplayID);
             TrackList[ActiveTrackIndex].Pause();
-        }
+        }*/
 
-        public override void Stop(string trackDisplayID)
+        /*public override void Stop(string trackDisplayID)
         {
             ActiveTrackIndex = GetTrackIndexAtID(trackDisplayID);
             TrackList[ActiveTrackIndex].Stop();
-        }
+        }*/
         public override void Skip(int index) //Commenting this out for now as it seems to me this Skip() logic could just be implemented into the Play() method directly 
         //(and potentially other playback methods, however I'll want to test how Skip logic works inside Play before deciding if I want to add to other methods)
         {

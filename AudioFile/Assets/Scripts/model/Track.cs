@@ -47,50 +47,58 @@ namespace AudioFile.Model
         public bool IsPaused { get { return _isPaused; } private set { _isPaused = value; } }
         public string ConnectionString => SetupController.Instance.ConnectionString;
 
-        public int TrackID { get; private set; }
+        public int TrackID { get; set; }
 
-        #region Setup/Unity methods
+        #region Track Setup
         // Static factory method to create and initialize Track
         public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
                                 string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album",
-                                string loadedPath = "Unknown Path", int albumTrackNumber = 0)
+                                string loadedPath = "Unknown Path", int albumTrackNumber = 0, bool isNewTrack = false)
         {
-            //trackID = TrackIDRegistry.Instance.GenerateNewTrackID();
-
-            // Add track to the database table Tracks
             Track track = null;
 
             using (var connection = new SqliteConnection(SetupController.Instance.ConnectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
                 {
-                    connection.Open();
-                    using (var command = connection.CreateCommand())
+                    if (isNewTrack)
                     {
                         command.CommandText = @"
                         INSERT INTO Tracks (Title, Artist, Album, Duration, Path, AlbumTrackNumber)
                         VALUES (@Title, @Artist, @Album, @Duration, @Path, @AlbumTrackNumber);
-                        SELECT last_insert_rowid();";
-                        command.Parameters.AddWithValue("@Title", trackTitle);
-                        command.Parameters.AddWithValue("@Artist", trackArtist);
-                        command.Parameters.AddWithValue("@Album", trackAlbum);
-                        command.Parameters.AddWithValue("@Duration", ""); //Initialize() will add this
-                        command.Parameters.AddWithValue("@Path", loadedPath);
-                        command.Parameters.AddWithValue("@AlbumTrackNumber", albumTrackNumber);
-                        var trackID = command.ExecuteScalar().ToString();
-
-                        // Create the track object
-                        GameObject trackObject = new GameObject("Track_" + trackTitle);
-                        track = trackObject.AddComponent<Track>();
-                        track.Initialize(trackID, loadedClip);
-                        return track;
+                        SELECT TrackID FROM Tracks WHERE rowid = last_insert_rowid();";
                     }
-                }
-            
-            //TrackLibrary.Instance.AddItem(track);
+                    else
+                    {
+                        command.CommandText = @"
+                        UPDATE Tracks
+                        SET Title = @Title, Artist = @Artist, Album = @Album, Duration = @Duration, Path = @Path, AlbumTrackNumber = @AlbumTrackNumber
+                        WHERE Path = @Path;
+                        SELECT TrackID FROM Tracks WHERE Path = @Path;";
+                    }
 
+                    command.Parameters.AddWithValue("@Title", trackTitle);
+                    command.Parameters.AddWithValue("@Artist", trackArtist);
+                    command.Parameters.AddWithValue("@Album", trackAlbum);
+                    command.Parameters.AddWithValue("@Duration", ""); // Initialize() will add this
+                    command.Parameters.AddWithValue("@Path", loadedPath);
+                    command.Parameters.AddWithValue("@AlbumTrackNumber", albumTrackNumber);
+
+                    var result = command.ExecuteScalar();
+                    int trackID = Convert.ToInt32(result);
+
+                    // Create the track object
+                    GameObject trackObject = new GameObject("Track_" + trackTitle);
+                    track = trackObject.AddComponent<Track>();
+                    track.Initialize(trackID, loadedClip, isNewTrack);
+                    return track;
+                }
+            }
         }
 
         // Initialize method to set up properties
-        private void Initialize(string trackID, AudioClip loadedClip)
+        private void Initialize(int trackID, AudioClip loadedClip, bool isNewTrack)
         {
             _audioSource = gameObject.AddComponent<AudioSource>();
             _audioSource.clip = loadedClip;
@@ -106,7 +114,10 @@ namespace AudioFile.Model
             TrackProperties.SetProperty(trackID, "Duration", _trackDuration);
 
             TrackID = trackID;
-            ObserverManager.ObserverManager.Instance.NotifyObservers("OnNewTrackAdded", this);
+            if (isNewTrack)
+            {
+                ObserverManager.ObserverManager.Instance.NotifyObservers("OnNewTrackAdded", this);
+            }
 
         }
 

@@ -29,8 +29,8 @@ namespace AudioFile.View
 
         public Canvas mainCanvas;
 
-        //private string TrackDisplayID;
-        private List<string> TrackDisplayIDs;
+        private List<int> TrackDisplayIDs;
+
         private UITrackDisplay trackDisplay;
 
         private List<MenuComponent> menuComponents;
@@ -42,7 +42,7 @@ namespace AudioFile.View
             // Set TrackDisplayGameObject to the current GameObject this script is attached to
             ContextMenuGameObject = this.gameObject;
         }
-        public UIContextMenu Initialize(List<string> trackDisplayIDs, Vector2 position, UITrackDisplay manager)
+        public UIContextMenu Initialize(List<int> trackDisplayIDs, Vector2 position, UITrackDisplay manager)
         {
             trackDisplay = manager;
             TrackDisplayIDs = trackDisplayIDs;

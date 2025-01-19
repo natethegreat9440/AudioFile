@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Mono.Data.Sqlite;
+
 
 namespace AudioFile.Controller
 {
@@ -26,16 +28,36 @@ namespace AudioFile.Controller
             return singletonObject.AddComponent<ExitProgramController>();
         }
 
+        public string ConnectionString => SetupController.Instance.ConnectionString;
+
+
         void ExitAudioFile()
         {
             #if UNITY_EDITOR //This if statement only occurs while using the Unity Editor to simulate closing the application. 
             //Application.Quit() does not work in the editor, but will work in a standalone build. Hence, the special usage of # syntax
                     // Stop play mode in the editor
+                    Debug.Log("Exiting UNITY_EDITOR.");
+                    DropTracksTable(); //Use for testing - comment out otherwise
                     UnityEditor.EditorApplication.isPlaying = false;
+
             #else
                     // Quit the application
                     Application.Quit();
             #endif
+        }
+
+        private void DropTracksTable() //Test method
+        {
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+                string dropTableQuery = "DROP TABLE IF EXISTS Tracks";
+                using (SqliteCommand command = new SqliteCommand(dropTableQuery, connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+            }
+            Debug.Log("Tracks table dropped.");
         }
         public void Dispose()
         {
@@ -50,7 +72,7 @@ namespace AudioFile.Controller
             {
                 ("ExitProgramCommand", false) => () =>
                 {
-                    //Debug.Log("Exit Program Command handled");
+                    Debug.Log("Exit Program Command handled");
                     ExitAudioFile();
                 },
                 //Add more switch arms here as needed

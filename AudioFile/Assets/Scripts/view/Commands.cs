@@ -36,10 +36,10 @@ namespace AudioFile.View
     public class PlayCommand : ICommand
     {
         public bool IsUndo { get; set; } = false;
-        public string TrackDisplayID { get; }
+        public int TrackDisplayID { get; }
 
 
-        public PlayCommand(string trackDisplayID)
+        public PlayCommand(int trackDisplayID)
         {
             TrackDisplayID = trackDisplayID;
         }
@@ -62,10 +62,10 @@ namespace AudioFile.View
     {
         public bool IsUndo { get; set; } = false;
 
-        public string TrackDisplayID { get; }
+        public int TrackDisplayID { get; }
 
 
-        public PauseCommand(string trackDisplayID)
+        public PauseCommand(int trackDisplayID)
         {
             TrackDisplayID = trackDisplayID;
         }
@@ -113,9 +113,9 @@ namespace AudioFile.View
     {
         public bool IsUndo { get; set; } = false;
 
-        public string TrackDisplayID { get; }
+        public int TrackDisplayID { get; }
 
-        public StopCommand(string trackDisplayID)
+        public StopCommand(int trackDisplayID)
         {
             TrackDisplayID = trackDisplayID;
         }
@@ -226,13 +226,13 @@ namespace AudioFile.View
         //public Track Track { get; }
 
         //public int Index { get; }
-        public List<string> TrackDisplayIDs { get; }
+        public List<int> TrackDisplayIDs { get; }
 
         public List<string> Paths { get; set; } = new List<string>();
 
-        public List<Dictionary<string, string>> TrackProperties { get; set; } = new List<Dictionary<string, string>>(); //Has ability to hold Track Properties for multiple tracks
+        public List<Dictionary<string, object>> TrackProperties { get; set; } = new List<Dictionary<string, object>>(); //Has ability to hold Track Properties for multiple tracks
 
-        public RemoveTrackCommand(List<string> trackDisplayIDs)
+        public RemoveTrackCommand(List<int> trackDisplayIDs)
         {
             TrackDisplayIDs = trackDisplayIDs;
         }
@@ -305,9 +305,9 @@ namespace AudioFile.View
         //Will need to have a reference to the playlist once I have that class figured out
         //public Playlist Playlist { get; }
 
-        public List<string> TrackDisplayIDs { get; set; } //Track reference used for execute and undo action
+        public List<int> TrackDisplayIDs { get; set; } //Track reference used for execute and undo action
 
-        public AddToPlaylistCommand(List<string> trackDisplayIDs)//,Playlist playlist)
+        public AddToPlaylistCommand(List<int> trackDisplayIDs)//,Playlist playlist)
         {
             //Playlist = playlist;
             TrackDisplayIDs = trackDisplayIDs;

@@ -79,6 +79,7 @@ namespace AudioFile.View
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnActiveTrackCycled", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("TracksDeserialized", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnCollectionReordered", this);
+
         }
 
         public void HandleTrackButtonClick(UITrackDisplay trackDisplay, string buttonType)
@@ -102,7 +103,7 @@ namespace AudioFile.View
         private void OnTrackDisplayDoubleClick(UITrackDisplay trackDisplay, string buttonType)
         {
             Debug.Log("Double-click detected on " + buttonType);
-            string trackDisplayID = trackDisplay.TrackDisplayID;
+            int trackDisplayID = trackDisplay.TrackDisplayID;
 
             Action action = buttonType switch
             {
@@ -172,7 +173,7 @@ namespace AudioFile.View
                 trackDisplayComponent.IsSelected = true;
                 trackDisplayComponent.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#A8DADC"); //Soft cyan
 
-                string trackDisplayID = GetTrackDisplayID(trackDisplayObject);
+                int trackDisplayID = GetTrackDisplayID(trackDisplayObject);
                 ObserverManager.ObserverManager.Instance.NotifyObservers("OnSingleTrackSelected", trackDisplayID);
 
             }
@@ -191,9 +192,9 @@ namespace AudioFile.View
                 }
             }
         }
-        public string GetTrackDisplayID(GameObject trackDisplay)
+        public int GetTrackDisplayID(GameObject trackDisplay)
         {
-            string trackDisplayID = trackDisplay.GetComponent<UITrackDisplay>().TrackDisplayID;
+            int trackDisplayID = trackDisplay.GetComponent<UITrackDisplay>().TrackDisplayID;
             return trackDisplayID;
         }
         public int GetTrackDisplayIndex(GameObject trackDisplay) 
@@ -210,7 +211,7 @@ namespace AudioFile.View
             return -1;
         }
 
-        private Transform GetTrackDisplay(string providedTrackID)
+        private Transform GetTrackDisplay(int providedTrackID)
         {
             Transform trackDisplayTransform = null;
 
@@ -297,7 +298,22 @@ namespace AudioFile.View
 
         private IEnumerator PopulateOnStart(List<Track> initialTrackList)
         {
+            // Create the initialTrackList from the Tracks table
+            /*List<Track> initialTrackList = new List<Track>();
+            foreach (var trackData in TracksTable.GetAllTracks())
+            {
+                Track track = Track.CreateTrack(
+                    trackData.AudioClip,
+                    trackData.Title,
+                    trackData.Artist,
+                    trackData.Album,
+                    trackData.Path,
+                    trackData.AlbumTrackNumber
+                );
+                initialTrackList.Add(track);
+            }*/
 
+            // Existing code
             foreach (var track in initialTrackList)
             {
                 Debug.Log($"Adding TrackDisplay for {track} on program start");
@@ -317,13 +333,14 @@ namespace AudioFile.View
             ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateEnd");
         }
 
-        private IEnumerator UpdateDisplay(List<Track> sortedTrackList) 
+        private IEnumerator UpdateDisplay(List<int> sortedTrackIDs)
         {
             //Essentially this method just tries to make the display order match the order of how the provided sortedTrackList (from SortController) is ordered
-            
+
             // Step 1: Create a dictionary to map track IDs to their corresponding Transform objects
 
-            Dictionary<string, Transform> trackIDToTransformMap = new Dictionary<string, Transform>();
+            Dictionary<int, Transform> trackIDToTransformMap = new Dictionary<int, Transform>();
+
             foreach (Transform child in Track_List_DisplayViewportContent)
             {
                 var trackDisplay = child.GetComponent<UITrackDisplay>();
@@ -335,9 +352,8 @@ namespace AudioFile.View
 
             // Step 2: Iterate through the sortedTrackList and get the corresponding Transform for each track
             List<Transform> sortedTransforms = new List<Transform>();
-            foreach (var track in sortedTrackList)
+            foreach (var trackID in sortedTrackIDs)
             {
-                string trackID = track.TrackID;
                 if (trackIDToTransformMap.TryGetValue(trackID, out Transform trackTransform))
                 {
                     sortedTransforms.Add(trackTransform);
@@ -353,6 +369,43 @@ namespace AudioFile.View
             yield return null;
         }
 
+        //private IEnumerator UpdateDisplay(List<int> sortedTrackIDs) 
+        //{
+        //    //Essentially this method just tries to make the display order match the order of how the provided sortedTrackList (from SortController) is ordered
+            
+        //    // Step 1: Create a dictionary to map track IDs to their corresponding Transform objects
+
+        //    Dictionary<int, Transform> trackIDToTransformMap = new Dictionary<int, Transform>();
+
+        //    foreach (Transform child in Track_List_DisplayViewportContent)
+        //    {
+        //        var trackDisplay = child.GetComponent<UITrackDisplay>();
+        //        if (trackDisplay != null)
+        //        {
+        //            trackIDToTransformMap[trackDisplay.TrackDisplayID] = child;
+        //        }
+        //    }
+
+        //    // Step 2: Iterate through the sortedTrackList and get the corresponding Transform for each track
+        //    List<Transform> sortedTransforms = new List<Transform>();
+        //    foreach (var track in sortedTrackList)
+        //    {
+        //        int trackID = track.TrackID;
+        //        if (trackIDToTransformMap.TryGetValue(trackID, out Transform trackTransform))
+        //        {
+        //            sortedTransforms.Add(trackTransform);
+        //        }
+        //    }
+
+        //    // Step 3: Reorder the children of Track_List_DisplayViewportContent based on the sorted list
+        //    for (int i = 0; i < sortedTransforms.Count; i++)
+        //    {
+        //        sortedTransforms[i].SetSiblingIndex(i);
+        //    }
+
+        //    yield return null;
+        //}
+
         public void AudioFileUpdate(string observationType, object data)
         {
             Action action = observationType switch
@@ -363,6 +416,7 @@ namespace AudioFile.View
                     {
                         StartCoroutine(PopulateOnStart(initialTrackList));
                     }
+
                 },
                 "OnNewTrackAdded" => () => StartCoroutine(AddTrackOnUpdate(data)),
                 "OnTrackRemoved" => () =>
@@ -370,7 +424,7 @@ namespace AudioFile.View
                     //Select the active track ID, which is now the track before the track that was removed
                     if (PlaybackController.Instance.ActiveTrack != null)
                     {
-                        string activeTrackID = PlaybackController.Instance.ActiveTrack.TrackID;
+                        int activeTrackID = PlaybackController.Instance.ActiveTrack.TrackID;
                         Transform selectedTrackDisplay = GetTrackDisplay(activeTrackID);
                         OnTrackSelection(selectedTrackDisplay.gameObject);
                     }
@@ -380,14 +434,14 @@ namespace AudioFile.View
                 {
                     if (data is int activeTrackIndex)
                     {
-                        GameObject selectedTrackDisplay = Track_List_DisplayViewportContent.GetChild(activeTrackIndex).gameObject;
+                        GameObject selectedTrackDisplay = Track_List_DisplayViewportContent.GetChild(activeTrackIndex - 1).gameObject;
                         OnTrackSelection(selectedTrackDisplay);
                     }
                 },
                 "OnCollectionReordered" => () =>
                 {
-                    if (data is List<Track> sortedTrackList)
-                        StartCoroutine(UpdateDisplay(sortedTrackList));
+                    if (data is List<int> sortedTrackIDs)
+                        StartCoroutine(UpdateDisplay(sortedTrackIDs));
                 },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")

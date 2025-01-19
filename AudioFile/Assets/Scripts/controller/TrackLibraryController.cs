@@ -47,14 +47,15 @@ namespace AudioFile.Controller
             return singletonObject.AddComponent<TrackLibraryController>();
         }
 
-        public List<Track> TrackList { get => TrackLibrary.Instance.TrackList; set => TrackLibrary.Instance.TrackList = value; }
+        public List<Track> TrackList = new List<Track>();
 
         Track ActiveTrack { get => PlaybackController.Instance.ActiveTrack; }
 
-        //private int loadingCoroutinesCount = 0;
         public string ConnectionString => SetupController.Instance.ConnectionString;
 
         private string CurrentSQLQueryInject => SortController.Instance.CurrentSQLQueryInject;
+
+        private int loadingCoroutinesCount = 0;
 
         public void Awake()
         {
@@ -62,7 +63,6 @@ namespace AudioFile.Controller
         }
         public void Start()
         {
-            //TrackLibrary.Instance.Initialize();
 
             using (var connection = new SqliteConnection(ConnectionString))
             {
@@ -84,14 +84,15 @@ namespace AudioFile.Controller
                 }
             }
 
-            //LoadTracksFromJSON();  //Method defaults to Documents/AudioFileTracks as the path to look for (just using this for initial development)      
+            if (GetTracksLength() > 0)
+            {
+                LoadTracksFromDB();
+            }
         }
 
         void OnApplicationQuit()
         {
-            //Debug.Log($"Track Library count on exit is: {TrackLibrary.Instance.TrackList.Count}");
-            //Debug.Log("Saving tracks on application exit");
-            //SaveTracksToFile();  //Method defaults to Documents/AudioFileTracks as the path to look for (just using this for initial development)      
+            TrackList.Clear();
         }
 
         public void Initialize()
@@ -102,10 +103,10 @@ namespace AudioFile.Controller
         public Track GetTrackAtID(int trackID)
         {
             // Find all Track components in the scene
-            Track[] allTracks = FindObjectsOfType<Track>();
+            //Track[] allTracks = FindObjectsOfType<Track>();
 
             // Use LINQ to find the track with the specified TrackID
-            Track track = allTracks.FirstOrDefault(t => t.TrackID == trackID);
+            Track track = TrackList.FirstOrDefault(t => t.TrackID == trackID);
 
             if (track != null)
             {
@@ -122,7 +123,7 @@ namespace AudioFile.Controller
         public int GetTrackIndex(int trackID, bool isNext = false, bool isPrevious = false)
         {
             int rowIndex = -1; // Default value if trackID is not found
-            int currentRow = 0;
+            int currentRow = 1;
             int indexAdjust = 0;
 
             //TODO: Likely need to adjust this method once shuffle is introduced
@@ -146,12 +147,15 @@ namespace AudioFile.Controller
                     {
                         while (reader.Read())
                         {
-                            currentRow++;
-                            if ((int)reader["TrackID"] == trackID)
+                            var result = reader["TrackID"];
+                            var readTrackID = Convert.ToInt32(result);
+
+                            if (readTrackID == trackID)
                             {
                                 rowIndex = currentRow + indexAdjust;
                                 break;
                             }
+                            currentRow++;
                         }
                     }
                 }
@@ -163,7 +167,7 @@ namespace AudioFile.Controller
         public int GetTrackIDAtIndex(int index)
         {
             int trackID = -1; // Default value if index is not found
-            int currentRow = 0;
+            int currentRow = 1;
 
             using (var connection = new SqliteConnection(ConnectionString))
             {
@@ -177,7 +181,9 @@ namespace AudioFile.Controller
                         {
                             if (currentRow == index)
                             {
-                                trackID = (int)reader["TrackID"];
+                                var result = reader["TrackID"];
+                                trackID = Convert.ToInt32(result);
+
                                 break;
                             }
                             currentRow++;
@@ -197,16 +203,20 @@ namespace AudioFile.Controller
             {
                 connection.Open();
 
-                using (var command = new SqliteCommand(CurrentSQLQueryInject, connection))
+                using (var command = new SqliteCommand("SELECT COUNT(*) FROM Tracks", connection))
                 {
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            tracksLength++;
-                        }
-                    }
+                    tracksLength = Convert.ToInt32(command.ExecuteScalar());
                 }
+                //using (var command = new SqliteCommand(CurrentSQLQueryInject ?? "SELECT COUNT(*) FROM Tracks", connection))
+                //{
+                //    using (var reader = command.ExecuteReader())
+                //    {
+                //        while (reader.Read())
+                //        {
+                //            tracksLength++;
+                //        }
+                //    }
+                //}
             }
 
             return tracksLength;
@@ -237,22 +247,15 @@ namespace AudioFile.Controller
 
                         if (removeTrackCommand.TrackDisplayIDs.Contains(activeTrackID))
                         {
-                            if (PlaybackController.Instance.ActiveTrackIndex > 0)
+                            var trackDisplayIDs = removeTrackCommand.TrackDisplayIDs;
+
+                            //Get the last element in the tracks to be removed and then either try to go to the next or previous item after that
+                            PlaybackController.Instance.SetActiveTrack(GetTrackAtID(trackDisplayIDs[trackDisplayIDs.Count - 1]));
+
+                            if (!PlaybackController.Instance.NextItem())
                             {
-                                PlaybackController.Instance.ActiveTrackIndex--;
-                                PlaybackController.Instance.SetActiveTrack(TrackList[PlaybackController.Instance.ActiveTrackIndex]);
-                                PlaybackController.Instance.SetSelectedTrack(TrackList[PlaybackController.Instance.ActiveTrackIndex]);
+                                PlaybackController.Instance.PreviousItem();
                             }
-                            else
-                            {
-                                PlaybackController.Instance.ActiveTrackIndex++;
-                                PlaybackController.Instance.SetActiveTrack(TrackList[PlaybackController.Instance.ActiveTrackIndex]);
-                                PlaybackController.Instance.SetSelectedTrack(TrackList[PlaybackController.Instance.ActiveTrackIndex]);
-                            }
-                        }
-                        else
-                        {
-                            //PlaybackController.Instance.SetSelectedTrack(ActiveTrack);
                         }
                     }
                     //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed
@@ -260,13 +263,13 @@ namespace AudioFile.Controller
                     {
                         var trackProperties = TrackList
                         .Where(track => track.TrackID == trackDisplayID)
-                        .Select(track => new Dictionary<string, string>(track.TrackProperties.GetAllProperties(track.TrackID)))
+                        .Select(track => new Dictionary<string, object>(track.TrackProperties.GetAllProperties(track.TrackID)))
                         .FirstOrDefault();
 
                         removeTrackCommand.TrackProperties.Add(trackProperties);
 
                         Track trackToRemove = GetTrackAtID(trackDisplayID);
-                        string removedTrackPath = trackToRemove.TrackProperties.GetProperty(trackToRemove.TrackID, "Path");
+                        string removedTrackPath = (string)trackToRemove.TrackProperties.GetProperty(trackToRemove.TrackID, "Path");
                         removeTrackCommand.Paths.Add(removedTrackPath);
 
                         RemoveTrack(trackDisplayID);
@@ -291,7 +294,7 @@ namespace AudioFile.Controller
                     //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed
                     foreach (var trackDisplayID in removeTrackCommand.TrackDisplayIDs)
                     {
-                        var path = removeTrackCommand.TrackProperties
+                        var path = (string)removeTrackCommand.TrackProperties
                             .Where(properties => properties.ContainsValue(trackDisplayID))
                             .Select(properties => properties.ContainsKey("Path") ? properties["Path"] : null)
                             .FirstOrDefault();
@@ -303,7 +306,7 @@ namespace AudioFile.Controller
 
                         if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
                         {
-                            StartCoroutine(LoadAudioClipFromFile(path, trackDisplayID, trackProperties));
+                            StartCoroutine(LoadAudioClipFromFile(path, null, true));
                         }
                         else
                         {
@@ -338,24 +341,18 @@ namespace AudioFile.Controller
             }
 
             // Remove the Track object reference from the TrackLibrary
-            //TrackLibrary.Instance.RemoveItem(trackDisplayID);
-
             Track trackToRemove = GetTrackAtID(trackDisplayID);
 
             Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
             ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
 
-            //Destroy Track Game Object
-            Destroy(GetTrackAtID(trackDisplayID).gameObject);
-        }
+            TrackList.Remove(trackToRemove);
 
-        /*public string RemoveTrackAtIndex(int index)
-        {
-            Track trackToRemove = TrackLibrary.Instance.GetTrackAtIndex(index);
-            string trackPath = trackToRemove.TrackProperties.GetProperty(trackToRemove.TrackID, "Path");
-            TrackLibrary.Instance.RemoveItemAtIndex(index);
-            return trackPath; //Returns Track's path so Handle Request can log this path to the RemoveTrackCommand that initiates this method
-        }*/
+            //Destroy Track Game Object in the scene
+            Track[] allTracks = FindObjectsOfType<Track>();
+            Track trackToDestroy = allTracks.FirstOrDefault(t => t.TrackID == trackDisplayID);
+            Destroy(trackToDestroy.gameObject);
+        }
 
         public void LoadNewTrack(AddTrackCommand addTrackCommand)
         {
@@ -367,7 +364,7 @@ namespace AudioFile.Controller
                 {
                     if (System.IO.File.Exists(paths[i]))
                     {
-                        StartCoroutine(LoadAudioClipFromFile(paths[i], null, null, newTrack =>
+                        StartCoroutine(LoadAudioClipFromFile(paths[i], newTrack =>
                         {
                             //This lambda expression is passed as a callback function to the LoadAudioClipFromFile coroutine
                             if (addTrackCommand != null)
@@ -375,9 +372,10 @@ namespace AudioFile.Controller
                                 Debug.Log($"trackToAdd for addTrackCommand:{newTrack}");
                                 addTrackCommand.Tracks.Add(newTrack);
                                 Debug.Log($"addTrackCommand.Tracks: {addTrackCommand.Tracks.Count}");
+                                TrackList.Add(newTrack);
                             }
                             //TODO: Add logic to pass this AddTrackCommand reference to the CommandStackController
-                        }));
+                        }, true)); //Passing isTrackNew = true
                     }
                     else
                     {
@@ -392,13 +390,15 @@ namespace AudioFile.Controller
         }
 
         // Coroutine to load the mp3 file as an AudioClip
-        private IEnumerator LoadAudioClipFromFile(string filePath, string trackID = null, Dictionary<string, string> otherProperties = null, Action<Track> onTrackLoaded = null)
+        private IEnumerator LoadAudioClipFromFile(string filePath, Action<Track> onTrackLoaded = null, bool isNewTrack = false) //(string filePath, string trackID = null, Dictionary<string, string> otherProperties = null, Action<Track> onTrackLoaded = null)
         {
             List<string> metadata = ExtractFileMetadata(filePath); //Metadata is always extracted even when loading clips that have already been added to the Library before.
                                                                    //This is so if the user updates/fixes any mistakes in the local file themselves these will be automatically propagated on load
 
             // Escape any '#' characters in the path for UnityWebRequest
             string escapedPath = filePath.Replace("#", "%23"); 
+
+            Track trackToAdd = null;
 
             //Debug.Log("Escaped path: " + escapedPath);
 
@@ -423,27 +423,14 @@ namespace AudioFile.Controller
                         string trackAlbum = metadata[2];
                         int albumTrackNumber = (metadata[3]) != null ? int.Parse(metadata[3]) : 0;
 
-                        Track trackToAdd = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, albumTrackNumber);
-
-                        /*bool isTrackNew = true;
-                        // Set the TrackProperties from the properties dictionary. Only happens when loading deserialized tracks
-                        if (otherProperties != null)
+                        if (isNewTrack)
                         {
-                            isTrackNew = false;
-
-                            foreach (var property in otherProperties)
-                            {
-                                //Skips setting any properties that are not already required/set by the CreateTrack method so only "other properties" get set
-                                //if (property.Key != "Title" || property.Key != "Artist" || property.Key != "Album" || property.Key != "Duration" || property.Key != "Path" || property.Key != "TrackID" || property.Key != "AlbumTrackNumber")
-                                    if (!new[] { "Title", "Artist", "Album", "Duration", "Path", "TrackID", "AlbumTrackNumber" }.Contains(property.Key))
-                                    {
-                                        trackToAdd.TrackProperties.SetProperty(property.Key, property.Value);
-                                    }
-                                    //trackToAdd.TrackProperties.SetProperty(property.Key, property.Value);
-                            }
-                        }*/
-
-                        //TrackLibrary.Instance.AddItem(trackToAdd, isTrackNew);
+                            trackToAdd = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, albumTrackNumber, isNewTrack);
+                        }
+                        else
+                        {
+                            trackToAdd = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, albumTrackNumber);
+                        }
 
                         // Invoke the callback with the new track.
                         // If an existing track is being loaded then trackToAdd will not be used in the callback function OnAllTracksDeserialized
@@ -512,6 +499,71 @@ namespace AudioFile.Controller
                 }
             }
             return paths;
+        }
+
+        private void LoadTracksFromDB()
+        {
+            try
+            {
+                loadingCoroutinesCount = GetTracksLength();
+
+                //List<Track> tracks = new List<Track>();
+
+                using (var connection = new SqliteConnection(ConnectionString))
+                {
+                    connection.Open();
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "SELECT * FROM Tracks";
+                        using (var reader = command.ExecuteReader())
+                        {
+                            ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateStart");
+
+                            while (reader.Read())
+                            {
+                                int trackID = Convert.ToInt32(reader["TrackID"]);
+                                var path = reader["Path"];
+
+                                if (path == DBNull.Value || string.IsNullOrEmpty(path.ToString()))
+                                {
+                                    Debug.LogError($"TrackID {trackID} has a null or empty Path.");
+                                    continue; // Skip this iteration
+                                }
+
+                                StartCoroutine(LoadAudioClipFromFile(path.ToString(), OnTracksDeserialized));
+
+                                /*StartCoroutine(LoadAudioClipFromFile(path, existingTrack =>
+                                {
+                                    OnTracksDeserialized
+                                }));*/
+                            }
+                        }
+                    }
+                }
+
+                //loadingCoroutinesCount = tracks.Count;
+                //Debug.Log("Calling PopulateOnStart in TrackLibraryController");
+
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error loading tracks: {ex.Message}");
+            }
+        }
+
+        private void OnTracksDeserialized(Track existingTrack)
+        {
+            //This function gets called whenever LoadAudioClipFromFile coroutine gets called from LoadTracksFromDB (each time).
+
+            loadingCoroutinesCount--;
+            TrackList.Add(existingTrack);
+
+            if (loadingCoroutinesCount == 0)
+            {
+                // All coroutines have completed
+                //SortController.Instance.RestoreDefaultOrder(UITrackListDisplayManager.Instance.TracksDisplayed);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
+            }
         }
 
         /*private void SaveTracksToFile(string filePath = null)
