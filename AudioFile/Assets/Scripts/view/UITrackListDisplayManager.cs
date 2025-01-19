@@ -264,7 +264,7 @@ namespace AudioFile.View
             }
         }
 
-        private IEnumerator RemoveTrackOnUpdate(object data) //Method yet to be tested due to lack of Remove track feature currently
+        private IEnumerator RemoveTrackOnUpdate(object data) 
         {
             if (data == null)
             {

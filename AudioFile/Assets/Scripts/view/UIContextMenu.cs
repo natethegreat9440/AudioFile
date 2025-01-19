@@ -25,9 +25,9 @@ namespace AudioFile.View
         //so whenever the user right clicks on a track, it populates the context menu with the appropriate options
         // these references here should just get from the global reference when called internally here
 
-        public GameObject ContextMenuGameObject;
+        private GameObject ContextMenuGameObject;
 
-        public Canvas mainCanvas;
+        private Canvas mainCanvas;
 
         private List<int> TrackDisplayIDs;
 

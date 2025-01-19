@@ -37,7 +37,7 @@ namespace AudioFile.Controller
             //Application.Quit() does not work in the editor, but will work in a standalone build. Hence, the special usage of # syntax
                     // Stop play mode in the editor
                     Debug.Log("Exiting UNITY_EDITOR.");
-                    DropTracksTable(); //Use for testing - comment out otherwise
+                    //DropTracksTable(); //Use for testing - comment out otherwise
                     UnityEditor.EditorApplication.isPlaying = false;
 
             #else
@@ -46,19 +46,19 @@ namespace AudioFile.Controller
             #endif
         }
 
-        private void DropTracksTable() //Test method
-        {
-            using (var connection = new SqliteConnection(ConnectionString))
-            {
-                connection.Open();
-                string dropTableQuery = "DROP TABLE IF EXISTS Tracks";
-                using (SqliteCommand command = new SqliteCommand(dropTableQuery, connection))
-                {
-                    command.ExecuteNonQuery();
-                }
-            }
-            Debug.Log("Tracks table dropped.");
-        }
+        //private void DropTracksTable() //Test method
+        //{
+        //    using (var connection = new SqliteConnection(ConnectionString))
+        //    {
+        //        connection.Open();
+        //        string dropTableQuery = "DROP TABLE IF EXISTS Tracks";
+        //        using (SqliteCommand command = new SqliteCommand(dropTableQuery, connection))
+        //        {
+        //            command.ExecuteNonQuery();
+        //        }
+        //    }
+        //    Debug.Log("Tracks table dropped.");
+        //}
         public void Dispose()
         {
             throw new NotImplementedException();

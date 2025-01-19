@@ -42,7 +42,6 @@ namespace AudioFile.View
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnActiveTrackChanged", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackListEnd", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSkipped", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateStart", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateEnd", this);
             ObserverManager.ObserverManager.Instance.RegisterObserver("AudioFileError", this);
@@ -103,15 +102,16 @@ namespace AudioFile.View
             return new Rect(corners[0].x, corners[0].y, corners[2].x - corners[0].x, corners[2].y - corners[0].y);
         }
 
-        private IEnumerator QuickMessage(float waitTime, string message, bool isQuickMessageScrolling = false)
+        public IEnumerator QuickMessage(float waitTime, string message, bool isQuickMessageScrolling = false)
         {
             //This is the Quick message that will appear on the ticker for the provided wait time
+            textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
             textRect.GetComponent<TextMeshProUGUI>().text = message;
             isScrolling = isQuickMessageScrolling;
 
-            yield return new WaitForSeconds(waitTime);
+            yield return new WaitForSecondsRealtime(waitTime);
 
-            //After waiting the coroutine resets the beahvior. Moving this outside of the coroutine will now work.
+            //After waiting the coroutine resets the beahvior. Moving this outside of the coroutine will not work.
             //If this method is to be abstracted then it needs additional parameter(s) to specify reset behavior
             if (Controller.PlaybackController.Instance.ActiveTrack != null)
                 textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.ActiveTrack.ToString();
@@ -146,14 +146,6 @@ namespace AudioFile.View
                         StartCoroutine(QuickMessage(1f, "End of playlist"));
                     }
                 },
-                "OnTrackRemoved" => () =>
-                {
-                    if (data is Track trackRemoved)
-                    {
-                        StartCoroutine(QuickMessage(4f, $"{trackRemoved.TrackProperties.GetProperty(trackRemoved.TrackID, "Title")} removed from library", true));
-                    }
-                }
-                ,
                 "OnTrackSkipped" => () =>
                 {
                     if (data is Track trackSkipped)

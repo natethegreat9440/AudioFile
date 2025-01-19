@@ -34,7 +34,7 @@ namespace AudioFile.View
 
         void Update()
         {
-            if (PlaybackController.Instance.ActiveTrack == null)
+            if (PlaybackController.Instance.ActiveTrack == null || PlaybackController.Instance.ActiveTrack.Equals(null))
             {
                 slider.value = 0;
                 slider.interactable = false;

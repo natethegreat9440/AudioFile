@@ -21,6 +21,7 @@ namespace AudioFile.View
 
     public class UITrackDisplay : MonoBehaviour, IPointerClickHandler
     {
+        [HideInInspector]
         public GameObject TrackDisplayGameObject;
         public Button TitleButton { get; private set; } 
         public Button ArtistButton { get; private set; } 
@@ -57,10 +58,10 @@ namespace AudioFile.View
 
         private void SetTrackData(Track trackData)
         {
-            //Testing
-            string title = (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Title") + " " + trackData.TrackID + " " + trackData.TrackProperties.GetProperty(trackData.TrackID, "AlbumTrackNumber");
+            //For Testing
+            //string title = (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Title") + " " + trackData.TrackID + " " + trackData.TrackProperties.GetProperty(trackData.TrackID, "AlbumTrackNumber");
 
-            SetText(listDisplayManager.titleTextPath, title);
+            SetText(listDisplayManager.titleTextPath, (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Title"));
             SetText(listDisplayManager.artistTextPath, (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Artist"));
             SetText(listDisplayManager.albumTextPath, (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Album"));
             SetText(listDisplayManager.durationTextPath, (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Duration"));

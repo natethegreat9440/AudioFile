@@ -328,6 +328,17 @@ namespace AudioFile.Controller
 
         public void RemoveTrack(int trackDisplayID)
         {
+            Track trackToRemove = GetTrackAtID(trackDisplayID);
+            var title = (string)trackToRemove.TrackProperties.GetProperty(trackToRemove.TrackID, "Title");
+
+            Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
+
+            TrackList.Remove(trackToRemove);
+
+            // Start coroutine to destroy the track after the message is displayed
+            StartCoroutine(ShowRemovedTrackMessage(title));
+
             // Remove the track entry from the Tracks table in the database
             using (var connection = new SqliteConnection(ConnectionString))
             {
@@ -340,18 +351,26 @@ namespace AudioFile.Controller
                 }
             }
 
-            // Remove the Track object reference from the TrackLibrary
-            Track trackToRemove = GetTrackAtID(trackDisplayID);
-
-            Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
-            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
-
-            TrackList.Remove(trackToRemove);
-
-            //Destroy Track Game Object in the scene
+            // Destroy Track Game Object in the scene
             Track[] allTracks = FindObjectsOfType<Track>();
-            Track trackToDestroy = allTracks.FirstOrDefault(t => t.TrackID == trackDisplayID);
+            Track trackToDestroy = allTracks.FirstOrDefault(t => t.TrackID == trackToRemove.TrackID);
             Destroy(trackToDestroy.gameObject);
+
+        }
+
+        private IEnumerator ShowRemovedTrackMessage(string title)
+        {
+            UITextTicker uiTextTicker = FindObjectOfType<UITextTicker>();
+            // Wait for the message to be displayed
+            if (uiTextTicker != null)
+            {
+                // Wait for the message to be displayed
+                yield return StartCoroutine(uiTextTicker.QuickMessage(6f, $"{title} removed from library", true));
+            }
+            else
+            {
+                Debug.LogError("UITextTicker component not found.");
+            }
         }
 
         public void LoadNewTrack(AddTrackCommand addTrackCommand)
@@ -390,7 +409,7 @@ namespace AudioFile.Controller
         }
 
         // Coroutine to load the mp3 file as an AudioClip
-        private IEnumerator LoadAudioClipFromFile(string filePath, Action<Track> onTrackLoaded = null, bool isNewTrack = false) //(string filePath, string trackID = null, Dictionary<string, string> otherProperties = null, Action<Track> onTrackLoaded = null)
+        private IEnumerator LoadAudioClipFromFile(string filePath, Action<Track> onTrackLoaded = null, bool isNewTrack = false) 
         {
             List<string> metadata = ExtractFileMetadata(filePath); //Metadata is always extracted even when loading clips that have already been added to the Library before.
                                                                    //This is so if the user updates/fixes any mistakes in the local file themselves these will be automatically propagated on load
@@ -460,7 +479,8 @@ namespace AudioFile.Controller
                 var file = TagLib.File.Create(filePath);
                 trackTitle = !string.IsNullOrEmpty(file.Tag.Title) ? file.Tag.Title : Path.GetFileName(filePath);
                 trackAlbum = !string.IsNullOrEmpty(file.Tag.Album) ? file.Tag.Album : "Unknown Album";
-                contributingArtists = !string.IsNullOrEmpty(string.Join(", ", file.Tag.Performers)) ? string.Join(", ", file.Tag.Performers) //Wrapping around next line since its so goddamn long
+                //Looks for Tag.Performers first (this translates to the Contributing Artists property in File Explorer), then AlbumArtists, then finally Unknown Artist if nothing found
+                contributingArtists = !string.IsNullOrEmpty(string.Join(", ", file.Tag.Performers)) ? string.Join(", ", file.Tag.Performers) 
                     : !string.IsNullOrEmpty(string.Join(", ", file.Tag.AlbumArtists)) ? string.Join(", ", file.Tag.AlbumArtists) : "Unknown Artist";
                 albumTrackNumber = file.Tag.Track != null ? (int)file.Tag.Track : 0;
 
@@ -470,7 +490,6 @@ namespace AudioFile.Controller
                 metadata[3] = albumTrackNumber.ToString();
 
                 return metadata;
-                //Looks for Tag.Performers first (this translates to the Contributing Artists property in File Explorer), then AlbumArtists, then finally Unknown Artist if nothing found
             }
             catch (System.Exception e)
             {
@@ -479,7 +498,6 @@ namespace AudioFile.Controller
             }
         }
 
-        // Function to open a file dialog (example, would need a third-party library)
         private string[] OpenFileDialog()
         {
             //TODO: Move this method to controller class later
@@ -531,19 +549,10 @@ namespace AudioFile.Controller
                                 }
 
                                 StartCoroutine(LoadAudioClipFromFile(path.ToString(), OnTracksDeserialized));
-
-                                /*StartCoroutine(LoadAudioClipFromFile(path, existingTrack =>
-                                {
-                                    OnTracksDeserialized
-                                }));*/
                             }
                         }
                     }
                 }
-
-                //loadingCoroutinesCount = tracks.Count;
-                //Debug.Log("Calling PopulateOnStart in TrackLibraryController");
-
             }
             catch (Exception ex)
             {
@@ -561,206 +570,9 @@ namespace AudioFile.Controller
             if (loadingCoroutinesCount == 0)
             {
                 // All coroutines have completed
-                //SortController.Instance.RestoreDefaultOrder(UITrackListDisplayManager.Instance.TracksDisplayed);
                 ObserverManager.ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
             }
         }
-
-        /*private void SaveTracksToFile(string filePath = null)
-        {
-            try
-            {
-                //For initial testing/programming purposes the filePath essentially defaults to Documents/AudioFileTracks/tracks.json
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    string defaultDirectory = SetTracksDirectory();
-                    string tracksDirectory = Path.Combine(defaultDirectory, "AudioFileTracks");
-                    if (!Directory.Exists(tracksDirectory))
-                    {
-                        Debug.Log($"Directory does not exist: {tracksDirectory}. Creating Directory.");
-                        Directory.CreateDirectory(tracksDirectory);
-                        Debug.Log(tracksDirectory + " created");
-                        // Ensure the directory exists
-                        // Handle the case where the directory does not exist,
-                        // which would occur whenever the program is loaded and the user has not attempted to load any files into the program
-                    }
-                    filePath = Path.Combine(tracksDirectory, "tracks.json");
-                }
-
-                var trackData = TrackList.Select(track => new TrackData
-                {
-                    TrackProperties = track.TrackProperties.GetAllProperties()
-                }).ToList();
-
-                var trackLibraryData = new TrackLibraryData { Tracks = trackData };
-
-                var json = JsonConvert.SerializeObject(trackLibraryData, Formatting.Indented);
-                System.IO.File.WriteAllText(filePath, json);
-                Debug.Log($"Tracks saved to {filePath}");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"Error saving tracks: {ex.Message}");
-            }
-        }*/
-
-        /*private void LoadTracksFromJSON(string filePath = null)
-        {
-            try
-            {
-                //For initial testing/programming purposes the filePath essentially defaults to Documents/AudioFileTracks/tracks.json
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    string defaultDirectory = SetTracksDirectory();
-                    string tracksDirectory = Path.Combine(defaultDirectory, "AudioFileTracks");
-                    if (!Directory.Exists(tracksDirectory))
-                    {
-                        Debug.LogWarning($"Directory does not exist: {tracksDirectory}");
-                        return;
-                        // Handle the case where the directory does not exist,
-                        // which would occur whenever the program is loaded and the user has not attempted to load any files into the program
-                    }
-                    filePath = Path.Combine(tracksDirectory, "tracks.json");
-                    Debug.Log("Loading tracks from " + filePath);
-                }
-
-                if (!System.IO.File.Exists(filePath))
-                {
-                    Debug.LogWarning($"File not found: {filePath}");
-                    return;
-                }
-
-                var json = System.IO.File.ReadAllText(filePath);
-
-                var trackLibraryData = JsonConvert.DeserializeObject<TrackLibraryData>(json);
-
-                loadingCoroutinesCount = trackLibraryData.Tracks.Count;
-
-                Debug.Log("Calling PopulateOnStart in TrackLibraryController");
-                ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateStart");
-
-                //This is the spot where things start to hang up on load.
-                //Used to think it was in TrackListDisplayManager.PopulateOnStart due to Unity's way of Instatiating game objects (i.e., the TrackDisplays)
-                //But it must be in the loading process of the TrackLibraryController from JSON or metadata extraction or new Track creation
-
-                foreach (var data in trackLibraryData.Tracks)
-                {
-                    StartCoroutine(LoadAudioClipFromFile(data.TrackProperties["Path"], data.TrackProperties["TrackID"], data.TrackProperties, OnTracksDeserialized)); //OnTracksDeserialized is passed as a callback function
-                    //Debug.Log($"Track {data.TrackProperties["Title"]}  loaded successfully.");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"Error loading tracks: {ex.Message}");
-            }
-        }*/
-
-        /*private void OnTracksDeserialized(Track unusedTrackParameter)
-        {
-            //This function gets called whenever LoadAudioClipFromFile coroutine gets called from LoadTracksFromJSON (each time).
-            //Doesn't do anything but decrement loadingCoroutinesCount until all loading coroutines have completed
-            //Doesn't need to do anything with the unusedTrackParameter parameter, but it is required in the callback function so thats why it is there
-
-            loadingCoroutinesCount--;
-
-            if (loadingCoroutinesCount == 0)
-            {
-                // All coroutines have completed
-                SortController.Instance.RestoreDefaultOrder(UITrackListDisplayManager.Instance.TracksDisplayed);
-                ObserverManager.ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
-            }
-        }*/
-
-        /*private static string SetTracksDirectory()
-        {
-            try
-            {
-                Debug.Log($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}");
-                #if UNITY_EDITOR //This if statement only occurs while using the Unity Editor which defaults to the One Drive/MyDocuments folder for testing. Unfortunately Environment.SpecialFolder.MyDocuments defaults to the OneDrive/MyDocuments instead of the actual Documents folder on my PC. Maybe I'll fix that later        
-                    return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                #else //This else statement only occurs when the program is run in the standalone build and sets appDirectory to whichever directory the program was installed in by the installer
-                    //return AppDomain.CurrentDomain.BaseDirectory; //Saves to same location as the executable, but this could result in permissions issues depending on if the default install location is selected on a non-admin user profile (ProgramFiles typically requires admin privileges when writing files)
-                    return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData); //Saves to User/AppData/Roaming. This directory does not usually cause permissions issues when it comes to writing files.
-                #endif
-            }
-            catch (UnauthorizedAccessException)
-            {
-                Debug.LogError($"Error setting tracks directory. Write access denied.");
-                ObserverManager.ObserverManager.Instance.NotifyObservers("AudioFileError", "Error writing tracks to memory. Write access denied. Please check with your system administrator.");
-                return string.Empty;
-            }
-        }*/
-
-        /*[Serializable]
-        private class TrackLibraryData //Helper class for LoadTracksFromJSON
-        {
-            [SerializeField]
-            public List<TrackData> Tracks = new List<TrackData>();
-        }
-
-        [Serializable]
-        private class TrackData //Helper class for LoadTracksFromJSON
-        {
-            [SerializeField]
-            public Dictionary<string, string> TrackProperties = new Dictionary<string, string>
-            {
-                { "Title", string.Empty },
-                { "Artist", string.Empty },
-                { "Album", string.Empty },
-                { "Duration", string.Empty },
-                { "BPM", string.Empty },
-                { "Path", string.Empty },
-                { "TrackID", string.Empty },
-                { "AlbumTrackNumber", string.Empty },
-            };
-        }*/
     }
 }
 
-
-/*public enum PlayMode { Consecutive, RecommendedRandom, TrueRandom, }
-
-    private PlayMode currentPlayMode = PlayMode.Consecutive;
-
-    public void PlayCurrentTrack()
-    {
-        if (mediaLibrary.tracks.Count > 0 && CurrentTrackIndex < mediaLibrary.tracks.Count)
-        {
-            AudioClip currentTrackClip = mediaLibrary.tracks[CurrentTrackIndex].AudioSource.clip;
-            audioSource = mediaLibrary.tracks[CurrentTrackIndex].AudioSource;
-
-            if (audioSource != null)
-            {
-                trackDuration = mediaLibrary.tracks[CurrentTrackIndex].Duration; // Get the duration of the current track
-                audioSource.Play();
-                OnTrackChanged?.Invoke(currentTrackClip.name); // Trigger event here
-                //CreateAndExpandVisualizers();
-            }
-            else
-            {
-                if (CurrentTrackIndex == mediaLibrary.tracks.Count - 1)
-                {
-                    Skip(false); // Skip to the previous track if the current clip is null and you are at the last track on a playlist
-                }
-                else
-                {
-                    Skip(true);  // Skip to the next track if the current clip is null and you are NOT at the last track on a playlist
-                }
-
-            }
-        }
-        else
-        {
-            Debug.LogError("No tracks available or index out of range.");
-        }
-    }
-
-
-    public void SetPlayMode(PlayMode mode)
-    {
-        currentPlayMode = mode;
-        Debug.Log($"Play mode changed to: {mode}");
-    }
-}
-#endregion*/

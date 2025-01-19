@@ -37,22 +37,6 @@ namespace AudioFile.Model
         {
             return $"{_name}";
         }
-
-        public virtual void AddComponent(MediaLibraryComponent mediaLibraryComponent)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void RemoveComponent(MediaLibraryComponent mediaLibraryComponent)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual MediaLibraryComponent GetChild(int i)
-        {
-            throw new NotImplementedException();
-        }
-
         #endregion
         #region Playback methods for tracks/visualizers
         public virtual void Play(string trackDisplayID)
