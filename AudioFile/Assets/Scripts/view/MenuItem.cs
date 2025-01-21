@@ -8,6 +8,7 @@ using Unity.VisualScripting;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.Runtime.CompilerServices;
+using AudioFile.Utilities;
 
 
 namespace AudioFile.View
@@ -30,12 +31,6 @@ namespace AudioFile.View
 
         bool _isContextItem;
 
-        /*public MenuItem(Button button, string label, string description, ICommand command) : base(button, description)
-        {
-            button.onClick.AddListener(MenuItem_Click); // Wire up the event handler
-            _command = command;
-        }*/
-
         public MenuItem Initialize(Button button, string label, string description, ICommand command, bool isContextItem = false)
         {
             base.Button = button;
@@ -57,10 +52,6 @@ namespace AudioFile.View
             if (_enabled == true)
             {
                 Button.gameObject.SetActive(true); //set button when Display is called
-
-                //Set as last sibling makes it so the menu renders above the click catcher so the click 
-                //catcher doesn't intercept mouse behavior
-                //this.gameObject.transform.SetAsLastSibling();
             }
             else
             {
@@ -89,8 +80,7 @@ namespace AudioFile.View
             }
         }
 
-        //Keeping this redundant method in for now in case we want to be able to add functionality later in order to 
-        //navigate the Menu's and execute commands with just the keyboard
+        //Keeping this redundant method in for now in case we want to be able to add functionality later in order to navigate the Menu's and execute commands with just the keyboard
         public override void MenuItem_Click() 
             {
                 this.ExecuteAction();

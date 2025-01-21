@@ -12,6 +12,16 @@ using Unity.VisualScripting;
 
 namespace AudioFile.View
 {
+    /// <summary>
+    /// View class for managing the Context Menu that appears when the user right clicks on a track display item.
+    /// <remarks>
+    /// Creates a ClickOutsideHandler object reference to handle the user clicking outside of the context menu when initialized. Destroys the ClickOutsideHandler object whenever a click outside is detected.
+    /// Members: menuComponents, ClickOutsideHandler. Initialize(), InitializeMenu(), CreateClickCatcher(), DestroyContextMenu().  Implements Start(), Awake(), Update(), Initialize() from MonoBehaviour.
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// <see also cref="ClickOutsideHandler"/>
+    /// </summary>
+
     public class UIContextMenu : MonoBehaviour
     {
         // Lazy<T> ensures that the instance is created in a thread-safe manner
@@ -22,7 +32,7 @@ namespace AudioFile.View
 
         public static UIContextMenu Instance => _instance.Value;
         //TODO: Add an AllPlaylist and AllPlaylistFolder collection (or something along those lines) reference
-        //so whenever the user right clicks on a track, it populates the context menu with the appropriate options
+        // so whenever the user right clicks on a track, it populates the context menu with the appropriate options
         // these references here should just get from the global reference when called internally here
 
         private GameObject ContextMenuGameObject;
@@ -67,9 +77,9 @@ namespace AudioFile.View
             Debug.Log("Initializing context menu");
             GameObject contextMenu = ContextMenuGameObject;
             //GameObjectExtensions is a class I made to make finding game objects easier for this project. It is part of the Utilities namespace
-            GameObject addToPlaylistGameObject = GameObjectExtensions.FindInChildren(contextMenu, "Add_To_Playlist_Button");
-            GameObject removeTrackGameObject = GameObjectExtensions.FindInChildren(contextMenu, "Remove_Button");
-            GameObject testPlaylistGameObject = GameObjectExtensions.FindInChildren(contextMenu, "Test_Playlist_Button");
+            GameObject addToPlaylistGameObject = AudioFileHelpers.FindInChildren(contextMenu, "Add_To_Playlist_Button");
+            GameObject removeTrackGameObject = AudioFileHelpers.FindInChildren(contextMenu, "Remove_Button");
+            GameObject testPlaylistGameObject = AudioFileHelpers.FindInChildren(contextMenu, "Test_Playlist_Button");
 
             RemoveTrackCommand removeTrackCommand = new RemoveTrackCommand(TrackDisplayIDs);
             AddToPlaylistCommand addToPlaylistCommand = new AddToPlaylistCommand(TrackDisplayIDs); //TODO: Add Playlist as second parameter once I have that class set up
@@ -77,7 +87,6 @@ namespace AudioFile.View
             Button addToPlaylistButton = ContextMenuGameObject.transform.Find("Add_To_Playlist_Button").GetComponent<Button>();
             Button removeTrackButton = ContextMenuGameObject.transform.Find("Remove_Button").GetComponent<Button>();
             Button testPlaylistButton = ContextMenuGameObject.transform.Find("Test_Playlist_Button").GetComponent<Button>();
-
 
             //Last argument in initialize is for a +1 correction factor to offset inconsistencies on how mouse position is tracked against OnPointerExit events
             //See comments in Menu code for more details. It is recommended for each Menu object added to the context menu to set optional parameter correctYMin to +1 to offset issues and get proper behavior

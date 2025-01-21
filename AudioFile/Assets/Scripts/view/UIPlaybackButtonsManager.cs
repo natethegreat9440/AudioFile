@@ -10,11 +10,20 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using AudioFile.Controller;
-using AudioFile.ObserverManager;
+using AudioFile.Utilities;
 
 
 namespace AudioFile.View
 {
+    /// <summary>
+    /// View class for managing the Playback Button behaviour and interactions.
+    /// <remarks>
+    /// Members: buttons, EnableButtons(), DisableButtons(). Implements Start(), Update(), Initialize() from MonoBehaviour. Lots of button configuration done in Start().
+    /// Implements AudioFileUpdate() from IAudioFileObserver.
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// <see cref="IAudioFileObserver"/>
+    /// </summary>
     public class UIPlaybackButtonsManager : MonoBehaviour, IAudioFileObserver //IAudioFileObserver required method AudioFileUpdate(string observationType, object data) is last method in class
     {
         int trackDisplayID;
@@ -33,7 +42,7 @@ namespace AudioFile.View
 
         void Start()
         {
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnSingleTrackSelected", this);
+            ObserverManager.Instance.RegisterObserver("OnSingleTrackSelected", this);
 
             Canvas canvas = GameObject.Find("GUI_Canvas").GetComponent<Canvas>();
 

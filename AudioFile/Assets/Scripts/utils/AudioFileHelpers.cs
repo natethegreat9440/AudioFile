@@ -2,7 +2,13 @@ using UnityEngine;
 
 namespace AudioFile.Utilities
 {
-    public static class GameObjectExtensions
+    /// <summary>
+    /// Assorted helper functions used in AudioFile for various purposes
+    /// <remarks>
+    /// Members: FindInChildren() which is useful for finding a child Unity game object by name. SetHexColor() which is useful for setting a color from a hex string.
+    /// </remarks>
+    /// </summary>
+    public static class AudioFileHelpers
     {
         public static GameObject FindInChildren(this GameObject parent, string name)
         {

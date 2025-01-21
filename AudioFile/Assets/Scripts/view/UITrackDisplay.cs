@@ -11,12 +11,13 @@ namespace AudioFile.View
     /// Concrete class for a UI Track Display item which holds Title, Artist, Album, and Duration buttons.
     /// <remarks>
     /// This needs to be attached as a component to the UI_Track_Display_Prefab
-    /// Members: Initialize(), SetTrackData(), SetText(), InitializeButtons(), OnButtonClicked().
+    /// Members: TrackDisplayID, IsSelected, Initialize(), SetTrackData(), SetText(), GetText(), InitializeButtons(), OnButtonClicked(), DestroyContextMenu().
     /// OnButtonClicked() calls HandleTrackButtonClick() from the UITrackListDisplayManager.
-    /// Implements Awake() from MonoBehaviour.
+    /// Implements Awake() from MonoBehaviour. Implements OnPointerClick() from IPointerClickHandler from UnityEngine.EventSystems
     /// </remarks>
     /// <see cref="UITrackListDisplayManager"/>
     /// <seealso cref="MonoBehaviour"/>
+    /// <see cref="IPointerClickHandler"/>
     /// </summary>
 
     public class UITrackDisplay : MonoBehaviour, IPointerClickHandler
@@ -56,15 +57,15 @@ namespace AudioFile.View
 
         }
 
-        private void SetTrackData(Track trackData)
+        private void SetTrackData(Track track)
         {
-            //For Testing
-            //string title = (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Title") + " " + trackData.TrackID + " " + trackData.TrackProperties.GetProperty(trackData.TrackID, "AlbumTrackNumber");
+            //For Testing and easily checking TrackID and AlbumTrackNumber which aren't intended to be displayed to the user
+            //string title = (string)track.TrackProperties.GetProperty(track.TrackID, "Title") + " " + track.TrackID + " " + track.TrackProperties.GetProperty(track.TrackID, "AlbumTrackNumber");
 
-            SetText(listDisplayManager.titleTextPath, (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Title"));
-            SetText(listDisplayManager.artistTextPath, (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Artist"));
-            SetText(listDisplayManager.albumTextPath, (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Album"));
-            SetText(listDisplayManager.durationTextPath, (string)trackData.TrackProperties.GetProperty(trackData.TrackID, "Duration"));
+            SetText(listDisplayManager.titleTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Title"));
+            SetText(listDisplayManager.artistTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Artist"));
+            SetText(listDisplayManager.albumTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Album"));
+            SetText(listDisplayManager.durationTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Duration"));
         }
 
         private void SetText(string path, string value)
@@ -75,7 +76,7 @@ namespace AudioFile.View
                 var textComponent = textTransform.GetComponent<Text>();
                 if (textComponent != null)
                 {
-                    textComponent.text = "  " + value; // Adding some space for aesthetic reasons.
+                    textComponent.text = "  " + value; // Adding some empty space for aesthetic purposes.
                 }
             }
         }
@@ -159,12 +160,11 @@ namespace AudioFile.View
             }
             else
             {
-                //listDisplayManager.OnTrackSelection(this.gameObject);
                 listDisplayManager.HandleTrackButtonClick(this, null);
             }
         }
-        //This method exists to be called from the UITrackListDisplayManager,
-        //so when the track is removed it destroys the Track Displays Context Menu if it is already open
+
+        //This method exists to be called from the UITrackListDisplayManager, so when the track is removed it destroys the Track Displays Context Menu if it is already open
         public void DestroyContextMenu()
         {
             
@@ -176,6 +176,5 @@ namespace AudioFile.View
                 ContextMenuInstance = null;
             }
         }
-
     }
 }

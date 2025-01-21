@@ -5,12 +5,19 @@ using UnityEngine;
 using UnityEngine.UI;
 using AudioFile.Controller;
 using AudioFile.Model;
-using AudioFile.ObserverManager;
 using AudioFile.Utilities;
 using Unity.VisualScripting;
 
 namespace AudioFile.View
 {
+    /// <summary>
+    /// View class for managing the Sort Button behaviour and interactions.
+    /// <remarks>
+    /// Members: SortButtons, ConfigureSortButton(), SetAllButtonText(), EnableButtons(), DisableButtons(), . Implements Start(), Update(), Initialize() from MonoBehaviour.
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// </summary>
+
     public class UISortButtonsManager : MonoBehaviour
     {
         private static readonly Lazy<UISortButtonsManager> _instance = new Lazy<UISortButtonsManager>(CreateSingleton);
@@ -54,16 +61,6 @@ namespace AudioFile.View
 
         public List<SortButton> SortButtons;
 
-
-        //TODO:
-        //Use LINQ or collection specific methods to sort the library
-        //Need reference (or get method) to find all track displays in TrackListDisplayerManager
-        //Need a sort alphabetically method and a reverse sort method (delegates to a SortController that takes a list, a sorting property, and an algorithm and then applies a sorting method to the list)
-        //When library gets sorted send an update to ListDisplayManager to refresh the display
-        //Need a way to keep track of default order tracks were added in
-        //Need a sort numerically method and a reverse sort method (unless alphabetical method can already handle this)
-        //Need a way to update the text in each butons to include a an up arrow char or a down arrow char to show the direction of the sort
-
         private void Start()
         {
 
@@ -90,7 +87,6 @@ namespace AudioFile.View
                 durationSortButton,
             };
 
-            //Set up onClick Listeners/events for SortButtons
             foreach (var button in SortButtons)
             {
                 ConfigureSortButton(button);
@@ -98,6 +94,7 @@ namespace AudioFile.View
 
         }
 
+        //Sets up onClick Listeners/events for SortButtons in ConfigureSortButton()
         private void ConfigureSortButton(SortButton button)
         {
             if (button != null)

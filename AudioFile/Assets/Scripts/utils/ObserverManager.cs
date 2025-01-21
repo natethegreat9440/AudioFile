@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AudioFile.ObserverManager;
+using AudioFile.Utilities;
 using AudioFile.Model;
 using AudioFile.View;
 using AudioFile.Controller;
@@ -10,7 +10,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-namespace AudioFile.ObserverManager
+namespace AudioFile.Utilities
 {
     /// <summary>
     /// Service layer for the concrete singleton service layer class ObserverManager and the interface IAudioFileObserver

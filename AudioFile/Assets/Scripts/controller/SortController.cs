@@ -4,7 +4,7 @@ using AudioFile;
 using System.Windows.Forms;
 using AudioFile.Model;
 using AudioFile.View;
-using AudioFile.ObserverManager;
+using AudioFile.Utilities;
 using System;
 using UnityEngine;
 using System.Windows.Forms.VisualStyles;
@@ -14,9 +14,19 @@ using Mono.Data.Sqlite;
 using Unity.VisualScripting;
 
 
-
 namespace AudioFile.Controller
 {
+    /// <summary>
+    /// Singleton Sort Controller in AudioFile used for controlling sort behavior as triggered by the UI, loading UITrackListDisplayManager, and PlaybackController among others using SQLite injections. 
+    /// This class file also contains the LibrarySortProperties enum which is used internally to specify the default sort method for the library, which is the default model view upon load.
+    /// <remarks>
+    /// Members: SortForward(), SortReverse(), RestoreDefaultOrder(), RefreshSorting(). Coroutine LoadAudioClipFromFile(). Implements HandleRequest() from IController. Implements AudioFileUpdate() from IAudioFileObserver.
+    /// This controller has no implementation for IController methods Initialize() or Dispose() (yet).
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// <seealso cref="IController"/>
+    /// <seealso cref="IAudioFileObserver"/>
+    /// </summary>
     public enum LibrarySortProperties { AlbumTrackNumber, Title, Album, Artist } //AlbumTrackNumber intentionally at the front here
     public class SortController : MonoBehaviour, IController, IAudioFileObserver
     {
@@ -33,11 +43,9 @@ namespace AudioFile.Controller
             // Create a new GameObject to hold the singleton instance if it doesn't already exist
             GameObject singletonObject = new GameObject(typeof(SortController).Name);
 
-            // Add the PlayBackController component to the GameObject
+            // Add the SortController component to the GameObject
             return singletonObject.AddComponent<SortController>();
         }
-
-        //TODO: Add reference variables for the Sorted State and Sorted Property??
 
         public string ConnectionString => SetupController.Instance.ConnectionString;
 
@@ -50,7 +58,7 @@ namespace AudioFile.Controller
         }
         public void Start()
         {
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnNewTrackAdded", this);
+            ObserverManager.Instance.RegisterObserver("OnNewTrackAdded", this);
         }
         public void HandleRequest(object request, bool isUndo)
         {
@@ -105,14 +113,14 @@ namespace AudioFile.Controller
         }
         private void SortForward(string collectionToSort, string mainSortProperty)
         {
-            //Note that if AlbumTrackNumber is passed to this ever as the mainSortProperty it will cause some issues. However, that's not likely to happen with the current interface
+            //Note that if AlbumTrackNumber is passed to this ever as the mainSortProperty it will cause some issues. However, that's not likely to happen with the current design
             Debug.Log($"Sorting {collectionToSort} in forward order by {mainSortProperty}");
             var sortedTrackIDs = new List<int>();
 
             if (collectionToSort == "library")
             {
                 //Note that LibrarySortProperties { AlbumTrackNumber, Title, Album, Artist } and the odd order of CurrentSortOrdering is intentional/correct
-                //TODO: Maybe a cleaner way to do it, but this was all I could think of when I initially wrote this pre-SQLite refactoring
+                //TODO: There may be a cleaner way to do it, but this was all I could think of when I initially wrote this pre-SQLite refactoring
 
                 var sortProperties = Enum.GetValues(typeof(LibrarySortProperties))
                     .Cast<LibrarySortProperties>()
@@ -143,7 +151,6 @@ namespace AudioFile.Controller
                         {
                             while (reader.Read())
                             {
-                                //var trackID = (int)reader["TrackID"];
                                 var result = reader["TrackID"];
                                 var trackID = Convert.ToInt32(result);
 
@@ -154,7 +161,7 @@ namespace AudioFile.Controller
                 }
 
                 if (sortedTrackIDs.Count > 0)
-                    ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
+                    ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
             }
         }
 
@@ -167,7 +174,7 @@ namespace AudioFile.Controller
             if (collectionToSort == "library")
             {
                 //Note that LibrarySortProperties { AlbumTrackNumber, Title, Album, Artist } and the odd order of CurrentSortOrdering is intentional/correct
-                //TODO: Maybe a cleaner way to do it, but this was all I could think of when I initially wrote this pre-SQLite refactoring
+                //TODO: There may be a cleaner way to do it, but this was all I could think of when I initially wrote this pre-SQLite refactoring
 
                 var sortProperties = Enum.GetValues(typeof(LibrarySortProperties))
                     .Cast<LibrarySortProperties>()
@@ -209,7 +216,7 @@ namespace AudioFile.Controller
                 }
 
                 if (sortedTrackIDs.Count > 0)
-                    ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
+                    ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
             }
         }
 
@@ -256,7 +263,7 @@ namespace AudioFile.Controller
                 }
 
                 if (sortedTrackIDs.Count > 0)
-                    ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
+                    ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
             }
         }
 
@@ -276,7 +283,7 @@ namespace AudioFile.Controller
             {
                 RestoreDefaultOrder(UITrackListDisplayManager.Instance.TracksDisplayed);
             }
-            else
+            else //This block ensures the sort state persists as new tracks get added
             {
                 if (buttonToSortBy.State == SortButtonState.Forward)
                 {
@@ -308,167 +315,5 @@ namespace AudioFile.Controller
 
             action();
         }
-
-        /*private void SortForward(string collectionToSort, string mainSortProperty)
-        {
-            //Note that if AlbumTrackNumber is passed to this ever as the mainSortProperty it will cause some issues. However, that's not likely to happen with the current interface
-            Debug.Log($"Sorting {collectionToSort} in forward order by {mainSortProperty}");
-            var sortedTrackList = new List<Track>();
-
-            if (collectionToSort == "library")
-            {
-                var sortProperties = Enum.GetValues(typeof(LibrarySortProperties))
-                    .Cast<LibrarySortProperties>()
-                    .Select(e => e.ToString())
-                    .Where(e => e != mainSortProperty)
-                    .ToList();
-
-                sortedTrackList = TrackLibrary.Instance.TrackList
-                    .OrderBy(track =>
-                    {
-                        var value = track.TrackProperties.GetProperty(mainSortProperty);
-                        return mainSortProperty == "AlbumTrackNumber" && int.TryParse(value, out int parsedValue)
-                            ? (object)parsedValue
-                            : value;
-                    })
-                    .ThenBy(track =>
-                    {
-                        var value = track.TrackProperties.GetProperty(sortProperties[2]);
-                        return sortProperties[2] == "AlbumTrackNumber" && int.TryParse(value, out int parsedValue)
-                            ? (object)parsedValue
-                            : value;
-                    })
-                    .ThenBy(track =>
-                    {
-                        var value = track.TrackProperties.GetProperty(sortProperties[0]);
-                        return sortProperties[0] == "AlbumTrackNumber" && int.TryParse(value, out int parsedValue)
-                            ? (object)parsedValue
-                            : value;
-                    })
-                    .ThenBy(track =>
-                    {
-                        var value = track.TrackProperties.GetProperty(sortProperties[1]);
-                        return sortProperties[1] == "AlbumTrackNumber" && int.TryParse(value, out int parsedValue)
-                            ? (object)parsedValue
-                            : value;
-                    })
-                    .ToList();
-
-                    TrackLibrary.Instance.TrackList = sortedTrackList;
-            }
-
-            if (sortedTrackList.Count > 0)
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackList);
-        }*/
-
-        /*private void SortReverse(string collectionToSort, string mainSortProperty)
-        {
-            Debug.Log($"Sorting {collectionToSort} in forward order by {mainSortProperty}");
-            var sortedTrackList = new List<Track>();
-
-            if (collectionToSort == "library")
-            {
-                var sortProperties = Enum.GetValues(typeof(LibrarySortProperties))
-                    .Cast<LibrarySortProperties>()
-                    .Select(e => e.ToString())
-                    .Where(e => e != mainSortProperty)
-                    .ToList();
-
-                sortedTrackList = TrackLibrary.Instance.TrackList
-                    .OrderByDescending(track =>
-                    {
-                        var value = track.TrackProperties.GetProperty(mainSortProperty);
-                        return mainSortProperty == "AlbumTrackNumber" && int.TryParse(value, out int parsedValue)
-                            ? (object)parsedValue
-                            : value;
-                    })
-                    .ThenByDescending(track =>
-                    {
-                        var value = track.TrackProperties.GetProperty(sortProperties[2]);
-                        return sortProperties[2] == "AlbumTrackNumber" && int.TryParse(value, out int parsedValue)
-                            ? (object)parsedValue
-                            : value;
-                    })
-                    .ThenBy(track =>
-                    {
-                        var value = track.TrackProperties.GetProperty(sortProperties[0]);
-                        return sortProperties[0] == "AlbumTrackNumber" && int.TryParse(value, out int parsedValue)
-                            ? (object)parsedValue
-                            : value;
-                    })
-                    .ThenBy(track =>
-                    {
-                        var value = track.TrackProperties.GetProperty(sortProperties[1]);
-                        return sortProperties[1] == "AlbumTrackNumber" && int.TryParse(value, out int parsedValue)
-                            ? (object)parsedValue
-                            : value;
-                    })
-                    .ToList();
-
-                TrackLibrary.Instance.TrackList = sortedTrackList;
-            }
-
-            if (sortedTrackList.Count > 0)
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackList);
-
-        }*/
-
-        /*public void RestoreDefaultOrder(string collectionToSort)
-        {
-            Debug.Log($"Setting {collectionToSort} in default order");
-            var sortedTrackList = new List<Track>();
-
-            if (collectionToSort == "library") 
-            {
-                sortedTrackList = TrackLibrary.Instance.TrackList
-                    .OrderBy(track => track.TrackProperties.GetProperty(Enum.GetName(typeof(LibrarySortProperties), 3))) //OrderBy defaults to ascending; Artist
-                    .ThenBy(track => track.TrackProperties.GetProperty(Enum.GetName(typeof(LibrarySortProperties), 2))) //Album
-                    .ThenBy(track =>
-                    {
-                        var value = track.TrackProperties.GetProperty(Enum.GetName(typeof(LibrarySortProperties), 0));
-                        return int.TryParse(value, out int parsedValue) //AlbumTrackNumber - requires parsing from string to int so it sorts numerically and not lexiconagrahpically (i.e., 1, 10, 11, etc.)
-                            ? (object)parsedValue 
-                            : value; 
-                    })
-                    .ThenBy(track => track.TrackProperties.GetProperty(Enum.GetName(typeof(LibrarySortProperties), 1))) //Title
-                    .ToList();
-
-                TrackLibrary.Instance.TrackList = sortedTrackList;
-            }
-
-            if (sortedTrackList.Count > 0)
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackList);
-        }*/
-
-        /*private void RefreshSorting()
-        {
-            SortButton buttonToSortBy = null;
-
-            foreach (var button in UISortButtonsManager.Instance.SortButtons)
-            {
-                if (button.State != SortButtonState.Default)
-                {
-                    buttonToSortBy = button;
-                }
-            }
-
-            if (buttonToSortBy == null)
-            {
-                RestoreDefaultOrder(UITrackListDisplayManager.Instance.TracksDisplayed);
-            }
-            else
-            {
-                if (buttonToSortBy.State == SortButtonState.Forward)
-                {
-                    SortForward(UITrackListDisplayManager.Instance.TracksDisplayed, buttonToSortBy.SortProperty);
-                }
-                else if (buttonToSortBy.State == SortButtonState.Reverse)
-                {
-                    SortReverse(UITrackListDisplayManager.Instance.TracksDisplayed, buttonToSortBy.SortProperty);
-                }
-            }
-        }*/
-
-
     }
 }

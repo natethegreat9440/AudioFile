@@ -26,7 +26,6 @@ namespace AudioFile.Controller
         void Dispose();
 
         //TODO: move Exit Program into a an Exit Controller class
-        //void ExitProgram();
 
     }
 }

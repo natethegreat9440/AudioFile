@@ -1,6 +1,6 @@
 using System.Windows.Forms;
 using AudioFile;
-using AudioFile.Utilities;
+using AudioFile.ObserverManager;
 using Unity.VisualScripting;
 using System;
 using UnityEngine;
@@ -318,7 +318,7 @@ namespace AudioFile.Controller
             var title = (string)trackToRemove.TrackProperties.GetProperty(trackToRemove.TrackID, "Title");
 
             Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
-            ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
+            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
 
             TrackList.Remove(trackToRemove);
 
@@ -414,7 +414,7 @@ namespace AudioFile.Controller
                 if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
                 {
                     Debug.LogError("Error loading audio file: " + www.error);
-                    ObserverManager.Instance.NotifyObservers("AudioFileError", "Error loading audio file at path (check file path): " + "file://" + escapedPath);
+                    ObserverManager.ObserverManager.Instance.NotifyObservers("AudioFileError", "Error loading audio file at path (check file path): " + "file://" + escapedPath);
                 }
                 else
                 {
@@ -446,7 +446,7 @@ namespace AudioFile.Controller
                     else
                     {
                         Debug.Log($"Unknown error: Audio clip is either null or has no samples. audioClip: {audioClip} samples: {audioClip.samples}");
-                        ObserverManager.Instance.NotifyObservers("AudioFileError", $"Unknown error loading/creating audio file: {metadata[0]} - {metadata[1]}");
+                        ObserverManager.ObserverManager.Instance.NotifyObservers("AudioFileError", $"Unknown error loading/creating audio file: {metadata[0]} - {metadata[1]}");
                     }
                 }
             }
@@ -519,7 +519,7 @@ namespace AudioFile.Controller
                         command.CommandText = "SELECT * FROM Tracks";
                         using (var reader = command.ExecuteReader())
                         {
-                            ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateStart");
+                            ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateStart");
 
                             while (reader.Read())
                             {
@@ -554,7 +554,7 @@ namespace AudioFile.Controller
             if (loadingCoroutinesCount == 0)
             {
                 // All coroutines have completed
-                ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
+                ObserverManager.ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
             }
         }
     }

@@ -2,7 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using AudioFile.ObserverManager;
+using AudioFile.Utilities;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -15,20 +15,19 @@ namespace AudioFile.Model
     /// <summary>
     /// Concrete class for Track objects
     /// <remarks>
-    /// Part of a Composite design pattern implementation. Track is a leaf node. Tracks are the children to the TrackLibrary composite node.
+    /// Once part of a Composite design pattern implementation. Track was a leaf node. Tracks were the children to the TrackLibrary composite node, but now standalone objects outside of a composite design pattern.
     /// Track Properties (i.e., Title, Artist, etc.) are stored in a TrackProperties object for better cohesion. Uses a static factory method to create and initialize Tracks.
-    /// Members: IsPlaying, IsPaused, TrackProperties, _audioSource, _trackDuration, CreateTrack(), IsDone(), FormatTime(). 
+    /// Members: TrackID, IsPlaying, IsPaused, TrackProperties, _audioSource, _trackDuration, CreateTrack(), IsDone(), FormatTime(), GetTime(). 
     /// Inherits Play(), Pause(), Stop(), GetDuration(), SetTime() from MediaLibraryComponent and largely delegates to the playback methods of Unity AudioSource objects with minor additions to help facilitate program flow.
     /// Has _audioPlayableOutput and _audioPlayable properties that hold Unity AudioPlayableOutput and AudioClipPlayable objects for more advanced playback capabilities (so far I haven't really needed to use them, so could be candidates for removal later)
     /// Has default ToString() override implementations. Implements Initialize(), Update(), OnDestroy(), from MonoBehaviour.
     /// </remarks>
     /// <see cref="TrackProperties"/>
+    /// <seealso cref="TrackLibraryController"/>
     /// <seealso cref="MediaLibraryComponent"/>
-    /// <seealso cref="TrackLibrary"/>
     /// <seealso cref="IPlayable"/>
     /// </summary>
 
-    [Serializable]
     public class Track : MediaLibraryComponent, IPlayable
     {
         AudioSource _audioSource;
@@ -97,7 +96,7 @@ namespace AudioFile.Model
             }
         }
 
-        // Initialize method to set up properties
+        // Initialize method to set up TrackProperties reference, AudioSource, AudioPlayableOutput, track duration, track ID, and notify observers that a new track has been added if it is new to the library
         private void Initialize(int trackID, AudioClip loadedClip, bool isNewTrack)
         {
             _audioSource = gameObject.AddComponent<AudioSource>();
@@ -116,30 +115,9 @@ namespace AudioFile.Model
             TrackID = trackID;
             if (isNewTrack)
             {
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnNewTrackAdded", this);
+                ObserverManager.Instance.NotifyObservers("OnNewTrackAdded", this);
             }
-
         }
-
-        /*public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
-                                        string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album", string loadedPath = "Unknown Path", string trackID = null, string albumTrackNumber = "0")
-        {
-            // Create a new GameObject and attach Track as a component
-            GameObject trackObject = new GameObject("Track_" + trackTitle);
-            Track track = trackObject.AddComponent<Track>();
-            if (trackID == null)
-            { trackID = TrackIDRegistry.Instance.GenerateNewTrackID(); }
-            else if (System.Text.RegularExpressions.Regex.IsMatch(trackID, @"^\d{6}$"))
-            {
-                TrackIDRegistry.Instance.AddExistingIDOnStart(trackID);
-            }
-            //Debug.Log($"The loaded path is: {loadedPath}");
-
-            track.Initialize(trackID, loadedClip, trackTitle, trackArtist, trackAlbum, loadedPath, albumTrackNumber);
-            return track;
-        }*/
-
-
 
         void Update()
         {
@@ -148,7 +126,7 @@ namespace AudioFile.Model
                 double currentTime = _audioSource.time;
                 double clipLength = _audioSource.clip.length;
                 float progress = (float)(currentTime / clipLength);
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackFrameUpdate", progress);
+                ObserverManager.Instance.NotifyObservers("OnTrackFrameUpdate", progress);
             }
         }
         void OnDestroy()
@@ -170,7 +148,7 @@ namespace AudioFile.Model
         #endregion
         #region Playback method implementations
 
-        //Make this a Utilities method
+        //TODO: Make this a Utilities method??
         public string FormatTime(float seconds)
         {
             int minutes = Mathf.FloorToInt(seconds / 60);
@@ -219,7 +197,7 @@ namespace AudioFile.Model
             //Debug.Log($"AudioPlayable time: { FormatTime((float)_audioPlayable.GetTime())}");
             //Debug.Log($"AudioSource time: {FormatTime((float)_audioSource.time)}");
 
-            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackStopped");
+            ObserverManager.Instance.NotifyObservers("OnTrackStopped");
 
         }
 

@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using AudioFile.Controller;
 using AudioFile.Model;
-using AudioFile.ObserverManager;
 using AudioFile.Utilities;
 using Unity.VisualScripting;
 using System.Linq;
@@ -15,17 +14,19 @@ namespace AudioFile.View
     /// <summary>
     /// Concrete class for updating the UI Track List display area and managing individual TrackDisplay objects.
     /// <remarks>
-    /// Needs method to instantiate the display with all tracks saved to PC memory down the road.
-    /// Members: AddTrackOnUpdate() and RemoveTrackOnUpdate() coroutines. Has HandleTrackButtonClick(), and OnTrackDisplayDoubleClick().
-    /// Has GetTrackDisplayIndex(), OnTrackSelection(), DeselectAllTrackDisplays() methods. Click interaction methods 
+    /// Members: TracksDisplayed, SelectedTrackDisplays, AllTrackDisplayTransforms. Has AddTrackOnUpdate(), RemoveTrackOnUpdate(), PopulateOnStart(), UpdateDisplay() coroutines. 
+    /// Has HandleTrackButtonClick(), and OnTrackDisplayDoubleClick(), GetTrackDisplayID(), GetTrackDisplay(), GetAllTrackDisplays(),
+    /// GetTrackDisplayIndex(), OnTrackSelection(), DeselectAllTrackDisplays() methods.
     /// Implements Start() from MonoBehaviour. Implements AudioFileUpdate() from IAudioFileObserver. 
     /// </remarks>
     /// <see cref="MonoBehaviour"/>
     /// <seealso cref="IAudioFileObserver"/>
     /// </summary>
-    public class UITrackListDisplayManager : MonoBehaviour, IAudioFileObserver
+
+    //IMPORTANT: Make sure in the Scroll Rect component in the Inspector for the Track_List_Display Game Object the Movement type is set to Clamped otherwise content can do some weird things
+
+    public class UITrackListDisplayManager : MonoBehaviour, IAudioFileObserver 
     {
-        //Make sure in the Scroll Rect component in the Inspector for the Track_List_Display Game Object the Movement type is set to Clamped otherwise content can do some weird things
         private static readonly Lazy<UITrackListDisplayManager> _instance = new Lazy<UITrackListDisplayManager>(CreateSingleton);
 
         // Private constructor to prevent instantiation
@@ -53,8 +54,8 @@ namespace AudioFile.View
             return instance;
         }
 
-        public GameObject UI_Track_DisplayPrefab;
-        public Transform Track_List_DisplayViewportContent;
+        public GameObject UI_Track_DisplayPrefab; //Attach in scene
+        public Transform Track_List_DisplayViewportContent; //Attach in scene
 
         public string TracksDisplayed { get; set; } = "library";
 
@@ -67,6 +68,7 @@ namespace AudioFile.View
         public readonly string albumTextPath = "UI_Track_Album_Button/UI_Track_Album_Button_Text";
         public readonly string durationTextPath = "UI_Track_Duration_Button/UI_Track_Duration_Button_Text";
 
+        [HideInInspector]
         public UIContextMenu activeContextMenu;
 
         public List<UITrackDisplay> SelectedTrackDisplays { get; private set; } = new List<UITrackDisplay>();
@@ -74,11 +76,11 @@ namespace AudioFile.View
         public List<Transform> AllTrackDisplayTransforms { get => GetAllTrackDisplays(); } //Not currently referenced but may have some viability later
         public void Start()
         {
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnNewTrackAdded", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnActiveTrackCycled", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("TracksDeserialized", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnCollectionReordered", this);
+            ObserverManager.Instance.RegisterObserver("OnNewTrackAdded", this);
+            ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
+            ObserverManager.Instance.RegisterObserver("OnActiveTrackCycled", this);
+            ObserverManager.Instance.RegisterObserver("TracksDeserialized", this);
+            ObserverManager.Instance.RegisterObserver("OnCollectionReordered", this);
 
         }
 
@@ -141,7 +143,7 @@ namespace AudioFile.View
                         SelectedTrackDisplays.Add(child);
                         child.IsSelected = true;
                         //child.GetComponent<Image>().color = Color.blue;
-                        child.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#A8DADC"); //Soft cyan
+                        child.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#A8DADC"); //Soft cyan
                     }
                 }
             }
@@ -152,13 +154,13 @@ namespace AudioFile.View
                 {
                     SelectedTrackDisplays.Remove(trackDisplayComponent);
                     trackDisplayComponent.IsSelected = false;
-                    trackDisplayComponent.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#F1FAEE"); //panache white
+                    trackDisplayComponent.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#F1FAEE"); //panache white
                 }
                 else
                 {
                     SelectedTrackDisplays.Add(trackDisplayComponent);
                     trackDisplayComponent.IsSelected = true;
-                    trackDisplayComponent.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#A8DADC"); //Soft cyan
+                    trackDisplayComponent.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#A8DADC"); //Soft cyan
                 }
             }
             else
@@ -171,10 +173,10 @@ namespace AudioFile.View
                 SelectedTrackDisplays.Add(trackDisplayComponent);
 
                 trackDisplayComponent.IsSelected = true;
-                trackDisplayComponent.GetComponent<Image>().color = GameObjectExtensions.SetHexColor("#A8DADC"); //Soft cyan
+                trackDisplayComponent.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#A8DADC"); //Soft cyan
 
                 int trackDisplayID = GetTrackDisplayID(trackDisplayObject);
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnSingleTrackSelected", trackDisplayID);
+                ObserverManager.Instance.NotifyObservers("OnSingleTrackSelected", trackDisplayID);
 
             }
 
@@ -188,7 +190,7 @@ namespace AudioFile.View
                 if (trackDisplay != null)
                 {
                     child.GetComponent<UITrackDisplay>().IsSelected = false;
-                    trackDisplay.color = GameObjectExtensions.SetHexColor("#F1FAEE"); //panache white
+                    trackDisplay.color = AudioFileHelpers.SetHexColor("#F1FAEE"); //panache white
                 }
             }
         }
@@ -283,9 +285,7 @@ namespace AudioFile.View
 
             if (trackDisplayTransformToRemove != null) //Destroy the TrackDisplay GameObject once found
             {
-                //Call the TrackDisplay's DestroyContext Menu method first in case there is an open Context Menu when the
-                //Track Display is removed
-                //trackDisplayToRemove.GetComponent<UITrackDisplay>().DestroyContextMenu();
+                //Call the TrackDisplay's DestroyContext Menu method first in case there is an open Context Menu when the Track Display is removed
                 var trackDisplayGameObject = trackDisplayTransformToRemove.gameObject;
                 activeContextMenu.DestroyContextMenu();
                 Destroy(trackDisplayTransformToRemove.gameObject);
@@ -298,22 +298,6 @@ namespace AudioFile.View
 
         private IEnumerator PopulateOnStart(List<Track> initialTrackList)
         {
-            // Create the initialTrackList from the Tracks table
-            /*List<Track> initialTrackList = new List<Track>();
-            foreach (var trackData in TracksTable.GetAllTracks())
-            {
-                Track track = Track.CreateTrack(
-                    trackData.AudioClip,
-                    trackData.Title,
-                    trackData.Artist,
-                    trackData.Album,
-                    trackData.Path,
-                    trackData.AlbumTrackNumber
-                );
-                initialTrackList.Add(track);
-            }*/
-
-            // Existing code
             foreach (var track in initialTrackList)
             {
                 Debug.Log($"Adding TrackDisplay for {track} on program start");
@@ -328,9 +312,9 @@ namespace AudioFile.View
             {
                 SortController.Instance.RefreshSorting(); //Essentially delegates directly to RestoreDefaultOrder, but if I do decide to have the program save Sort Button states after a session then RefreshSorting will handle accordingly
             }
-            yield return null; // Ensure the final yield return is executed before notifying observers
+            yield return null; // Ensure the final yield return is executed before notifying observers to ensure population is complete before observers are notified
 
-            ObserverManager.ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateEnd");
+            ObserverManager.Instance.NotifyObservers("TrackDisplayPopulateEnd");
         }
 
         private IEnumerator UpdateDisplay(List<int> sortedTrackIDs)
@@ -368,43 +352,6 @@ namespace AudioFile.View
 
             yield return null;
         }
-
-        //private IEnumerator UpdateDisplay(List<int> sortedTrackIDs) 
-        //{
-        //    //Essentially this method just tries to make the display order match the order of how the provided sortedTrackList (from SortController) is ordered
-            
-        //    // Step 1: Create a dictionary to map track IDs to their corresponding Transform objects
-
-        //    Dictionary<int, Transform> trackIDToTransformMap = new Dictionary<int, Transform>();
-
-        //    foreach (Transform child in Track_List_DisplayViewportContent)
-        //    {
-        //        var trackDisplay = child.GetComponent<UITrackDisplay>();
-        //        if (trackDisplay != null)
-        //        {
-        //            trackIDToTransformMap[trackDisplay.TrackDisplayID] = child;
-        //        }
-        //    }
-
-        //    // Step 2: Iterate through the sortedTrackList and get the corresponding Transform for each track
-        //    List<Transform> sortedTransforms = new List<Transform>();
-        //    foreach (var track in sortedTrackList)
-        //    {
-        //        int trackID = track.TrackID;
-        //        if (trackIDToTransformMap.TryGetValue(trackID, out Transform trackTransform))
-        //        {
-        //            sortedTransforms.Add(trackTransform);
-        //        }
-        //    }
-
-        //    // Step 3: Reorder the children of Track_List_DisplayViewportContent based on the sorted list
-        //    for (int i = 0; i < sortedTransforms.Count; i++)
-        //    {
-        //        sortedTransforms[i].SetSiblingIndex(i);
-        //    }
-
-        //    yield return null;
-        //}
 
         public void AudioFileUpdate(string observationType, object data)
         {

@@ -5,73 +5,86 @@ using UnityEngine.EventSystems;
 using System;
 using System.Collections.Generic;
 
-
-public class ClickOutsideHandler : MonoBehaviour, IPointerClickHandler
+namespace AudioFile.View
 {
-    public UIContextMenu contextMenu;
-
-    public Menu alphaMenu;
-
-    public void OnPointerClick(PointerEventData eventData)
+    /// <summary>
+    /// View class for managing the ClickOutsideHandler used by Menu objects.
+    /// <remarks>
+    /// Handle the user clicking outside of the menu tree bounds when initialized. Works with the Context Menu and Alpha Menus from the top ribbon. Destroys the ClickOutsideHandler object whenever a click outside is detected.
+    /// Members: GenerateMenuTreeBounds(), DestroyClickOutsideHandler(). Implements OnPointerClick() from IPointerClickHandler from UnityEngine.EventSystems.
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// <see cref="UIContextMenu"/>
+    /// <see cref="Menu"/>
+    /// <see also cref="IPointerClickHandler"/>
+    /// </summary>
+    public class ClickOutsideHandler : MonoBehaviour, IPointerClickHandler
     {
+        public UIContextMenu contextMenu;
 
-        // Check if the click is outside the context menu
-        if (contextMenu != null)
+        public Menu alphaMenu;
+
+        public void OnPointerClick(PointerEventData eventData)
         {
-            RectTransform contextMenuRect = contextMenu.GetComponent<RectTransform>();
 
-            // Use RectTransformUtility to check if the click is inside the context menu bounds
-            if (!RectTransformUtility.RectangleContainsScreenPoint(
-                contextMenuRect, eventData.position, eventData.pressEventCamera))
+            // Check if the click is outside the context menu
+            if (contextMenu != null)
             {
+                RectTransform contextMenuRect = contextMenu.GetComponent<RectTransform>();
+
+                // Use RectTransformUtility to check if the click is inside the context menu bounds
+                if (!RectTransformUtility.RectangleContainsScreenPoint(
+                    contextMenuRect, eventData.position, eventData.pressEventCamera))
+                {
+                    DestroyClickOutsideHandler();
+                }
+            }
+
+            //Check if the click is outside the alpha menu's tree
+            if (alphaMenu != null)
+            {
+                List<RectTransform> menuTreeBounds = GenerateMenuTreeBounds();
+
+                // Use RectTransformUtility to check if the click is inside the context menu bounds
+                foreach (var rect in menuTreeBounds)
+                {
+                    if (!RectTransformUtility.RectangleContainsScreenPoint(
+                        rect, eventData.position, eventData.pressEventCamera))
+                    {
+                        alphaMenu.Hide();
+                    }
+                }
+
                 DestroyClickOutsideHandler();
             }
         }
 
-        //Check if the click is outside the alpha menu's tree
-        if (alphaMenu != null)
+        private List<RectTransform> GenerateMenuTreeBounds()
         {
-            List<RectTransform> menuTreeBounds = GenerateMenuTreeBounds();
+            List<RectTransform> menuTreeBounds = new List<RectTransform>();
 
-            // Use RectTransformUtility to check if the click is inside the context menu bounds
-            foreach (var rect in menuTreeBounds)
+            RectTransform alphaMenuRect = alphaMenu.GetComponent<RectTransform>();
+            menuTreeBounds.Add(alphaMenuRect);
+
+            for (int i = 0; i < alphaMenu.MenuComponents.Count; i++)
             {
-                if (!RectTransformUtility.RectangleContainsScreenPoint(
-                    rect, eventData.position, eventData.pressEventCamera))
-                {
-                    alphaMenu.Hide();
-                }
+                MenuComponent child = alphaMenu.MenuComponents[i];
+                child.GetComponent<RectTransform>();
+                menuTreeBounds.Add(alphaMenuRect);
             }
 
-            DestroyClickOutsideHandler();
+            return menuTreeBounds;
+
         }
-    }
 
-    private List<RectTransform> GenerateMenuTreeBounds()
-    {
-        List<RectTransform> menuTreeBounds = new List<RectTransform>();
-
-        RectTransform alphaMenuRect = alphaMenu.GetComponent<RectTransform>();
-        menuTreeBounds.Add(alphaMenuRect);
-
-        for (int i = 0; i < alphaMenu.MenuComponents.Count; i++)
+        public void DestroyClickOutsideHandler()
         {
-            MenuComponent child = alphaMenu.MenuComponents[i];
-            child.GetComponent<RectTransform>();
-            menuTreeBounds.Add(alphaMenuRect);
+            //Debug.Log("Click outside detected. Destroying context menu.");
+            if (contextMenu != null)
+            {
+                contextMenu.DestroyContextMenu();
+            }
+            Destroy(gameObject);
         }
-
-        return menuTreeBounds;
-
-    }
-
-    public void DestroyClickOutsideHandler()
-    {
-        //Debug.Log("Click outside detected. Destroying context menu.");
-        if (contextMenu != null)
-        {
-            contextMenu.DestroyContextMenu();
-        }
-        Destroy(gameObject);
     }
 }

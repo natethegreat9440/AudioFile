@@ -12,15 +12,14 @@ using AudioFile.Controller;
 namespace AudioFile.Model
 {
     /// <summary>
-    /// Concrete class for holding Track Properties, which are encapsulated away from Track objects themselves in a trackProperties Dictionary object to help with cohesion and management of Track metadata down the road
+    /// Provides methods for accessing and modifying track properties easily from the Tracks table in the SQLite database
     /// <remarks>
-    /// Members: trackProperties, cantRemoveProperties, GetProperty, SetProperty, AddProperty, RemoveProperty
+    /// Members: GetProperty(), SetProperty(), GetAllProperties(). May need to add more methods for removing properties
     /// </remarks>
     /// <see cref="Track"/>
-    /// <seealso cref="TrackLibrary"/>
+    /// <seealso cref="TrackLibraryController"/>
     /// </summary>
 
-    [Serializable]
     public class TrackProperties
     {
         public string ConnectionString => SetupController.Instance.ConnectionString;

@@ -4,14 +4,12 @@ using AudioFile;
 using System.Windows.Forms;
 using AudioFile.Model;
 using AudioFile.View;
-using AudioFile.ObserverManager;
+using AudioFile.Utilities;
 using System;
 using UnityEngine;
 using Mono.Data.Sqlite;
 using Unity.VisualScripting.Dependencies.Sqlite;
 using Unity.VisualScripting.Antlr3.Runtime.Collections;
-
-
 
 namespace AudioFile.Controller
 {
@@ -20,7 +18,8 @@ namespace AudioFile.Controller
     /// <remarks>
     /// May be modified later to control synchronization of track and visualizer playback. 
     /// Will be modified to pass along all commands to the CommandStackController for undo/redo operations.
-    /// Members: ActiveTrack, SelectedTrack, CreateSingleton(), GetCurentTrackIndex(), HandlePlayPauseButton(), SetActiveTrack(), SetSelectedTrack(), Play(), Pause(), Stop(), NextItem(), PreviousItem().
+    /// Members: ActiveTrack, SelectedTrack, GetCurentTrackIndex(), HandlePlayPauseButton(), SetActiveTrack(), SetSelectedTrack(),
+    /// Play(), Pause(), Stop(), NextItem(), PreviousItem(), Skip(), Seek(), GetTime().
     /// Implements Awake(), Start(), and Update() from MonoBehaviour. Implements AudioFileUpdate() from IAudioFileObserver. Implements HandleRequest() from IController.
     /// This controller has no implementation for IController methods Initialize() or Dispose() (yet).
     /// </remarks>
@@ -46,11 +45,6 @@ namespace AudioFile.Controller
         private string CurrentSQLQueryInject => SortController.Instance.CurrentSQLQueryInject;
 
         public int ActiveTrackIndex => TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID);
-        //{
-        //    get { return TrackLibrary.Instance.ActiveTrackIndex; }
-        //    set { TrackLibrary.Instance.ActiveTrackIndex = value; }
-        //}
-
         public string ConnectionString => SetupController.Instance.ConnectionString;
 
         private static PlaybackController CreateSingleton()
@@ -64,9 +58,8 @@ namespace AudioFile.Controller
 
         public void Start()
         {
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnSingleTrackSelected", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnActiveTrackIsDone", this);
-
+            ObserverManager.Instance.RegisterObserver("OnSingleTrackSelected", this);
+            ObserverManager.Instance.RegisterObserver("OnActiveTrackIsDone", this);
         }
 
         void Update()
@@ -74,7 +67,7 @@ namespace AudioFile.Controller
             if (ActiveTrack != null && ActiveTrack.IsDone())
             {
                 Debug.Log("Track has finished playing.");
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackIsDone", null);
+                ObserverManager.Instance.NotifyObservers("OnActiveTrackIsDone", null);
             }
         }
 
@@ -189,7 +182,7 @@ namespace AudioFile.Controller
             {
                 ActiveTrack = track;
                 Debug.Log($"Active track set to: {ActiveTrack}");
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
+                ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
             }
             else
             {
@@ -203,7 +196,6 @@ namespace AudioFile.Controller
             {
                 SelectedTrack = track;
                 Debug.Log($"Selected track set to: {SelectedTrack}");
-                //ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
             }
             else
             {
@@ -238,9 +230,7 @@ namespace AudioFile.Controller
 
         public bool NextItem()
         {
-            //int activeTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID); //Testing
-
-            int nextTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, true); //True indicates to grab the index of next track in table
+            int nextTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, true); //True indicates to grab the index of next track in Tracks table
             int tracksLength = TrackLibraryController.Instance.GetTracksLength(); 
 
             if (nextTrackIndex < tracksLength + 1)
@@ -251,8 +241,8 @@ namespace AudioFile.Controller
                 Track nextTrack = TrackLibraryController.Instance.GetTrackAtID(nextTrackID);
                 SetActiveTrack(nextTrack);
 
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
+                ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);
+                ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
                 
                 Play(nextTrackID);
                 return true;
@@ -260,7 +250,7 @@ namespace AudioFile.Controller
             else
             {
                 Debug.Log("Reached the end of the playlist.");
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", ActiveTrackIndex);
+                ObserverManager.Instance.NotifyObservers("OnTrackListEnd", ActiveTrackIndex);
                 return false;
             }
         }
@@ -276,28 +266,26 @@ namespace AudioFile.Controller
                 Track prevTrack = TrackLibraryController.Instance.GetTrackAtID(prevTrackID);
                 SetActiveTrack(prevTrack);
 
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
+                ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);
+                ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
 
                 Play(prevTrackID);
             }
             else
             {
                 Debug.Log("Reached the front of the playlist.");
-                ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackListEnd", ActiveTrackIndex);
+                ObserverManager.Instance.NotifyObservers("OnTrackListEnd", ActiveTrackIndex);
             }
         }
 
-        public void Skip() //Commenting this out for now as it seems to me this Skip() logic could just be implemented into the Play() method directly 
-        //(and potentially other playback methods, however I'll want to test how Skip logic works inside Play before deciding if I want to add to other methods)
+        public void Skip() 
         {
             if (ActiveTrack != null && !NextItem())
             {
                 Debug.Log("Delegating to PreviousItem() because the end of the playlist was reached.");
                 PreviousItem(); // Fallback to previous item
             }
-
-            ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackSkipped", ActiveTrack); //Passes the track name if possible when skipped
+            ObserverManager.Instance.NotifyObservers("OnTrackSkipped", ActiveTrack); //Passes the track name if possible when skipped
         }
 
         public void Seek(float newTime)
@@ -311,7 +299,6 @@ namespace AudioFile.Controller
         }
         public void AudioFileUpdate(string observationType, object data)
         {
-            //Debug.Log(observationType);
             Action action = observationType switch
             {
                 "OnActiveTrackIsDone" => () => { NextItem(); },

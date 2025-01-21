@@ -64,7 +64,7 @@ namespace Assets.Scripts
                     double currentTime = _audioPlayable.GetTime();
                     double clipLength = _audioPlayable.GetDuration();
                     float progress = (float)(currentTime / clipLength);
-                    AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackFrameUpdate", progress);
+                    AudioFile.ObserverManager.Instance.NotifyObservers("OnTrackFrameUpdate", progress);
 
                     // Update waveform samples
                     _audioSource.GetOutputData(_waveformSamples, 0);
@@ -117,7 +117,7 @@ namespace Assets.Scripts
                 Debug.Log($"AudioPlayable time: {FormatTime((float)_audioPlayable.GetTime())}");
                 Debug.Log($"AudioSource time: {FormatTime((float)_audioSource.time)}");
 
-                AudioFile.ObserverManager.ObserverManager.Instance.NotifyObservers("OnTrackStopped");
+                AudioFile.ObserverManager.Instance.NotifyObservers("OnTrackStopped");
             }
 
             public override float GetDuration()

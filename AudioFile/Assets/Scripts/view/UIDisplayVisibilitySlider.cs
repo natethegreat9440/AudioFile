@@ -2,10 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-//using UnityEngine.UIElements;
 
 namespace AudioFile.View
 {
+    /// <summary>
+    /// View class for managing the Display Transparency Slider.
+    /// <remarks>
+    /// Members: UpdateTransparency(), SetTransparencyIterative(). Implements Start() and OnDestroy() from MonoBehaviour.
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// </summary>
     public class UIDisplayVisibilitySlider : MonoBehaviour
     {
         public Slider Display_Slider; //Attach this script to the slider in the inspector
@@ -55,7 +61,6 @@ namespace AudioFile.View
 
         void SetTransparencyIterative(Transform root, float alpha)
         {
-            //TODO: Figure out how to get this method to 
             Stack<Transform> stack = new Stack<Transform>();
             stack.Push(root);
 

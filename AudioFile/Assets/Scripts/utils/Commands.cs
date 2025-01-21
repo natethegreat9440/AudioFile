@@ -11,8 +11,9 @@ using AudioFile.Model;
 using System;
 using UnityEngine;
 using System.Collections;
+using AudioFile.View;
 
-namespace AudioFile.View
+namespace AudioFile.Utilities
 {
     /// <summary>
     /// This file contains all the Commands used in AudioFile

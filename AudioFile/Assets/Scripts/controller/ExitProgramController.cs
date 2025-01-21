@@ -9,6 +9,18 @@ using Mono.Data.Sqlite;
 
 namespace AudioFile.Controller
 {
+    /// <summary>
+    /// Generic singleton controller for controlling the exit of the application when Exit command is executed
+    /// <remarks>
+    /// Members: ExitAudioFile() with options for specific Unity Editor and standalone program logic. DropTracksTable() for testing purposes commented out - useful for easily resetting the Tracks table to empty.
+    /// Implements HandleRequest() from IController. Initialize() and Dispose() are not implemented from MonoBehaviour.
+    /// Interfaces can't inherit from MonoBehaviour. Usually requests are Command objects, but don't have to be.
+    /// Bool isUndo specifies if the Command passed should execute it's Undo() operation if true
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// <seealso cref="IController"/>
+    /// </summary>
+
     public class ExitProgramController : MonoBehaviour, IController
     {
         // Lazy<T> ensures that the instance is created in a thread-safe manner
@@ -76,7 +88,6 @@ namespace AudioFile.Controller
                     ExitAudioFile();
                 },
                 //Add more switch arms here as needed
-
                 _ => () => Debug.LogWarning($"Unhandled command: {command} at {this}")
             };
 

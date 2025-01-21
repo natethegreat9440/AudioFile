@@ -9,6 +9,14 @@ using TMPro;
 
 namespace AudioFile.View
 {
+    /// <summary>
+    /// Concrete class for managing/updating the Toggle Display button which interacts with the DisplayVisibilitySlider.
+    /// <remarks>
+    /// Members: IsTrackDisplayActive, ToggleDisplay(). Implements OnDestroy() from MonoBehaviour
+    /// </remarks>
+    /// <see cref="MonoBehaviour" />
+    /// <seealso cref="IAudioFileObserver" />
+    /// </summary>
     public class UIToggleDisplay : MonoBehaviour
     {
         public Slider Display_Slider; //Drag this here in the inspector

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using AudioFile;
 using AudioFile.Model;
 using System.Windows.Forms;
-using AudioFile.ObserverManager;
+using AudioFile.Utilities;
 using UnityEngine;
 using AudioFile.View;
 using System;
@@ -16,7 +16,8 @@ namespace AudioFile.Controller
     /// Generic singleton controller for setting up the UI where needed (i.e., Menus)
     /// <remarks>
     /// This should be attached to a GameObject in the scene for the easiest entry point for setting up the UI
-    /// Members: SetupFileMenu(). Implements Start() and Awake() from MonoBehaviour. 
+    /// Members: SetupFileMenu(), SetSQLLiteDBLocation(), . Implements Start() and Awake() from MonoBehaviour. 
+    /// Holds the central reference to the main AudioFile.db file by means of ConnectionString.
     /// This controller has no implementation for IController methods (yet).
     /// </remarks>
     /// <see cref="MonoBehaviour"/>
@@ -25,23 +26,6 @@ namespace AudioFile.Controller
 
     public class SetupController : MonoBehaviour, IController
     {
-        // Lazy<T> ensures that the instance is created in a thread-safe manner
-        //private static readonly Lazy<SetupController> _instance = new Lazy<SetupController>(CreateSingleton);
-
-        //// Private constructor to prevent instantiation
-        //private SetupController() { } //Unity objects should not use constructors with parameters as Unity uses its own lifecycle methods to manage these objects
-
-        //public static SetupController Instance => _instance.Value;
-
-        //private static SetupController CreateSingleton()
-        //{
-        //    // Create a new GameObject to hold the singleton instance if it doesn't already exist
-        //    GameObject singletonObject = new GameObject(typeof(SetupController).Name);
-
-        //    // Add the PlayBackController component to the GameObject
-        //    return singletonObject.AddComponent<SetupController>();
-        //}
-
         private static SetupController _instance;
         public static SetupController Instance
         {
@@ -78,7 +62,7 @@ namespace AudioFile.Controller
             ConnectionString = SetSQLLiteDBLocation();
             Debug.Log($"AudioFile.db located here {ConnectionString}");
 
-            var observerManager = ObserverManager.ObserverManager.Instance; //Only assigned to a reference variable here to wake it up for all of it's dependents
+            var observerManager = ObserverManager.Instance; //Only assigned to a reference variable here to wake it up for all of it's dependents
             var sortController = SortController.Instance;
             var trackLibraryController = TrackLibraryController.Instance;
             var playbackController = PlaybackController.Instance;
@@ -108,7 +92,7 @@ namespace AudioFile.Controller
             catch (UnauthorizedAccessException)
             {
                 Debug.LogError($"Error setting database file location. Write access denied.");
-                ObserverManager.ObserverManager.Instance.NotifyObservers("AudioFileError", "Error writing tracks to memory. Write access denied. Please check with your system administrator.");
+                ObserverManager.Instance.NotifyObservers("AudioFileError", "Error writing tracks to memory. Write access denied. Please check with your system administrator.");
                 return string.Empty;
             }
         }

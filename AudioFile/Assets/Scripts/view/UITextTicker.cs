@@ -7,7 +7,7 @@ using TagLib;
 using System.Collections;
 using UnityEngine;
 using TMPro;
-using AudioFile.ObserverManager;
+using AudioFile.Utilities;
 using AudioFile.Model;
 
 namespace AudioFile.View
@@ -15,7 +15,7 @@ namespace AudioFile.View
     /// <summary>
     /// Concrete class for managing/updating the UI Now Playing text area.
     /// <remarks>
-    /// May want to turn this into a generic interface later on hence the generic name. If so new name for this specific concrete class might be NowPlayingTextTicker. Members:
+    /// May want to turn this into a generic interface later on hence the generic name. If so new name for this specific concrete class might be NowPlayingTextTicker. Members: DisplayWelcome(), 
     /// Has a QuickMessage() coroutine for user input temporary feedback messages. Implements Start() and Update() from MonoBehaviour. 
     /// Has a GetWorldRect() helper method for Update().  Implements AudioFileUpdate() from IAudioFileObserver. 
     /// </remarks>
@@ -28,7 +28,7 @@ namespace AudioFile.View
     //TODO: Make this into an interface if I find myself with the need for mutliple text tickers beyond for "Now Playing"
     public class UITextTicker : MonoBehaviour, IAudioFileObserver //IAudioFileObserver required method AudioFileUpdate(string observationType, object data) is last method in class
     {
-        public float scrollSpeed = 50f; // Adjust speed here. 50 is a good default
+        public float scrollSpeed = 50f; // Adjust speed here if needed. 50 is a good default though
         private RectTransform textRect;
         private float startPositionX;
         private float resetPositionX;
@@ -39,12 +39,12 @@ namespace AudioFile.View
             DisplayWelcome();
 
             //Register for these observations
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnActiveTrackChanged", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackListEnd", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("OnTrackSkipped", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateStart", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateEnd", this);
-            ObserverManager.ObserverManager.Instance.RegisterObserver("AudioFileError", this);
+            ObserverManager.Instance.RegisterObserver("OnActiveTrackChanged", this);
+            ObserverManager.Instance.RegisterObserver("OnTrackListEnd", this);
+            ObserverManager.Instance.RegisterObserver("OnTrackSkipped", this);
+            ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateStart", this);
+            ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateEnd", this);
+            ObserverManager.Instance.RegisterObserver("AudioFileError", this);
         }
 
         private void DisplayWelcome(string welcomeMessage = "Welcome to AudioFile!", bool isWelcomeScrolling = true)
@@ -94,7 +94,7 @@ namespace AudioFile.View
             }
         }
 
-        // Helper method to get the world space Rect of a RectTransform
+        // Helper method to get the world space Rect of a RectTransform used as necessary for testing
         private Rect GetWorldRect(RectTransform rectTransform)
         {
             Vector3[] corners = new Vector3[4];
