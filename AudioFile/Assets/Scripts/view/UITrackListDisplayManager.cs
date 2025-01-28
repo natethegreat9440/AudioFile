@@ -14,7 +14,7 @@ namespace AudioFile.View
     /// <summary>
     /// Concrete class for updating the UI Track List display area and managing individual TrackDisplay objects.
     /// <remarks>
-    /// Members: TracksDisplayed, SelectedTrackDisplays, AllTrackDisplayTransforms. Has AddTrackOnUpdate(), RemoveTrackOnUpdate(), PopulateOnStart(), UpdateDisplay() coroutines. 
+    /// Members: TracksDisplayed, SelectedTrackDisplays, AllTrackDisplayTransforms. Has AddTrackOnUpdate(), RemoveTrackOnUpdate(), PopulateDisplay(), UpdateDisplay() coroutines. 
     /// Has HandleTrackButtonClick(), and OnTrackDisplayDoubleClick(), GetTrackDisplayID(), GetTrackDisplay(), GetAllTrackDisplays(),
     /// GetTrackDisplayIndex(), OnTrackSelection(), DeselectAllTrackDisplays() methods.
     /// Implements Start() from MonoBehaviour. Implements AudioFileUpdate() from IAudioFileObserver. 
@@ -296,17 +296,17 @@ namespace AudioFile.View
             yield break;
         }
 
-        private IEnumerator PopulateOnStart(List<Track> initialTrackList)
+        private IEnumerator PopulateDisplay(List<Track> trackList)
         {
-            foreach (var track in initialTrackList)
+            foreach (var track in trackList)
             {
-                Debug.Log($"Adding TrackDisplay for {track} on program start");
+                Debug.Log($"Adding TrackDisplay for {track}");
                 yield return AddTrackOnUpdate(track);
             }
 
-            if (initialTrackList == null || initialTrackList.Count == 0)
+            if (trackList == null || trackList.Count == 0)
             {
-                Debug.Log("initialTrackList is empty/null");
+                Debug.Log("trackList is empty/null");
             }
             else
             {
@@ -361,7 +361,7 @@ namespace AudioFile.View
                 {
                     if (data is List<Track> initialTrackList)
                     {
-                        StartCoroutine(PopulateOnStart(initialTrackList));
+                        StartCoroutine(PopulateDisplay(initialTrackList));
                     }
 
                 },

@@ -49,6 +49,7 @@ namespace AudioFile.View
             ObserverManager.Instance.RegisterObserver("AudioFileError", this);
             ObserverManager.Instance.RegisterObserver("BulkTrackAddStart", this);
             ObserverManager.Instance.RegisterObserver("BulkTrackAddEnd", this);
+            ObserverManager.Instance.RegisterObserver("OnCollectionReordered", this);
         }
 
         private void BasicMessage(string welcomeMessage = "Welcome to AudioFile!", bool isWelcomeScrolling = true)

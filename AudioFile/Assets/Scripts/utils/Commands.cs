@@ -200,6 +200,33 @@ namespace AudioFile.Utilities
             TrackLibraryController.Instance.HandleRequest(this, IsUndo);
         }
     }
+
+    public class SearchCommand : ICommand
+    {
+        public bool IsUndo { get; set; } = false;
+
+        public string UserQuery { get; }
+
+        public string QueryTable { get; }
+
+        public SearchCommand(string inputQuery, string queryTable)
+        {
+            UserQuery = inputQuery;
+            QueryTable = queryTable;
+        }
+        public void Execute()
+        {
+            Debug.Log("New Search Command executed");
+            SearchController.Instance.HandleRequest(this, IsUndo);
+        }
+
+        public void Undo()
+        {
+            Debug.Log("New Search Command undone");
+            IsUndo = true;
+            SearchController.Instance.HandleRequest(this, IsUndo);
+        }
+    }
     public class AddTrackCommand : ICommand
     {
         public bool IsUndo { get; set; } = false;

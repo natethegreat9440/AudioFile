@@ -27,7 +27,7 @@ namespace AudioFile.Controller
     /// <seealso cref="IController"/>
     /// <seealso cref="IAudioFileObserver"/>
     /// </summary>
-    public enum LibrarySortProperties { AlbumTrackNumber, Title, Album, Artist } //AlbumTrackNumber intentionally at the front here
+    public enum LibrarySortProperties { AlbumTrackNumber, Title, Album, Artist, } //AlbumTrackNumber intentionally at the front here
     public class SortController : MonoBehaviour, IController, IAudioFileObserver
     {
         // Lazy<T> ensures that the instance is created in a thread-safe manner

@@ -64,6 +64,7 @@ namespace AudioFile.Controller
 
             var observerManager = ObserverManager.Instance; //Only assigned to a reference variable here to wake it up for all of it's dependents
             var sortController = SortController.Instance;
+            var searchController = SearchController.Instance;
             var trackLibraryController = TrackLibraryController.Instance;
             var playbackController = PlaybackController.Instance;
             var sortButtonManager = UISortButtonsManager.Instance;
