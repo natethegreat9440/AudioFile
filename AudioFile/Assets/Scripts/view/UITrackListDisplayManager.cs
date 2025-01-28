@@ -71,6 +71,7 @@ namespace AudioFile.View
         [HideInInspector]
         public UIContextMenu activeContextMenu;
 
+        //Note that SelectedTrackDisplays should always be ordered from bottom to top otherwise Playback logic can get out of whack when a bulk track removal is performed
         public List<UITrackDisplay> SelectedTrackDisplays { get; private set; } = new List<UITrackDisplay>();
 
         public List<Transform> AllTrackDisplayTransforms { get => GetAllTrackDisplays(); } //Not currently referenced but may have some viability later
@@ -81,7 +82,6 @@ namespace AudioFile.View
             ObserverManager.Instance.RegisterObserver("OnActiveTrackCycled", this);
             ObserverManager.Instance.RegisterObserver("TracksDeserialized", this);
             ObserverManager.Instance.RegisterObserver("OnCollectionReordered", this);
-
         }
 
         public void HandleTrackButtonClick(UITrackDisplay trackDisplay, string buttonType)
@@ -395,6 +395,22 @@ namespace AudioFile.View
             };
 
             action();
+        }
+
+        public List<int> GetOrderedTrackDisplayIDs(List<int> trackDisplayIDs)
+        {
+            List<int> orderedTrackDisplayIDs = new List<int>();
+
+            foreach (Transform child in Track_List_DisplayViewportContent)
+            {
+                var trackDisplay = child.GetComponent<UITrackDisplay>();
+                if (trackDisplay != null && trackDisplayIDs.Contains(trackDisplay.TrackDisplayID))
+                {
+                    orderedTrackDisplayIDs.Add(trackDisplay.TrackDisplayID);
+                }
+            }
+
+            return orderedTrackDisplayIDs;
         }
     }
 }

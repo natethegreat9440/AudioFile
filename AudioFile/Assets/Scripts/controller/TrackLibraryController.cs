@@ -234,14 +234,7 @@ namespace AudioFile.Controller
                         if (removeTrackCommand.TrackDisplayIDs.Contains(activeTrackID))
                         {
                             var trackDisplayIDs = removeTrackCommand.TrackDisplayIDs;
-
-                            //Get the last element in the tracks to be removed and then either try to go to the next or previous item after that
-                            PlaybackController.Instance.SetActiveTrack(GetTrackAtID(trackDisplayIDs[trackDisplayIDs.Count - 1]));
-
-                            if (!PlaybackController.Instance.NextItem())
-                            {
-                                PlaybackController.Instance.PreviousItem();
-                            }
+                            PlaybackController.Instance.HandleActiveTrackAfterTrackRemoval(trackDisplayIDs);
                         }
                     }
 
@@ -286,7 +279,7 @@ namespace AudioFile.Controller
                             .FirstOrDefault();
 
                         var trackProperties = removeTrackCommand.TrackProperties
-                            .Where (properties => properties.ContainsValue(trackDisplayID))
+                            .Where(properties => properties.ContainsValue(trackDisplayID))
                             .Select(properties => properties)
                             .FirstOrDefault();
 
@@ -307,6 +300,8 @@ namespace AudioFile.Controller
             action();
         }
 
+
+
         public void Dispose()
         {
             throw new NotImplementedException();
@@ -317,12 +312,10 @@ namespace AudioFile.Controller
             Track trackToRemove = GetTrackAtID(trackDisplayID);
             var title = (string)trackToRemove.TrackProperties.GetProperty(trackToRemove.TrackID, "Title");
 
-            Debug.Log($"Track '{trackToRemove}' has been removed from the media library.");
             ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
 
             TrackList.Remove(trackToRemove);
 
-            // Start coroutine to destroy the track after the message is displayed
             StartCoroutine(ShowRemovedTrackMessage(title));
 
             // Remove the track entry from the Tracks table in the database
@@ -336,6 +329,8 @@ namespace AudioFile.Controller
                     command.ExecuteNonQuery();
                 }
             }
+
+            Debug.Log($"Track '{trackToRemove}' with ID '{trackToRemove.TrackID}' has been removed from the media library.");
 
             // Destroy Track Game Object in the scene
             Track[] allTracks = FindObjectsOfType<Track>();
@@ -351,7 +346,7 @@ namespace AudioFile.Controller
             if (uiTextTicker != null)
             {
                 // Wait for the message to be displayed
-                yield return StartCoroutine(uiTextTicker.QuickMessage(6f, $"{title} removed from library", true));
+                yield return StartCoroutine(uiTextTicker.TempMessage(6f, $"{title} removed from library", true));
             }
             else
             {
@@ -363,24 +358,37 @@ namespace AudioFile.Controller
         {
             string[] paths = OpenFileDialog();
 
+            bool isBulkAdd = paths.Length > 3 ? true : false;
+
+            if (isBulkAdd)
+            {
+                NotifyBulkTrackAddStart();
+            }
+            //This has to be a seperate method in order for BulkTrackAddEnd to not get called immediately, but instead wait till all LoadAudioClip coroutines to finish first
+            StartCoroutine(LoadAllNewTracks(paths, addTrackCommand, isBulkAdd));
+
+            static void NotifyBulkTrackAddStart()
+            {
+                ObserverManager.Instance.NotifyObservers("BulkTrackAddStart", null);
+            }
+        }
+
+        private IEnumerator LoadAllNewTracks(string[] paths, AddTrackCommand addTrackCommand, bool isBulkAdd)
+        {
             for (int i = 0; i < paths.Length; i++)
             {
                 if (!string.IsNullOrEmpty(paths[i]))
                 {
                     if (System.IO.File.Exists(paths[i]))
                     {
-                        StartCoroutine(LoadAudioClipFromFile(paths[i], newTrack =>
+                        yield return StartCoroutine(LoadAudioClipFromFile(paths[i], newTrack =>
                         {
-                            //This lambda expression is passed as a callback function to the LoadAudioClipFromFile coroutine
                             if (addTrackCommand != null)
                             {
-                                Debug.Log($"trackToAdd for addTrackCommand:{newTrack}");
                                 addTrackCommand.Tracks.Add(newTrack);
-                                Debug.Log($"addTrackCommand.Tracks: {addTrackCommand.Tracks.Count}");
                                 TrackList.Add(newTrack);
                             }
-                            //TODO: Add logic to pass this AddTrackCommand reference to the CommandStackController
-                        }, true)); //Passing isTrackNew = true
+                        }, true));
                     }
                     else
                     {
@@ -392,7 +400,13 @@ namespace AudioFile.Controller
                     Debug.LogError("No file selected.");
                 }
             }
+
+            if (isBulkAdd)
+            {
+                ObserverManager.Instance.NotifyObservers("BulkTrackAddEnd", null);
+            }
         }
+
 
         // Coroutine to load the mp3 file as an AudioClip
         private IEnumerator LoadAudioClipFromFile(string filePath, Action<Track> onTrackLoaded = null, bool isNewTrack = false) 

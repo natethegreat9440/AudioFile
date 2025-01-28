@@ -47,7 +47,7 @@ namespace AudioFile.View
 
         private void SeekPosition(float sliderValue) //This method can only be called if the slider is interacted with by the user and not from "OnTrackFrameUpdate"
         {
-            if (!isUpdatingFromObservation)
+            if (!isUpdatingFromObservation && PlaybackController.Instance.ActiveTrack != null)
             {
                 float newTime = sliderValue * PlaybackController.Instance.ActiveTrack.GetDuration();
                 float previousTime = PlaybackController.Instance.GetTime();

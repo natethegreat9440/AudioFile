@@ -99,6 +99,29 @@ namespace AudioFile.Controller
                 HandleRequest(new PlayCommand(trackDisplayID));
             }
         }
+
+        public void HandleActiveTrackAfterTrackRemoval(List<int> trackDisplayIDs)
+        {
+            if (trackDisplayIDs.Count >= UITrackListDisplayManager.Instance.AllTrackDisplayTransforms.Count)
+            {
+                ActiveTrack = null;
+                SelectedTrack = null;
+            }
+            else
+            {
+                // Reorder trackDisplayIDs to match the order in UITrackListDisplayManager
+                trackDisplayIDs = UITrackListDisplayManager.Instance.GetOrderedTrackDisplayIDs(trackDisplayIDs);
+
+                // Get the last element in the tracks to be removed and then either try to go to the next or previous item after that
+                SetActiveTrack(TrackLibraryController.Instance.GetTrackAtID(trackDisplayIDs[trackDisplayIDs.Count - 1]));
+
+                if (!NextItem())
+                {
+                    SetActiveTrack(TrackLibraryController.Instance.GetTrackAtID(trackDisplayIDs[0]));
+                    PreviousItem();
+                }
+            }
+        }
         public void HandleRequest(object request, bool isUndo = false)
         {
             //Add methods to log these commands with the UndoController
@@ -181,7 +204,7 @@ namespace AudioFile.Controller
             if (track != null)
             {
                 ActiveTrack = track;
-                Debug.Log($"Active track set to: {ActiveTrack}");
+                Debug.Log($"Active track set to: {ActiveTrack} with ID: {ActiveTrack.TrackID}");
                 ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
             }
             else

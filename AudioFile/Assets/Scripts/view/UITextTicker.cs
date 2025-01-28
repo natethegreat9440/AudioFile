@@ -15,8 +15,8 @@ namespace AudioFile.View
     /// <summary>
     /// Concrete class for managing/updating the UI Now Playing text area.
     /// <remarks>
-    /// May want to turn this into a generic interface later on hence the generic name. If so new name for this specific concrete class might be NowPlayingTextTicker. Members: DisplayWelcome(), 
-    /// Has a QuickMessage() coroutine for user input temporary feedback messages. Implements Start() and Update() from MonoBehaviour. 
+    /// May want to turn this into a generic interface later on hence the generic name. If so new name for this specific concrete class might be NowPlayingTextTicker. Members: BasicMessage(), 
+    /// Has a TempMessage() coroutine for user input temporary feedback messages. Implements Start() and Update() from MonoBehaviour. 
     /// Has a GetWorldRect() helper method for Update().  Implements AudioFileUpdate() from IAudioFileObserver. 
     /// </remarks>
     /// <see cref="MonoBehaviour"/>
@@ -26,35 +26,46 @@ namespace AudioFile.View
     //Attach this as a component to a TextMeshProUGUI object which should be a child of a Scroll View object
 
     //TODO: Make this into an interface if I find myself with the need for mutliple text tickers beyond for "Now Playing"
-    public class UITextTicker : MonoBehaviour, IAudioFileObserver //IAudioFileObserver required method AudioFileUpdate(string observationType, object data) is last method in class
+    public class UITextTicker : MonoBehaviour, IAudioFileObserver
     {
-        public float scrollSpeed = 50f; // Adjust speed here if needed. 50 is a good default though
+        public float scrollSpeed = 50f;
         private RectTransform textRect;
         private float startPositionX;
         private float resetPositionX;
         private bool isScrolling;
+        private Rect parentRect;
 
         void Start()
         {
-            DisplayWelcome();
+            textRect = GetComponent<RectTransform>();
+            parentRect = ((RectTransform)textRect.parent).rect;
+            BasicMessage();
 
-            //Register for these observations
             ObserverManager.Instance.RegisterObserver("OnActiveTrackChanged", this);
             ObserverManager.Instance.RegisterObserver("OnTrackListEnd", this);
             ObserverManager.Instance.RegisterObserver("OnTrackSkipped", this);
             ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateStart", this);
             ObserverManager.Instance.RegisterObserver("TrackDisplayPopulateEnd", this);
             ObserverManager.Instance.RegisterObserver("AudioFileError", this);
+            ObserverManager.Instance.RegisterObserver("BulkTrackAddStart", this);
+            ObserverManager.Instance.RegisterObserver("BulkTrackAddEnd", this);
         }
 
-        private void DisplayWelcome(string welcomeMessage = "Welcome to AudioFile!", bool isWelcomeScrolling = true)
+        private void BasicMessage(string welcomeMessage = "Welcome to AudioFile!", bool isWelcomeScrolling = true)
         {
-            // Set up scrolling text and welcome message
-            textRect = GetComponent<RectTransform>();
-            startPositionX = textRect.localPosition.x;
-            resetPositionX = textRect.rect.width; // Width of the text
+            if (welcomeMessage == "Welcome to AudioFile!")
+            {
+                //Sets the initial values of startPositionX and resetPositionX
+                startPositionX = textRect.localPosition.x;
+                resetPositionX = textRect.rect.width;
+            }
+            else
+            {
+                //Resets the message location so it can be fully read
+                resetPositionX = parentRect.width;
+                textRect.localPosition = new Vector3(resetPositionX, textRect.localPosition.y, 0);
+            }
 
-            //TODO: Have this choose a random humorous phrase from a phrase bank (List of strings)
             textRect.GetComponent<TextMeshProUGUI>().text = welcomeMessage;
             isScrolling = isWelcomeScrolling;
         }
@@ -63,27 +74,16 @@ namespace AudioFile.View
         {
             if (isScrolling)
             {
-                // Move text to the left
                 textRect.localPosition += Vector3.left * scrollSpeed * Time.deltaTime;
-
-                // Check if the TextMeshPro RectTransform is out of bounds of the parent Content RectTransform
-                Rect parentRect = ((RectTransform)textRect.parent).rect;
                 Vector3[] textCorners = new Vector3[4];
                 textRect.GetWorldCorners(textCorners);
-
-                // Get the left and right bounds of the TextMeshPro object
-                float textLeft = textCorners[0].x;
                 float textRight = textCorners[3].x;
-
-                // Get the left boundary of the parent Content in world space
                 Vector3[] parentCorners = new Vector3[4];
                 ((RectTransform)textRect.parent).GetWorldCorners(parentCorners);
                 float parentLeft = parentCorners[0].x;
 
-                // Check if the right side of the text has passed the left side of the Content
                 if (textRight < parentLeft)
                 {
-                    // Reset the text position to the right side of the viewport
                     float resetPositionX = parentRect.width;
                     textRect.localPosition = new Vector3(resetPositionX, textRect.localPosition.y, 0);
                 }
@@ -94,7 +94,6 @@ namespace AudioFile.View
             }
         }
 
-        // Helper method to get the world space Rect of a RectTransform used as necessary for testing
         private Rect GetWorldRect(RectTransform rectTransform)
         {
             Vector3[] corners = new Vector3[4];
@@ -102,17 +101,14 @@ namespace AudioFile.View
             return new Rect(corners[0].x, corners[0].y, corners[2].x - corners[0].x, corners[2].y - corners[0].y);
         }
 
-        public IEnumerator QuickMessage(float waitTime, string message, bool isQuickMessageScrolling = false)
+        public IEnumerator TempMessage(float waitTime, string message, bool isTempMessageScrolling = false)
         {
-            //This is the Quick message that will appear on the ticker for the provided wait time
             textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
             textRect.GetComponent<TextMeshProUGUI>().text = message;
-            isScrolling = isQuickMessageScrolling;
+            isScrolling = isTempMessageScrolling;
 
             yield return new WaitForSecondsRealtime(waitTime);
 
-            //After waiting the coroutine resets the beahvior. Moving this outside of the coroutine will not work.
-            //If this method is to be abstracted then it needs additional parameter(s) to specify reset behavior
             if (Controller.PlaybackController.Instance.ActiveTrack != null)
                 textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.ActiveTrack.ToString();
             isScrolling = true;
@@ -134,51 +130,68 @@ namespace AudioFile.View
                         textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.SelectedTrack.ToString(); ;
                     }
                     isScrolling = true;
-                },
+                }
+                ,
                 "OnTrackListEnd" => () =>
                 {
                     if (Controller.PlaybackController.Instance.ActiveTrackIndex == 0)
                     {
-                        StartCoroutine(QuickMessage(1f, "Front of playlist"));
+                        StartCoroutine(TempMessage(1f, "Front of playlist"));
                     }
                     else
                     {
-                        StartCoroutine(QuickMessage(1f, "End of playlist"));
+                        StartCoroutine(TempMessage(1f, "End of playlist"));
                     }
-                },
+                }
+                ,
                 "OnTrackSkipped" => () =>
                 {
                     if (data is Track trackSkipped)
                     {
-                        StartCoroutine(QuickMessage(4f, $"{trackSkipped.TrackProperties.GetProperty(trackSkipped.TrackID, "Title")} skipped due to error", true));
+                        StartCoroutine(TempMessage(4f, $"{trackSkipped.TrackProperties.GetProperty(trackSkipped.TrackID, "Title")} skipped due to error", true));
                     }
                     else if (data is null)
                     {
-                        StartCoroutine(QuickMessage(4f, "Unknown track skipped due to error", true));
+                        StartCoroutine(TempMessage(4f, "Unknown track skipped due to error", true));
                     }
                     else
                     {
-                        StartCoroutine(QuickMessage(4f, "Track skipped due to unknown error", true));
+                        StartCoroutine(TempMessage(4f, "Track skipped due to unknown error", true));
                     }
-                },
+                }
+                ,
                 "TrackDisplayPopulateStart" => () =>
                 {
-                    DisplayWelcome("Loading tracks...", false);
-                },
+                    BasicMessage("Loading tracks...", false);
+                }
+                ,
                 "TrackDisplayPopulateEnd" => () =>
                 {
-                    DisplayWelcome();
-                },
+                    BasicMessage();
+                }
+                ,
+                "BulkTrackAddStart" => () =>
+                {
+                    Debug.Log("Bulk track add start");
+                    BasicMessage("Adding tracks...", false);
+                }
+                ,
+                "BulkTrackAddEnd" => () =>
+                {
+                    Debug.Log("Bulk track add end");
+                    BasicMessage();
+                }
+                ,
                 "AudioFileError" => () =>
                 {
                     string errorMessage = data as string;
-                    StartCoroutine(QuickMessage(8f, errorMessage, true));
-                },
+                    StartCoroutine(TempMessage(8f, errorMessage, true));
+                }
+                ,
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };
 
             action();
         }
-
     }
 }
