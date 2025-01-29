@@ -35,6 +35,8 @@ namespace AudioFile.Controller
         public string ConnectionString => SetupController.Instance.ConnectionString;
 
         public List<int> SearchResults { get; private set; } = new List<int>();
+
+        public bool IsFiltered = false;
         public void Dispose()
         {
             throw new NotImplementedException();
@@ -62,7 +64,7 @@ namespace AudioFile.Controller
 
             return results;
         }
-        public void HandleRequest(object request, bool isUndo)
+        public void HandleRequest(object request, bool isUndo = false)
         {
             string command = request.GetType().Name;
 
@@ -72,6 +74,8 @@ namespace AudioFile.Controller
                 {
                     "SearchCommand" => () =>
                     {
+                        Debug.Log("Search Command handled");
+
                         SearchCommand searchCommand = request as SearchCommand;
                         foreach (var property in Enum.GetValues(typeof(SearchProperties)).Cast<SearchProperties>())
                         {
@@ -80,12 +84,18 @@ namespace AudioFile.Controller
 
                         if (SearchResults.Count > 0)
                         {
+                            if (searchCommand.UserQuery != "")
+                            {
+                                IsFiltered = true;
+                            }
                             ObserverManager.Instance.NotifyObservers("SearchResultsFound", SearchResults);
                         }
                         else
                         {
                             ObserverManager.Instance.NotifyObservers("AudioFileError", "Search results not found.");
                         }
+
+                        SearchResults.Clear();
                     },
                     //Add more switch arms here as needed
                     _ => () => Debug.LogWarning($"Unhandled command: {request}")

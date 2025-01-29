@@ -82,6 +82,7 @@ namespace AudioFile.View
             ObserverManager.Instance.RegisterObserver("OnActiveTrackCycled", this);
             ObserverManager.Instance.RegisterObserver("TracksDeserialized", this);
             ObserverManager.Instance.RegisterObserver("OnCollectionReordered", this);
+            ObserverManager.Instance.RegisterObserver("SearchResultsFound", this);
         }
 
         public void HandleTrackButtonClick(UITrackDisplay trackDisplay, string buttonType)
@@ -213,7 +214,7 @@ namespace AudioFile.View
             return -1;
         }
 
-        private Transform GetTrackDisplay(int providedTrackID)
+        public Transform GetTrackDisplay(int providedTrackID)
         {
             Transform trackDisplayTransform = null;
 
@@ -350,6 +351,19 @@ namespace AudioFile.View
                 sortedTransforms[i].SetSiblingIndex(i);
             }
 
+            // Step 4: Hide any transforms where the trackDisplay.TrackID is not present in the sortedTrackIDs
+            foreach (var kvp in trackIDToTransformMap)
+            {
+                if (!sortedTrackIDs.Contains(kvp.Key))
+                {
+                    kvp.Value.gameObject.SetActive(false);
+                }
+                else
+                {
+                    kvp.Value.gameObject.SetActive(true);
+                }
+            }
+
             yield return null;
         }
 
@@ -388,7 +402,12 @@ namespace AudioFile.View
                 "OnCollectionReordered" => () =>
                 {
                     if (data is List<int> sortedTrackIDs)
-                        StartCoroutine(UpdateDisplay(sortedTrackIDs));
+                        StartCoroutine(UpdateDisplay(sortedTrackIDs)); // TODO: have this observation get called with the full set of IDs from Tracks
+                },
+                "SearchResultsFound" => () =>
+                {
+                    if (data is List<int> searchResults)
+                        StartCoroutine(UpdateDisplay(searchResults));
                 },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")

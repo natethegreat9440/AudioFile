@@ -356,7 +356,6 @@ namespace AudioFile.Utilities
         }
     }
 
-
     public class ExitProgramCommand : ICommand
     {
 

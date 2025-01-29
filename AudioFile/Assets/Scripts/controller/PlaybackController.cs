@@ -42,6 +42,8 @@ namespace AudioFile.Controller
 
         public Track SelectedTrack { get; private set; } = null;
 
+        bool isFiltered => SearchController.Instance.IsFiltered;
+
         private string CurrentSQLQueryInject => SortController.Instance.CurrentSQLQueryInject;
 
         public int ActiveTrackIndex => TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID);
@@ -253,15 +255,51 @@ namespace AudioFile.Controller
 
         public bool NextItem()
         {
-            int nextTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, true); //True indicates to grab the index of next track in Tracks table
-            int tracksLength = TrackLibraryController.Instance.GetTracksLength(); 
+            int nextTrackIndex = -1;
+            int tracksLength = -2;
+
+            if (isFiltered)
+            {
+                var activeTrackDisplay = UITrackListDisplayManager.Instance.GetTrackDisplay(ActiveTrack.TrackID).gameObject;
+                nextTrackIndex = UITrackListDisplayManager.Instance.GetTrackDisplayIndex(activeTrackDisplay) + 1;
+
+                tracksLength = SearchController.Instance.SearchResults.Count;
+            }
+            else
+            {
+                nextTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, true); //True indicates to grab the index of next track in Tracks table
+                tracksLength = TrackLibraryController.Instance.GetTracksLength();
+            }
 
             if (nextTrackIndex < tracksLength + 1)
             {
                 Stop();
+                int nextTrackID = -1;
+                Track nextTrack = null;
 
-                int nextTrackID = TrackLibraryController.Instance.GetTrackIDAtIndex(nextTrackIndex);
-                Track nextTrack = TrackLibraryController.Instance.GetTrackAtID(nextTrackID);
+                if (isFiltered)
+                {
+                    int nextTrackDisplayID = SearchController.Instance.SearchResults[nextTrackIndex];
+                    // Get all Track objects in the scene
+                    Track[] allTracks = GameObject.FindObjectsOfType<Track>();
+                    // Iterate through all Track objects to find the one with the matching TrackID
+                    foreach (Track track in allTracks)
+                    {
+                        if (track.TrackID == nextTrackDisplayID)
+                        {
+                            nextTrack = track;
+                            break;
+                        }
+                    }
+                    //var nextTrackDisplay = UITrackListDisplayManager.Instance.GetTrackDisplay(nextTrackID).GetComponent<UITrackDisplay>();
+
+                }
+                else
+                {
+                    nextTrackID = TrackLibraryController.Instance.GetTrackIDAtIndex(nextTrackIndex);
+                    nextTrack = TrackLibraryController.Instance.GetTrackAtID(nextTrackID);
+                }
+
                 SetActiveTrack(nextTrack);
 
                 ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);
