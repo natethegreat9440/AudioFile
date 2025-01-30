@@ -43,7 +43,7 @@ namespace AudioFile.Controller
 
         public Track SelectedTrack { get; private set; } = null;
 
-        private List<int> SearchResults => SearchController.Instance.SearchResults;
+        List<int> SearchResults => SearchController.Instance.SearchResults;
 
         private List<Track> TrackList => TrackLibraryController.Instance.TrackList;
 

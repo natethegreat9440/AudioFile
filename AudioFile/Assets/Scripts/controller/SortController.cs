@@ -12,6 +12,7 @@ using System.Linq;
 using Unity.VisualScripting.Antlr3.Runtime.Collections;
 using Mono.Data.Sqlite;
 using Unity.VisualScripting;
+using UnityEditor.Search;
 
 
 namespace AudioFile.Controller
@@ -51,7 +52,23 @@ namespace AudioFile.Controller
 
         public List<string> CurrentSortOrdering { get; private set; } //CurrentSQLQueryInject refers to this. Don't remove. May not need as a public property however, but we'll keep it this way for now
 
-        public string CurrentSQLQueryInject { get; private set; } 
+        public string CurrentSQLQueryInject { get; private set; }
+
+        bool isFiltered => SearchController.Instance.IsFiltered;
+
+        List<int> searchResults => SearchController.Instance.SearchResults;
+
+        string FilterSQLQueryInject
+        {
+            get
+            {
+                if (isFiltered)
+                    return $"WHERE TrackID IN({ string.Join(",", searchResults)})";
+                else
+                    return "";
+            }
+        }
+
         public void Initialize()
         {
             throw new NotImplementedException();
@@ -135,8 +152,10 @@ namespace AudioFile.Controller
                     connection.Open();
 
                     //ASC = ascending
+                    //Adds a filter if a search is active with {FilterSQLQueryInject}. If search is not active, "" is passed as the FilterSQLQueryInject
                     string query = $@"
                         SELECT * FROM Tracks
+                        {FilterSQLQueryInject}
                         ORDER BY 
                             {CurrentSortOrdering[0]} ASC,
                             {CurrentSortOrdering[1]} ASC,
@@ -190,8 +209,10 @@ namespace AudioFile.Controller
 
                     //ASC = ascending
                     //DESC = descending (not Describe as this is not MySQL)
+                    //Adds a filter if a search is active with {FilterSQLQueryInject}. If search is not active, "" is passed as the FilterSQLQueryInject
                     string query = $@"
                         SELECT * FROM Tracks
+                        {FilterSQLQueryInject}
                         ORDER BY 
                             {CurrentSortOrdering[0]} DESC,
                             {CurrentSortOrdering[1]} DESC,
@@ -234,6 +255,7 @@ namespace AudioFile.Controller
                     //ASC = ascending
                     string query = $@"
                         SELECT * FROM Tracks
+                        {FilterSQLQueryInject}
                         ORDER BY 
                             Artist ASC,
                             Album ASC,

@@ -13,7 +13,7 @@ using Mono.Data.Sqlite;
 namespace AudioFile.Controller
 {
     public enum SearchProperties {  Title, Artist, Album, };
-    public class SearchController : MonoBehaviour, IController
+    public class SearchController : MonoBehaviour, IController, IAudioFileObserver
     {
         // Lazy<T> ensures that the instance is created in a thread-safe manner
         private static readonly Lazy<SearchController> _instance = new Lazy<SearchController>(CreateSingleton);
@@ -37,6 +37,12 @@ namespace AudioFile.Controller
         public List<int> SearchResults { get; private set; } = new List<int>();
 
         public bool IsFiltered = false;
+
+        public void Start()
+        {
+            ObserverManager.Instance.RegisterObserver("OnCollectionReordered", this);
+        }
+
         public void Dispose()
         {
             throw new NotImplementedException();
@@ -71,18 +77,8 @@ namespace AudioFile.Controller
                 }
             }
 
-            //List<int> cleanedResults = RemoveDuplicateResults(results);
-
             return results;
         }
-
-        //private List<int> RemoveDuplicateResults(List<int> initialResults)
-        //{
-        //    List<int> cleanedResults = new List<int>();
-        //    cleanedResults.AddRange(initialResults.Distinct());
-
-        //    return cleanedResults;
-        //}
 
         public void HandleRequest(object request, bool isUndo = false)
         {
@@ -95,6 +91,7 @@ namespace AudioFile.Controller
                     "SearchCommand" => () =>
                     {
                         Debug.Log("Search Command handled");
+
                         SearchResults.Clear();
 
                         SearchCommand searchCommand = request as SearchCommand;
@@ -114,12 +111,15 @@ namespace AudioFile.Controller
                             }
                             ObserverManager.Instance.NotifyObservers("SearchResultsFound", SearchResults);
                         }
+                        else if (searchCommand.UserQuery == "")
+                        {
+                            IsFiltered = false;
+                        }
                         else
                         {
                             ObserverManager.Instance.NotifyObservers("AudioFileError", "Search results not found.");
                         }
 
-                        //SearchResults.Clear();
                     },
                     //Add more switch arms here as needed
                     _ => () => Debug.LogWarning($"Unhandled command: {request}")
@@ -144,6 +144,24 @@ namespace AudioFile.Controller
         public void Initialize()
         {
             throw new NotImplementedException();
+        }
+
+        public void AudioFileUpdate(string observationType, object data)
+        {
+            Action action = observationType switch
+            {
+                "OnCollectionReordered" => () =>
+                {
+                    if (data is List<int> sortedTrackIDs)
+                    {
+                        SearchResults = sortedTrackIDs;
+                    }
+                },
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
         }
     }
 }
