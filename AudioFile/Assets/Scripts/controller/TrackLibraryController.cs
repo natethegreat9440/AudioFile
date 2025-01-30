@@ -339,7 +339,6 @@ namespace AudioFile.Controller
             Track[] allTracks = FindObjectsOfType<Track>();
             Track trackToDestroy = allTracks.FirstOrDefault(t => t.TrackID == trackToRemove.TrackID);
             Destroy(trackToDestroy.gameObject);
-
         }
 
         private IEnumerator ShowRemovedTrackMessage(string title)
