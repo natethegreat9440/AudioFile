@@ -60,10 +60,10 @@ namespace AudioFile.View
         private void SetTrackData(Track track)
         {
             //For Testing and easily checking TrackID and AlbumTrackNumber which aren't intended to be displayed to the user
-            //string title = (string)track.TrackProperties.GetProperty(track.TrackID, "Title") + " " + track.TrackID + " " + track.TrackProperties.GetProperty(track.TrackID, "AlbumTrackNumber");
-            //SetText(listDisplayManager.titleTextPath, title);
+            string title = (string)track.TrackProperties.GetProperty(track.TrackID, "Title") + " " + track.TrackID + " " + track.TrackProperties.GetProperty(track.TrackID, "AlbumTrackNumber");
+            SetText(listDisplayManager.titleTextPath, title);
 
-            SetText(listDisplayManager.titleTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Title"));
+            //SetText(listDisplayManager.titleTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Title"));
             SetText(listDisplayManager.artistTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Artist"));
             SetText(listDisplayManager.albumTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Album"));
             SetText(listDisplayManager.durationTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Duration"));

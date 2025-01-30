@@ -51,7 +51,7 @@ namespace AudioFile.Controller
 
         public List<string> CurrentSortOrdering { get; private set; } //CurrentSQLQueryInject refers to this. Don't remove. May not need as a public property however, but we'll keep it this way for now
 
-        public string CurrentSQLQueryInject { get; private set; } //Used by PlaybackController to ensure next, previous, and auto-play functions know how the current display is ordered
+        public string CurrentSQLQueryInject { get; private set; } 
         public void Initialize()
         {
             throw new NotImplementedException();

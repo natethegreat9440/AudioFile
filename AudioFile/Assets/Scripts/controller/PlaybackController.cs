@@ -10,6 +10,7 @@ using UnityEngine;
 using Mono.Data.Sqlite;
 using Unity.VisualScripting.Dependencies.Sqlite;
 using Unity.VisualScripting.Antlr3.Runtime.Collections;
+using System.Linq;
 
 namespace AudioFile.Controller
 {
@@ -42,11 +43,24 @@ namespace AudioFile.Controller
 
         public Track SelectedTrack { get; private set; } = null;
 
+        private List<int> SearchResults => SearchController.Instance.SearchResults;
+
+        private List<Track> TrackList => TrackLibraryController.Instance.TrackList;
+
         bool isFiltered => SearchController.Instance.IsFiltered;
 
         private string CurrentSQLQueryInject => SortController.Instance.CurrentSQLQueryInject;
 
-        public int ActiveTrackIndex => TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID);
+        public int ActiveTrackIndex
+        {
+            get
+            {
+                if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID))
+                    return SearchController.Instance.GetSearchResultsIndex(ActiveTrack.TrackID) + 1;//Need to add 1 because SearchResults is 0-indexed and TrackLibraryController.Instance.GetTrackIndex is 1-indexed since it access a SQLite DB directly
+                else
+                    return TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID);
+            }
+        }
         public string ConnectionString => SetupController.Instance.ConnectionString;
 
         private static PlaybackController CreateSingleton()
@@ -258,47 +272,36 @@ namespace AudioFile.Controller
             int nextTrackIndex = -1;
             int tracksLength = -2;
 
-            if (isFiltered)
+            if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID)) //TODO: The isFiltered = true conditions in this method need more work
             {
-                var activeTrackDisplay = UITrackListDisplayManager.Instance.GetTrackDisplay(ActiveTrack.TrackID).gameObject;
-                nextTrackIndex = UITrackListDisplayManager.Instance.GetTrackDisplayIndex(activeTrackDisplay) + 1;
-
+                //Adding 2 to the index here because the TrackLibraryController.Instance.GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1 (+1 for converting from 0-indexed to 1-indexed and another +1 to get the next index)
+                //Conversion necessary so they both approach the next if statement on similar basis. +1 +1 shown for verbosity here
+                nextTrackIndex = SearchController.Instance.SearchResults.IndexOf(ActiveTrack.TrackID) + 1 + 1;
                 tracksLength = SearchController.Instance.SearchResults.Count;
             }
             else
             {
+                //Note that the GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1
                 nextTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, true); //True indicates to grab the index of next track in Tracks table
                 tracksLength = TrackLibraryController.Instance.GetTracksLength();
             }
 
-            if (nextTrackIndex < tracksLength + 1)
+            if (nextTrackIndex < tracksLength + 1 && nextTrackIndex > 0)
             {
                 Stop();
                 int nextTrackID = -1;
                 Track nextTrack = null;
 
-                if (isFiltered)
+                if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID))
                 {
-                    int nextTrackDisplayID = SearchController.Instance.SearchResults[nextTrackIndex];
-                    // Get all Track objects in the scene
-                    Track[] allTracks = GameObject.FindObjectsOfType<Track>();
-                    // Iterate through all Track objects to find the one with the matching TrackID
-                    foreach (Track track in allTracks)
-                    {
-                        if (track.TrackID == nextTrackDisplayID)
-                        {
-                            nextTrack = track;
-                            break;
-                        }
-                    }
-                    //var nextTrackDisplay = UITrackListDisplayManager.Instance.GetTrackDisplay(nextTrackID).GetComponent<UITrackDisplay>();
-
+                    nextTrackID = SearchController.Instance.SearchResults[nextTrackIndex - 1]; //-1 to convert from 1-indexed to 0-indexed since SearchResults is 0-indexed
                 }
                 else
                 {
                     nextTrackID = TrackLibraryController.Instance.GetTrackIDAtIndex(nextTrackIndex);
-                    nextTrack = TrackLibraryController.Instance.GetTrackAtID(nextTrackID);
                 }
+
+                nextTrack = TrackLibraryController.Instance.GetTrackAtID(nextTrackID);
 
                 SetActiveTrack(nextTrack);
 
@@ -317,14 +320,36 @@ namespace AudioFile.Controller
         }
         public void PreviousItem()
         {
-            int prevTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, false, true); //False and then true indicates to grab the index of previous track in table
+            int prevTrackIndex = -1;
 
+            if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID))
+            {
+                //Effectively not changing the index here because the TrackLibraryController.Instance.GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1 (+1 for converting from 0-indexed to 1-indexed and another -1 to get the previous index)
+                //Conversion necessary so they both approach the next if statement on similar basis. +1 -1 shown for verbosity here
+                prevTrackIndex = SearchController.Instance.SearchResults.IndexOf(ActiveTrack.TrackID) + 1 - 1;
+            }
+            else
+            {
+                //Note that the GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1
+                prevTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, false, true); //False and then true indicates to grab the index of previous track in table
+            }
             if (prevTrackIndex > 0)
             {
                 Stop();
+                int prevTrackID = -1;
+                Track prevTrack = null;
 
-                int prevTrackID = TrackLibraryController.Instance.GetTrackIDAtIndex(prevTrackIndex);
-                Track prevTrack = TrackLibraryController.Instance.GetTrackAtID(prevTrackID);
+                if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID))
+                {
+                    prevTrackID = SearchController.Instance.SearchResults[prevTrackIndex - 1]; //-1 to convert from 1-indexed to 0-indexed since SearchResults is 0-indexed
+                }
+                else
+                {
+                    prevTrackID = TrackLibraryController.Instance.GetTrackIDAtIndex(prevTrackIndex);
+                }
+
+                prevTrack = TrackLibraryController.Instance.GetTrackAtID(prevTrackID);
+
                 SetActiveTrack(prevTrack);
 
                 ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);

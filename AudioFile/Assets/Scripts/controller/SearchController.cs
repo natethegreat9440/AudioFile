@@ -41,6 +41,15 @@ namespace AudioFile.Controller
         {
             throw new NotImplementedException();
         }
+
+        public int GetSearchResultsIndex(int trackID)
+        {
+            if (IsFiltered && SearchResults.Count > 0)
+                return SearchResults.IndexOf(trackID);
+            else
+                return -1;
+        }
+
         private List<int> Search(string userQuery, SearchProperties searchProperty, string tableName = "Tracks")
         {
             List<int> results = new List<int>();
@@ -62,8 +71,19 @@ namespace AudioFile.Controller
                 }
             }
 
+            //List<int> cleanedResults = RemoveDuplicateResults(results);
+
             return results;
         }
+
+        //private List<int> RemoveDuplicateResults(List<int> initialResults)
+        //{
+        //    List<int> cleanedResults = new List<int>();
+        //    cleanedResults.AddRange(initialResults.Distinct());
+
+        //    return cleanedResults;
+        //}
+
         public void HandleRequest(object request, bool isUndo = false)
         {
             string command = request.GetType().Name;
@@ -75,15 +95,19 @@ namespace AudioFile.Controller
                     "SearchCommand" => () =>
                     {
                         Debug.Log("Search Command handled");
+                        SearchResults.Clear();
 
                         SearchCommand searchCommand = request as SearchCommand;
                         foreach (var property in Enum.GetValues(typeof(SearchProperties)).Cast<SearchProperties>())
                         {
-                            SearchResults.AddRange(Search(searchCommand.UserQuery, property, searchCommand.QueryTable));
+                            SearchResults.AddRange(Search(searchCommand.UserQuery, property, searchCommand.QueryTable).Distinct());
                         }
 
                         if (SearchResults.Count > 0)
                         {
+                            // Ensure SearchResults is distinct (has no duplicates) after all iterations
+                            SearchResults = SearchResults.Distinct().ToList();
+
                             if (searchCommand.UserQuery != "")
                             {
                                 IsFiltered = true;
@@ -95,7 +119,7 @@ namespace AudioFile.Controller
                             ObserverManager.Instance.NotifyObservers("AudioFileError", "Search results not found.");
                         }
 
-                        SearchResults.Clear();
+                        //SearchResults.Clear();
                     },
                     //Add more switch arms here as needed
                     _ => () => Debug.LogWarning($"Unhandled command: {request}")
