@@ -60,6 +60,8 @@ namespace AudioFile.Controller
 
         private int loadingCoroutinesCount = 0;
 
+        bool isFiltered => SearchController.Instance.IsFiltered;
+
         public void Awake()
         {
             DontDestroyOnLoad(this.gameObject);

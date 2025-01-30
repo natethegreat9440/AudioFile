@@ -41,6 +41,7 @@ namespace AudioFile.Controller
         public void Start()
         {
             ObserverManager.Instance.RegisterObserver("OnCollectionReordered", this);
+            ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
         }
 
         public void Dispose()
@@ -155,6 +156,16 @@ namespace AudioFile.Controller
                     if (data is List<int> sortedTrackIDs)
                     {
                         SearchResults = sortedTrackIDs;
+                    }
+                },
+                "OnTrackRemoved" => () =>
+                {
+                    if (data is Track trackToRemove)
+                    {
+                        if (IsFiltered && SearchResults.Contains(trackToRemove.TrackID))
+                        {
+                            SearchResults.Remove(trackToRemove.TrackID);
+                        }
                     }
                 },
                 //Add more switch arms here as needed
