@@ -94,7 +94,7 @@ namespace AudioFile.Controller
             {
                 activeSearchCommand = searchCommand;
             }
-            //SearchCommand searchCommand = request as SearchCommand;
+
             foreach (var property in Enum.GetValues(typeof(SearchProperties)).Cast<SearchProperties>())
             {
                 SearchResults.AddRange(Search(activeSearchCommand.UserQuery, property, activeSearchCommand.QueryTable).Distinct());
@@ -183,7 +183,8 @@ namespace AudioFile.Controller
                 },
                 "OnNewTrackAdded" => () =>
                 {
-                    HandleSearch(null); //Handle search will just refer to the activeSearchCommand if null is sent
+                    if (IsFiltered)
+                        HandleSearch(null); //Handle search will just refer to the activeSearchCommand if null is sent
                     //Makes sure the same active query is applied to new tracks as they are added so they will display/not display according to active query
                 },
                 //Add more switch arms here as needed

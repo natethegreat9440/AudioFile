@@ -39,6 +39,8 @@ namespace AudioFile.View
         {
             textRect = GetComponent<RectTransform>();
             parentRect = ((RectTransform)textRect.parent).rect;
+            startPositionX = textRect.localPosition.x;
+            resetPositionX = textRect.rect.width;
             BasicMessage();
 
             ObserverManager.Instance.RegisterObserver("OnActiveTrackChanged", this);
@@ -53,18 +55,21 @@ namespace AudioFile.View
 
         private void BasicMessage(string welcomeMessage = "Welcome to AudioFile!", bool isWelcomeScrolling = true)
         {
-            if (welcomeMessage == "Welcome to AudioFile!")
-            {
-                //Sets the initial values of startPositionX and resetPositionX
-                startPositionX = textRect.localPosition.x;
-                resetPositionX = textRect.rect.width;
-            }
-            else
-            {
-                //Resets the message location so it can be fully read
-                resetPositionX = parentRect.width;
-                textRect.localPosition = new Vector3(resetPositionX, textRect.localPosition.y, 0);
-            }
+            //if (welcomeMessage == "Welcome to AudioFile!")
+            //{
+            //    //Sets the initial values of startPositionX and resetPositionX
+            //    startPositionX = textRect.localPosition.x;
+            //    resetPositionX = textRect.rect.width;
+            //}
+            //else
+            //{
+            //    //Resets the message location so it can be fully read
+            //    resetPositionX = parentRect.width;
+            //    textRect.localPosition = new Vector3(resetPositionX, textRect.localPosition.y, 0);
+            //}
+
+            resetPositionX = parentRect.width;
+            textRect.localPosition = new Vector3(resetPositionX, textRect.localPosition.y, 0);
 
             textRect.GetComponent<TextMeshProUGUI>().text = welcomeMessage;
             isScrolling = isWelcomeScrolling;
@@ -114,22 +119,27 @@ namespace AudioFile.View
             isScrolling = true;
         }
 
+        private void DisplayActiveTrack()
+        {
+            textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
+            if (Controller.PlaybackController.Instance.ActiveTrack != null)
+            {
+                textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.ActiveTrack.ToString();
+            }
+            else
+            {
+                textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.SelectedTrack.ToString(); ;
+            }
+            isScrolling = true;
+        }
+
         public void AudioFileUpdate(string observationType, object data)
         {
             Action action = observationType switch
             {
                 "OnActiveTrackChanged" => () =>
                 {
-                    textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
-                    if (Controller.PlaybackController.Instance.ActiveTrack != null)
-                    {
-                        textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.ActiveTrack.ToString();
-                    }
-                    else
-                    {
-                        textRect.GetComponent<TextMeshProUGUI>().text = Controller.PlaybackController.Instance.SelectedTrack.ToString(); ;
-                    }
-                    isScrolling = true;
+                    DisplayActiveTrack();
                 }
                 ,
                 "OnTrackListEnd" => () =>
@@ -179,7 +189,11 @@ namespace AudioFile.View
                 "BulkTrackAddEnd" => () =>
                 {
                     Debug.Log("Bulk track add end");
-                    BasicMessage();
+
+                    if (Controller.PlaybackController.Instance.ActiveTrack != null)
+                        DisplayActiveTrack();
+                    else
+                        BasicMessage();
                 }
                 ,
                 "AudioFileError" => () =>
@@ -193,5 +207,6 @@ namespace AudioFile.View
 
             action();
         }
+
     }
 }

@@ -15,12 +15,6 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_01ACC8E817FE454B9C0509C636BF099D"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_057BC10953094C2483D37A97C23FC175"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -1653,12 +1647,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_47C68AC53C799F0CBF1EB5146ED73BCF"
-        "OwnerKey" = "8:_FBB1275ACAFF4472A1A2531A8F37C764"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_483E168E74A24F66AEF5367F5B933FAF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -1739,12 +1727,6 @@
         {
         "MsmKey" = "8:_4F3D58F5C0254113119F825BCED85531"
         "OwnerKey" = "8:_AC50B14E226984D6C66D5856B11E841F"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_4F3D58F5C0254113119F825BCED85531"
-        "OwnerKey" = "8:_47C68AC53C799F0CBF1EB5146ED73BCF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -2927,6 +2909,12 @@
         {
         "MsmKey" = "8:_73443815F6B24A4AE304857AC5ADE407"
         "OwnerKey" = "8:_85CF391ECA274AC69EAC0CF6ECE7E757"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_73443815F6B24A4AE304857AC5ADE407"
+        "OwnerKey" = "8:_FBB1275ACAFF4472A1A2531A8F37C764"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -5138,6 +5126,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
         "Release"
@@ -5162,6 +5158,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
     }
@@ -5192,26 +5196,6 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_01ACC8E817FE454B9C0509C636BF099D"
-            {
-            "SourcePath" = "8:..\\..\\..\\AudioFile Builds\\AudioFile\\v0.1.txt"
-            "TargetName" = "8:v0.1.txt"
-            "Tag" = "8:"
-            "Folder" = "8:_F18CF9B04A204CBABB39DE8688148127"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_057BC10953094C2483D37A97C23FC175"
             {
             "AssemblyRegister" = "3:1"
@@ -7421,37 +7405,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_47C68AC53C799F0CBF1EB5146ED73BCF"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_47C68AC53C799F0CBF1EB5146ED73BCF"
-                    {
-                    "Name" = "8:Newtonsoft.Json.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:Newtonsoft.Json.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_EFBCF6B0758343B588E31FCC85DBB72B"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_483E168E74A24F66AEF5367F5B933FAF"
@@ -12468,7 +12421,7 @@
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_ECEDE2A2848849198C17FC764B7BD4A6"
             {
-            "DefaultLocation" = "8:[ProgramFilesFolder]\\AudioFile v0.1"
+            "DefaultLocation" = "8:[ProgramFilesFolder]\\AudioFile v1.0"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -12659,15 +12612,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:AudioFileInstaller"
-        "ProductCode" = "8:{8A196395-B13A-4B73-BFF1-7310B5E0DC0F}"
-        "PackageCode" = "8:{B054D6D9-019B-4EFB-8DDF-9BF34A0F8D72}"
+        "ProductCode" = "8:{A6562183-1058-42E3-831D-B7FCB3A5CADF}"
+        "PackageCode" = "8:{9EB02F81-B825-4E57-A337-119F83B50961}"
         "UpgradeCode" = "8:{55910A20-D173-4788-A048-B55AAB7C4F8D}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:0.1"
+        "ProductVersion" = "8:1.0"
         "Manufacturer" = "8:NWH Enterprises"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
