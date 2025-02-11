@@ -98,7 +98,7 @@ namespace AudioFile.View
         }
 
         //IMPORTANT NOTE: OnPointerEnter and OnPointerExit will not work as expected unless anchors and pivot for Menus are centered 
-        //using x=0.5, y=0.5 within the Unity scene using the Inspector. If  these are set properly and bugs are occurring try
+        //using x=0.5, y=0.5 within the Unity scene using the Inspector. If these are set properly and bugs are occurring try
         //adding float tolerance = 0.5f or similar to OnPointerExit and subtracting/adding tolerance to rect.yMin/rect.yMax respectively.
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {

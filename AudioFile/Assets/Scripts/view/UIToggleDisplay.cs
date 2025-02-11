@@ -41,23 +41,33 @@ namespace AudioFile.View
             //Add code to turn on the Visualizer Display when Track Display is turned off
             if (IsTrackDisplayActive)
             {
-                Debug.Log("Track List display active");
-                this.gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Hide Tracks";
-                trackDisplay.SetActive(true);
-                sortButtons.SetActive(true);
-                Display_Slider.gameObject.SetActive(true);
-                Display_Slider.value = 1f;
+                SetTrackDisplayViewActive(trackDisplay, sortButtons);
             }
             else
             {
-                Debug.Log("Track List display in-active");
-                this.gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Show Tracks";
-                //Display_Slider.value = 0.2f;
-                trackDisplay.SetActive(false);
-                sortButtons.SetActive(false);
-                Display_Slider.gameObject.SetActive(false);
+                SetTrackDisplayViewInactive(trackDisplay, sortButtons);
             }
         }
+
+        private void SetTrackDisplayViewActive(GameObject trackDisplay, GameObject sortButtons)
+        {
+            Debug.Log("Track List display active");
+            this.gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Hide Tracks";
+            trackDisplay.SetActive(true);
+            sortButtons.SetActive(true);
+            Display_Slider.gameObject.SetActive(true);
+            Display_Slider.value = 1f;
+        }
+        private void SetTrackDisplayViewInactive(GameObject trackDisplay, GameObject sortButtons)
+        {
+            Debug.Log("Track List display in-active");
+            this.gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Show Tracks";
+            //Display_Slider.value = 0.2f;
+            trackDisplay.SetActive(false);
+            sortButtons.SetActive(false);
+            Display_Slider.gameObject.SetActive(false);
+        }
+
         void OnDestroy()
         {
             // Remove the listener to avoid memory leaks
@@ -66,6 +76,5 @@ namespace AudioFile.View
                 toggleDisplayButton.onClick.RemoveListener(ToggleDisplay);
             }
         }
-
     }
 }

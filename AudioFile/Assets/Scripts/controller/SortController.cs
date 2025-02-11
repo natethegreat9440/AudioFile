@@ -69,6 +69,21 @@ namespace AudioFile.Controller
         {
             ObserverManager.Instance.RegisterObserver("OnNewTrackAdded", this);
         }
+
+        public void AudioFileUpdate(string observationType, object data)
+        {
+            Action action = observationType switch
+            {
+                "OnNewTrackAdded" => () =>
+                {
+                    RefreshSorting();
+                },
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
+        }
         public void HandleRequest(object request, bool isUndo)
         {
             //Add methods to log these commands with the UndoController
@@ -126,7 +141,7 @@ namespace AudioFile.Controller
             Debug.Log($"Sorting {collectionToSort} in forward order by {mainSortProperty}");
             var sortedTrackIDs = new List<int>();
 
-            if (collectionToSort == "library")
+            if (collectionToSort == "Tracks")
             {
                 //Note that LibrarySortProperties { AlbumTrackNumber, Title, Album, Artist } and the odd order of CurrentSortOrdering is intentional/correct
                 //TODO: There may be a cleaner way to do it, but this was all I could think of when I initially wrote this pre-SQLite refactoring
@@ -182,7 +197,7 @@ namespace AudioFile.Controller
             Debug.Log($"Sorting {collectionToSort} in reverse order by {mainSortProperty}");
             var sortedTrackIDs = new List<int>();
 
-            if (collectionToSort == "library")
+            if (collectionToSort == "Tracks")
             {
                 //Note that LibrarySortProperties { AlbumTrackNumber, Title, Album, Artist } and the odd order of CurrentSortOrdering is intentional/correct
                 //TODO: There may be a cleaner way to do it, but this was all I could think of when I initially wrote this pre-SQLite refactoring
@@ -238,7 +253,7 @@ namespace AudioFile.Controller
             Debug.Log($"Setting {collectionToSort} in default order");
             var sortedTrackIDs = new List<int>();
 
-            if (collectionToSort == "library") 
+            if (collectionToSort == "Tracks") 
             {
                 using (var connection = new SqliteConnection(ConnectionString))
                 {
@@ -313,21 +328,6 @@ namespace AudioFile.Controller
         public void Dispose()
         {
             throw new NotImplementedException();
-        }
-
-        public void AudioFileUpdate(string observationType, object data)
-        {
-            Action action = observationType switch
-            {
-                "OnNewTrackAdded" => () =>
-                {
-                    RefreshSorting();
-                },
-                //Add more switch arms here as needed
-                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
-            };
-
-            action();
         }
     }
 }

@@ -53,6 +53,91 @@ namespace AudioFile.View
             ObserverManager.Instance.RegisterObserver("BulkTrackAddEnd", this);
         }
 
+        void Update()
+        {
+            if (isScrolling)
+            {
+                float textRight, parentLeft;
+                IncrementScrollingMessagePosition(out textRight, out parentLeft);
+
+                if (textRight < parentLeft)
+                {
+                    ResetMessagePositionWhenOutOfBounds();
+                }
+            }
+            else
+            {
+                SetStaticMessagePosition();
+            }
+        }
+
+        public void AudioFileUpdate(string observationType, object data)
+        {
+            Action action = observationType switch
+            {
+                "OnActiveTrackChanged" => () =>
+                {
+                    DisplayActiveTrackInfo();
+                },
+                "OnTrackListEnd" => () =>
+                {
+                    if (Controller.PlaybackController.Instance.ActiveTrackIndex == 0)
+                    {
+                        StartCoroutine(TempMessage(1f, "Front of playlist"));
+                    }
+                    else
+                    {
+                        StartCoroutine(TempMessage(1f, "End of playlist"));
+                    }
+                },
+                "OnTrackSkipped" => () =>
+                {
+                    if (data is Track trackSkipped)
+                    {
+                        StartCoroutine(TempMessage(4f, $"{trackSkipped.TrackProperties.GetProperty(trackSkipped.TrackID, "Title")} skipped due to error", true));
+                    }
+                    else if (data is null)
+                    {
+                        StartCoroutine(TempMessage(4f, "Unknown track skipped due to error", true));
+                    }
+                    else
+                    {
+                        StartCoroutine(TempMessage(4f, "Track skipped due to unknown error", true));
+                    }
+                },
+                "TrackDisplayPopulateStart" => () =>
+                {
+                    BasicMessage("Loading tracks...", false);
+                },
+                "TrackDisplayPopulateEnd" => () =>
+                {
+                    BasicMessage();
+                },
+                "BulkTrackAddStart" => () =>
+                {
+                    Debug.Log("Bulk track add start");
+                    BasicMessage("Adding tracks...", false);
+                },
+                "BulkTrackAddEnd" => () =>
+                {
+                    Debug.Log("Bulk track add end");
+
+                    if (Controller.PlaybackController.Instance.ActiveTrack != null)
+                        DisplayActiveTrackInfo();
+                    else
+                        BasicMessage();
+                },
+                "AudioFileError" => () =>
+                {
+                    string errorMessage = data as string;
+                    StartCoroutine(TempMessage(8f, errorMessage, true));
+                },
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
+        }
+
         private void BasicMessage(string welcomeMessage = "Welcome to AudioFile!", bool isWelcomeScrolling = true)
         {
             //if (welcomeMessage == "Welcome to AudioFile!")
@@ -75,37 +160,6 @@ namespace AudioFile.View
             isScrolling = isWelcomeScrolling;
         }
 
-        void Update()
-        {
-            if (isScrolling)
-            {
-                textRect.localPosition += Vector3.left * scrollSpeed * Time.deltaTime;
-                Vector3[] textCorners = new Vector3[4];
-                textRect.GetWorldCorners(textCorners);
-                float textRight = textCorners[3].x;
-                Vector3[] parentCorners = new Vector3[4];
-                ((RectTransform)textRect.parent).GetWorldCorners(parentCorners);
-                float parentLeft = parentCorners[0].x;
-
-                if (textRight < parentLeft)
-                {
-                    float resetPositionX = parentRect.width;
-                    textRect.localPosition = new Vector3(resetPositionX, textRect.localPosition.y, 0);
-                }
-            }
-            else
-            {
-                textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
-            }
-        }
-
-        private Rect GetWorldRect(RectTransform rectTransform)
-        {
-            Vector3[] corners = new Vector3[4];
-            rectTransform.GetWorldCorners(corners);
-            return new Rect(corners[0].x, corners[0].y, corners[2].x - corners[0].x, corners[2].y - corners[0].y);
-        }
-
         public IEnumerator TempMessage(float waitTime, string message, bool isTempMessageScrolling = false)
         {
             textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
@@ -119,7 +173,7 @@ namespace AudioFile.View
             isScrolling = true;
         }
 
-        private void DisplayActiveTrack()
+        private void DisplayActiveTrackInfo()
         {
             textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
             if (Controller.PlaybackController.Instance.ActiveTrack != null)
@@ -133,80 +187,32 @@ namespace AudioFile.View
             isScrolling = true;
         }
 
-        public void AudioFileUpdate(string observationType, object data)
+        private void SetStaticMessagePosition()
         {
-            Action action = observationType switch
-            {
-                "OnActiveTrackChanged" => () =>
-                {
-                    DisplayActiveTrack();
-                }
-                ,
-                "OnTrackListEnd" => () =>
-                {
-                    if (Controller.PlaybackController.Instance.ActiveTrackIndex == 0)
-                    {
-                        StartCoroutine(TempMessage(1f, "Front of playlist"));
-                    }
-                    else
-                    {
-                        StartCoroutine(TempMessage(1f, "End of playlist"));
-                    }
-                }
-                ,
-                "OnTrackSkipped" => () =>
-                {
-                    if (data is Track trackSkipped)
-                    {
-                        StartCoroutine(TempMessage(4f, $"{trackSkipped.TrackProperties.GetProperty(trackSkipped.TrackID, "Title")} skipped due to error", true));
-                    }
-                    else if (data is null)
-                    {
-                        StartCoroutine(TempMessage(4f, "Unknown track skipped due to error", true));
-                    }
-                    else
-                    {
-                        StartCoroutine(TempMessage(4f, "Track skipped due to unknown error", true));
-                    }
-                }
-                ,
-                "TrackDisplayPopulateStart" => () =>
-                {
-                    BasicMessage("Loading tracks...", false);
-                }
-                ,
-                "TrackDisplayPopulateEnd" => () =>
-                {
-                    BasicMessage();
-                }
-                ,
-                "BulkTrackAddStart" => () =>
-                {
-                    Debug.Log("Bulk track add start");
-                    BasicMessage("Adding tracks...", false);
-                }
-                ,
-                "BulkTrackAddEnd" => () =>
-                {
-                    Debug.Log("Bulk track add end");
-
-                    if (Controller.PlaybackController.Instance.ActiveTrack != null)
-                        DisplayActiveTrack();
-                    else
-                        BasicMessage();
-                }
-                ,
-                "AudioFileError" => () =>
-                {
-                    string errorMessage = data as string;
-                    StartCoroutine(TempMessage(8f, errorMessage, true));
-                }
-                ,
-                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
-            };
-
-            action();
+            textRect.localPosition = new Vector3(startPositionX, textRect.localPosition.y, 0);
         }
 
+        private void IncrementScrollingMessagePosition(out float textRight, out float parentLeft)
+        {
+            textRect.localPosition += Vector3.left * scrollSpeed * Time.deltaTime;
+            Vector3[] textCorners = new Vector3[4];
+            textRect.GetWorldCorners(textCorners);
+            textRight = textCorners[3].x;
+            Vector3[] parentCorners = new Vector3[4];
+            ((RectTransform)textRect.parent).GetWorldCorners(parentCorners);
+            parentLeft = parentCorners[0].x;
+        }
+
+        private void ResetMessagePositionWhenOutOfBounds()
+        {
+            float resetPositionX = parentRect.width;
+            textRect.localPosition = new Vector3(resetPositionX, textRect.localPosition.y, 0);
+        }
+        private Rect GetWorldRect(RectTransform rectTransform)
+        {
+            Vector3[] corners = new Vector3[4];
+            rectTransform.GetWorldCorners(corners);
+            return new Rect(corners[0].x, corners[0].y, corners[2].x - corners[0].x, corners[2].y - corners[0].y);
+        }
     }
 }

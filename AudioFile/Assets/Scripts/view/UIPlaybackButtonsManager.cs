@@ -61,6 +61,35 @@ namespace AudioFile.View
                 stopButton,
             };
 
+            InitializeButtons();
+        }
+
+        void Update()
+        {
+            if (UITrackListDisplayManager.Instance.SelectedTrackDisplays.Count > 1)
+            {
+                DisableButtons();
+            }
+            else
+            {
+                EnableButtons();
+            }
+        }
+
+        public void AudioFileUpdate(string observationType, object data)
+        {
+            Action action = observationType switch
+            {
+                "OnSingleTrackSelected" => () => trackDisplayID = (int)data,
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
+        }
+
+        private void InitializeButtons()
+        {
             //Set up onClick Listeners/events for buttons
 
             //Previous button OnClick event setup
@@ -109,18 +138,6 @@ namespace AudioFile.View
             }
         }
 
-        void Update()
-        {
-            if (UITrackListDisplayManager.Instance.SelectedTrackDisplays.Count > 1)
-            {
-                DisableButtons();
-            }
-            else
-            {
-                EnableButtons();
-            }
-        }
-
         private void EnableButtons()
         {
             foreach (var button in buttons)
@@ -135,18 +152,6 @@ namespace AudioFile.View
             {
                 button.interactable = false;
             }
-        }
-
-        public void AudioFileUpdate(string observationType, object data)
-        {
-            Action action = observationType switch
-            {
-                "OnSingleTrackSelected" => () => trackDisplayID = (int)data,
-                //Add more switch arms here as needed
-                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
-            };
-
-            action();
         }
     }
 }

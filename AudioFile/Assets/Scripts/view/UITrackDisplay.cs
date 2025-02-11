@@ -11,7 +11,7 @@ namespace AudioFile.View
     /// Concrete class for a UI Track Display item which holds Title, Artist, Album, and Duration buttons.
     /// <remarks>
     /// This needs to be attached as a component to the UI_Track_Display_Prefab
-    /// Members: TrackDisplayID, IsSelected, Initialize(), SetTrackData(), SetText(), GetText(), InitializeButtons(), OnButtonClicked(), DestroyContextMenu().
+    /// Members: TrackDisplayID, IsSelected, Initialize(), SetTrackDisplayText(), SetButtonText(), GetTrackDisplayText(), InitializeButtons(), OnButtonClicked(), DestroyContextMenu().
     /// OnButtonClicked() calls HandleTrackButtonClick() from the UITrackListDisplayManager.
     /// Implements Awake() from MonoBehaviour. Implements OnPointerClick() from IPointerClickHandler from UnityEngine.EventSystems
     /// </remarks>
@@ -52,37 +52,76 @@ namespace AudioFile.View
 
             //Set TrackDisplayID to match TrackID so these can be compared later with LINQ queries
             TrackDisplayID = trackData.TrackID;
-            SetTrackData(trackData);
+            SetTrackDisplayText(trackData);
             InitializeButtons();
 
         }
 
-        private void SetTrackData(Track track)
+        public void OnPointerClick(PointerEventData eventData)
         {
-            //For Testing and easily checking TrackID and AlbumTrackNumber which aren't intended to be displayed to the user
-            //string title = (string)track.TrackProperties.GetProperty(track.TrackID, "Title") + " " + track.TrackID + " " + track.TrackProperties.GetProperty(track.TrackID, "AlbumTrackNumber");
-            //SetText(listDisplayManager.titleTextPath, title);
-
-            SetText(listDisplayManager.titleTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Title"));
-            SetText(listDisplayManager.artistTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Artist"));
-            SetText(listDisplayManager.albumTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Album"));
-            SetText(listDisplayManager.durationTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Duration"));
-        }
-
-        private void SetText(string path, string value)
-        {
-            var textTransform = transform.Find(path);
-            if (textTransform != null)
+            //Debug.Log("Pointer click detected");
+            // Check for right-click
+            if (eventData.button == PointerEventData.InputButton.Right && IsSelected)
             {
-                var textComponent = textTransform.GetComponent<Text>();
-                if (textComponent != null)
+
+                Debug.Log($"Right-click detected on {transform.Find(UITrackListDisplayManager.Instance.titleTextPath).GetComponent<Text>()} - {transform.Find(UITrackListDisplayManager.Instance.titleTextPath).GetComponent<Text>()}");
+                Canvas mainCanvas = FindObjectOfType<Canvas>();
+                RectTransform canvasRectTransform = mainCanvas.GetComponent<RectTransform>();
+
+                if (ContextMenuPrefab != null && canvasRectTransform != null)
                 {
-                    textComponent.text = "  " + value; // Adding some empty space for aesthetic purposes.
+                    HandleTrackDisplayContextMenuCreation(eventData, canvasRectTransform);
                 }
+            }
+            else //Delegate to UITrackListDisplayManager
+            {
+                listDisplayManager.HandleTrackButtonClick(this, null);
             }
         }
 
-        public string GetText(string path)
+        private void HandleTrackDisplayContextMenuCreation(PointerEventData eventData, RectTransform canvasRectTransform)
+        {
+            GameObject newContextMenuInstance = Instantiate(ContextMenuPrefab, canvasRectTransform);
+            UIContextMenu contextMenu = newContextMenuInstance.GetComponent<UIContextMenu>();
+            if (contextMenu != null)
+            {
+                Vector2 displayPosition = eventData.position;
+
+                var trackDisplayIDList = new List<int>();
+
+                foreach (var trackDisplay in listDisplayManager.SelectedTrackDisplays)
+                {
+                    trackDisplayIDList.Add(trackDisplay.TrackDisplayID);
+                }
+
+                ContextMenuInstance = contextMenu.Initialize(trackDisplayIDList, eventData.position, this); //TODO: Add Playlist as second parameter once I have that class set upTrackDisplayID, displayPosition, this);
+                Debug.Log("Context menu initialized");
+
+                // Optional: Prevent other click handlers from firing once the menu is created
+                //eventData.Use();  // Stop propagation if context menu is opened
+
+            }
+        }
+
+        public void DestroyContextMenu() //This method exists to be called from the UITrackListDisplayManager, so when the track is removed it destroys the Track Displays Context Menu if it is already open
+
+        {
+
+            Debug.Log("Delegating context menu destruction");
+            if (ContextMenuInstance != null)
+            {
+                Debug.Log("All right now destroy it");
+                ContextMenuInstance.DestroyContextMenu();
+                ContextMenuInstance = null;
+            }
+        }
+        private void OnButtonClicked(string buttonType)
+        {
+            listDisplayManager.HandleTrackButtonClick(this, buttonType);
+            Debug.Log("Button clicked: " + buttonType);
+        }
+
+        public string GetTrackDisplayText(string path)
         {
             var textTransform = transform.Find(path);
             if (textTransform != null)
@@ -117,64 +156,28 @@ namespace AudioFile.View
             if (DurationButton != null) DurationButton.onClick.AddListener(() => OnButtonClicked("Duration"));
         }
 
-
-        private void OnButtonClicked(string buttonType)
+        private void SetTrackDisplayText(Track track)
         {
-            listDisplayManager.HandleTrackButtonClick(this, buttonType);
-            Debug.Log("Button clicked: " + buttonType);
+            //For Testing and easily checking TrackID and AlbumTrackNumber which aren't intended to be displayed to the user
+            //string title = (string)track.TrackProperties.GetProperty(track.TrackID, "Title") + " " + track.TrackID + " " + track.TrackProperties.GetProperty(track.TrackID, "AlbumTrackNumber");
+            //SetButtonText(listDisplayManager.titleTextPath, title);
+
+            SetButtonText(listDisplayManager.titleTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Title"));
+            SetButtonText(listDisplayManager.artistTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Artist"));
+            SetButtonText(listDisplayManager.albumTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Album"));
+            SetButtonText(listDisplayManager.durationTextPath, (string)track.TrackProperties.GetProperty(track.TrackID, "Duration"));
         }
 
-        public void OnPointerClick(PointerEventData eventData)
+        private void SetButtonText(string path, string value)
         {
-            //Debug.Log("Pointer click detected");
-            // Check for right-click
-            if (eventData.button == PointerEventData.InputButton.Right && IsSelected)
+            var textTransform = transform.Find(path);
+            if (textTransform != null)
             {
-
-                Debug.Log($"Right-click detected on {transform.Find(UITrackListDisplayManager.Instance.titleTextPath).GetComponent<Text>()} - {transform.Find(UITrackListDisplayManager.Instance.titleTextPath).GetComponent<Text>()}");
-                Canvas mainCanvas = FindObjectOfType<Canvas>();
-                RectTransform canvasRectTransform = mainCanvas.GetComponent<RectTransform>();
-
-                if (ContextMenuPrefab != null && canvasRectTransform != null)
+                var textComponent = textTransform.GetComponent<Text>();
+                if (textComponent != null)
                 {
-                    GameObject newContextMenuInstance = Instantiate(ContextMenuPrefab, canvasRectTransform);
-                    UIContextMenu contextMenu = newContextMenuInstance.GetComponent<UIContextMenu>();
-                    if (contextMenu != null)
-                    {
-                        Vector2 displayPosition = eventData.position;
-
-                        var trackDisplayIDList = new List<int>();
-
-                        foreach (var trackDisplay in listDisplayManager.SelectedTrackDisplays)
-                        {
-                            trackDisplayIDList.Add(trackDisplay.TrackDisplayID);
-                        }
-
-                        ContextMenuInstance = contextMenu.Initialize(trackDisplayIDList, eventData.position, this); //TODO: Add Playlist as second parameter once I have that class set upTrackDisplayID, displayPosition, this);
-                        Debug.Log("Context menu initialized");
-
-                        // Optional: Prevent other click handlers from firing once the menu is created
-                        //eventData.Use();  // Stop propagation if context menu is opened
-
-                    }
+                    textComponent.text = "  " + value; // Adding some empty space for aesthetic purposes.
                 }
-            }
-            else
-            {
-                listDisplayManager.HandleTrackButtonClick(this, null);
-            }
-        }
-
-        //This method exists to be called from the UITrackListDisplayManager, so when the track is removed it destroys the Track Displays Context Menu if it is already open
-        public void DestroyContextMenu()
-        {
-            
-            Debug.Log("Delegating context menu destruction");
-            if (ContextMenuInstance != null)
-            {
-                Debug.Log("All right now destroy it");
-                ContextMenuInstance.DestroyContextMenu();
-                ContextMenuInstance = null;
             }
         }
     }

@@ -209,10 +209,13 @@ namespace AudioFile.Utilities
 
         public string QueryTable { get; }
 
-        public SearchCommand(string inputQuery, string queryTable)
+        public string SearchType { get; }
+
+        public SearchCommand(string inputQuery, string queryTable, string searchType="All")
         {
             UserQuery = inputQuery;
             QueryTable = queryTable;
+            SearchType = searchType;
         }
         public void Execute()
         {

@@ -94,6 +94,18 @@ namespace AudioFile.View
 
         }
 
+        void Update()
+        {
+            if (UITrackListDisplayManager.Instance.SelectedTrackDisplays.Count > 1)
+            {
+                DisableButtons();
+            }
+            else
+            {
+                EnableButtons();
+            }
+        }
+
         //Sets up onClick Listeners/events for SortButtons in ConfigureSortButton()
         private void ConfigureSortButton(SortButton button)
         {
@@ -149,18 +161,6 @@ namespace AudioFile.View
                     button.State = SortButtonState.Default;
                     button.GetComponentInChildren<Text>().text = button.SortProperty == "Duration" ? "Time" : $"{button.SortProperty}";
                 }
-            }
-        }
-
-        void Update()
-        {
-            if (UITrackListDisplayManager.Instance.SelectedTrackDisplays.Count > 1)
-            {
-                DisableButtons();
-            }
-            else
-            {
-                EnableButtons();
             }
         }
 

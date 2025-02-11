@@ -45,16 +45,6 @@ namespace AudioFile.View
             }
         }
 
-        private void SeekPosition(float sliderValue) //This method can only be called if the slider is interacted with by the user and not from "OnTrackFrameUpdate"
-        {
-            if (!isUpdatingFromObservation && PlaybackController.Instance.ActiveTrack != null)
-            {
-                float newTime = sliderValue * PlaybackController.Instance.ActiveTrack.GetDuration();
-                float previousTime = PlaybackController.Instance.GetTime();
-                PlaybackController.Instance.HandleRequest(new SeekCommand(previousTime, newTime));
-            }
-        }
-
         public void AudioFileUpdate(string observationType, object data)
         {
             Action action = observationType switch
@@ -70,13 +60,22 @@ namespace AudioFile.View
                     isUpdatingFromObservation = true;
                     slider.value = 0;
                     isUpdatingFromObservation = false;
-                }
-                ,
+                },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };
 
             action();
+        }
+
+        private void SeekPosition(float sliderValue) //This method can only be called if the slider is interacted with by the user and not from "OnTrackFrameUpdate"
+        {
+            if (!isUpdatingFromObservation && PlaybackController.Instance.ActiveTrack != null)
+            {
+                float newTime = sliderValue * PlaybackController.Instance.ActiveTrack.GetDuration();
+                float previousTime = PlaybackController.Instance.GetTime();
+                PlaybackController.Instance.HandleRequest(new SeekCommand(previousTime, newTime));
+            }
         }
     }
 }

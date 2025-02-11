@@ -46,81 +46,39 @@ namespace AudioFile.Controller
             ObserverManager.Instance.RegisterObserver("OnTrackRemoved", this);
             ObserverManager.Instance.RegisterObserver("OnNewTrackAdded", this);
         }
-
-        public void Dispose()
+        public void AudioFileUpdate(string observationType, object data)
         {
-            throw new NotImplementedException();
-        }
-
-        public int GetSearchResultsIndex(int trackID)
-        {
-            if (IsFiltered && SearchResults.Count > 0)
-                return SearchResults.IndexOf(trackID);
-            else
-                return -1;
-        }
-
-        private List<int> Search(string userQuery, SearchProperties searchProperty, string tableName = "Tracks")
-        {
-            List<int> results = new List<int>();
-            string query = $"SELECT TrackID FROM {tableName} WHERE {searchProperty} LIKE @userQuery";
-
-            using (SqliteConnection connection = new SqliteConnection(ConnectionString))
+            Action action = observationType switch
             {
-                SqliteCommand command = new SqliteCommand(query, connection);
-                command.Parameters.AddWithValue("@userQuery", "%" + userQuery + "%");
-
-                connection.Open();
-
-                using (var reader = command.ExecuteReader())
+                "OnCollectionReordered" => () =>
                 {
-                    while (reader.Read())
+                    if (data is List<int> sortedTrackIDs)
                     {
-                        results.Add(reader.GetInt32(0));
+                        SearchResults = sortedTrackIDs;
                     }
-                }
-            }
-
-            return results;
-        }
-
-        private void HandleSearch(object request)
-        {
-            Debug.Log("Search Command handled");
-
-            SearchResults.Clear();
-
-            if (request is SearchCommand searchCommand)
-            {
-                activeSearchCommand = searchCommand;
-            }
-
-            foreach (var property in Enum.GetValues(typeof(SearchProperties)).Cast<SearchProperties>())
-            {
-                SearchResults.AddRange(Search(activeSearchCommand.UserQuery, property, activeSearchCommand.QueryTable).Distinct());
-            }
-
-            if (SearchResults.Count > 0)
-            {
-                // Ensure SearchResults is distinct (has no duplicates) after all iterations
-                SearchResults = SearchResults.Distinct().ToList();
-
-                if (activeSearchCommand.UserQuery != "")
+                },
+                "OnTrackRemoved" => () =>
                 {
-                    IsFiltered = true;
-                }
-                ObserverManager.Instance.NotifyObservers("SearchResultsFound", SearchResults);
-            }
-            else if (activeSearchCommand.UserQuery == "")
-            {
-                IsFiltered = false;
-            }
-            else
-            {
-                ObserverManager.Instance.NotifyObservers("AudioFileError", "Search results not found.");
-            }
-        }
+                    if (data is Track trackToRemove)
+                    {
+                        if (IsFiltered && SearchResults.Contains(trackToRemove.TrackID))
+                        {
+                            SearchResults.Remove(trackToRemove.TrackID);
+                        }
+                    }
+                },
+                "OnNewTrackAdded" => () =>
+                {
+                    if (IsFiltered)
+                        HandleSearch(null); //Handle search will just refer to the activeSearchCommand if null is sent
+                    //Makes sure the same active query is applied to new tracks as they are added so they will display/not display according to active query
+                },
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
 
+            action();
+        }
 
         public void HandleRequest(object request, bool isUndo = false)
         {
@@ -154,44 +112,92 @@ namespace AudioFile.Controller
             }
         }
 
+        private void HandleSearch(object request)
+        {
+            Debug.Log("Search Command handled");
 
-        public void Initialize()
+            SearchResults.Clear();
+
+            if (request is SearchCommand searchCommand)
+            {
+                activeSearchCommand = searchCommand;
+
+                if (activeSearchCommand.SearchType == "All")
+                {
+                    foreach (var property in Enum.GetValues(typeof(SearchProperties)).Cast<SearchProperties>())
+                    {
+                        SearchResults.AddRange(Search(activeSearchCommand.UserQuery, property, activeSearchCommand.QueryTable).Distinct());
+                    }
+                }
+                else //Search by just Artist or Album depending on Enum.Parse result of activeSearchCommand.SearchType
+                {
+                    SearchResults.AddRange(Search(activeSearchCommand.UserQuery, (SearchProperties)Enum.Parse(typeof(SearchProperties), activeSearchCommand.SearchType), activeSearchCommand.QueryTable));
+                }
+            }
+
+            if (SearchResults.Count > 0)
+            {
+                // Ensure SearchResults is distinct (has no duplicates) after all iterations
+                SearchResults = SearchResults.Distinct().ToList();
+
+                if (activeSearchCommand.UserQuery != "")
+                {
+                    IsFiltered = true;
+                }
+                ObserverManager.Instance.NotifyObservers("SearchResultsFound", SearchResults);
+            }
+
+            else if (activeSearchCommand.UserQuery == "")
+            {
+                IsFiltered = false;
+            }
+
+            else
+            {
+                ObserverManager.Instance.NotifyObservers("AudioFileError", "Search results not found.");
+            }
+        }
+
+        private List<int> Search(string userQuery, SearchProperties searchProperty, string tableName = "Tracks")
+        {
+            List<int> results = new List<int>();
+            string query = $"SELECT TrackID FROM {tableName} WHERE {searchProperty} LIKE @userQuery";
+
+            using (SqliteConnection connection = new SqliteConnection(ConnectionString))
+            {
+                SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@userQuery", "%" + userQuery + "%");
+
+                connection.Open();
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        results.Add(reader.GetInt32(0));
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        public int GetSearchResultsIndex(int trackID)
+        {
+            if (IsFiltered && SearchResults.Count > 0)
+                return SearchResults.IndexOf(trackID);
+            else
+                return -1;
+        }
+
+        public void Dispose()
         {
             throw new NotImplementedException();
         }
 
-        public void AudioFileUpdate(string observationType, object data)
+        public void Initialize()
         {
-            Action action = observationType switch
-            {
-                "OnCollectionReordered" => () =>
-                {
-                    if (data is List<int> sortedTrackIDs)
-                    {
-                        SearchResults = sortedTrackIDs;
-                    }
-                },
-                "OnTrackRemoved" => () =>
-                {
-                    if (data is Track trackToRemove)
-                    {
-                        if (IsFiltered && SearchResults.Contains(trackToRemove.TrackID))
-                        {
-                            SearchResults.Remove(trackToRemove.TrackID);
-                        }
-                    }
-                },
-                "OnNewTrackAdded" => () =>
-                {
-                    if (IsFiltered)
-                        HandleSearch(null); //Handle search will just refer to the activeSearchCommand if null is sent
-                    //Makes sure the same active query is applied to new tracks as they are added so they will display/not display according to active query
-                },
-                //Add more switch arms here as needed
-                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
-            };
-
-            action();
+            throw new NotImplementedException();
         }
     }
 }

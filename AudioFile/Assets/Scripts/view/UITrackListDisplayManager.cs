@@ -8,6 +8,8 @@ using AudioFile.Model;
 using AudioFile.Utilities;
 using Unity.VisualScripting;
 using System.Linq;
+using UnityEngine.Windows;
+using Input = UnityEngine.Input; // Add this line to resolve ambiguity
 
 namespace AudioFile.View
 {
@@ -57,7 +59,7 @@ namespace AudioFile.View
         public GameObject UI_Track_DisplayPrefab; //Attach in scene
         public Transform Track_List_DisplayViewportContent; //Attach in scene
 
-        public string TracksDisplayed { get; set; } = "library";
+        public string TracksDisplayed { get; set; } = "Tracks";
 
         private const float doubleClickThreshold = 0.3f;
         private float lastClickTime = 0f;
@@ -85,6 +87,48 @@ namespace AudioFile.View
             ObserverManager.Instance.RegisterObserver("SearchResultsFound", this);
         }
 
+        public void AudioFileUpdate(string observationType, object data)
+        {
+            Action action = observationType switch
+            {
+                "TracksDeserialized" => () =>
+                {
+                    if (data is List<Track> initialTrackList)
+                    {
+                        StartCoroutine(PopulateDisplayInitally(initialTrackList));
+                    }
+
+                },
+                "OnNewTrackAdded" => () => StartCoroutine(AddTrackOnUpdate(data)),
+                "OnTrackRemoved" => () =>
+                {
+                    ChangeActiveTrackSelectionOnTrackRemoval();
+                    StartCoroutine(RemoveTrackOnUpdate(data));
+                },
+                "OnActiveTrackCycled" => () =>
+                {
+                    if (data is int activeTrackIndex)
+                    {
+                        ChangeActiveTrackSelectionOnTrackCycle(activeTrackIndex);
+                    }
+                },
+                "OnCollectionReordered" => () =>
+                {
+                    if (data is List<int> sortedTrackIDs)
+                        StartCoroutine(UpdateDisplay(sortedTrackIDs)); // TODO: have this observation get called with the full set of IDs from Tracks
+                },
+                "SearchResultsFound" => () =>
+                {
+                    if (data is List<int> searchResults)
+                        StartCoroutine(UpdateDisplay(searchResults));
+                },
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
+        }
+
         public void HandleTrackButtonClick(UITrackDisplay trackDisplay, string buttonType)
         {
             float timeSinceLastClick = Time.time - lastClickTime;
@@ -103,23 +147,6 @@ namespace AudioFile.View
             lastButtonClicked = buttonType;
         }
 
-        private void OnTrackDisplayDoubleClick(UITrackDisplay trackDisplay, string buttonType)
-        {
-            Debug.Log("Double-click detected on " + buttonType);
-            int trackDisplayID = trackDisplay.TrackDisplayID;
-
-            Action action = buttonType switch
-            {
-                "Duration" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayID)),
-                "Title" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayID)),
-                /*"Artist" => () => /*Filter by artist logic here,
-                "Album" => () => /*Filter by album logic here, */
-                _ => () => Debug.LogWarning("Unknown button type double-clicked.")
-            };
-
-            action();
-        }
-
         public void OnTrackSelection(GameObject trackDisplayObject)
         {
             bool isShiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
@@ -127,80 +154,24 @@ namespace AudioFile.View
 
             if (isShiftPressed && SelectedTrackDisplays.Count > 0)
             {
-                int startIndex = GetTrackDisplayIndex(SelectedTrackDisplays[0].TrackDisplayGameObject);
-                int endIndex = GetTrackDisplayIndex(trackDisplayObject);
-                if (startIndex > endIndex) //If selecting from top to bottom invert startIndex and endIndex so for loop always executes and increments from the lowest index regardless of whether that index was selected first or last
-                {
-                    int temp = startIndex;
-                    startIndex = endIndex;
-                    endIndex = temp;
-                }
-
-                for (int i = startIndex; i <= endIndex; i++)
-                {
-                    var child = Track_List_DisplayViewportContent.GetChild(i).GetComponent<UITrackDisplay>();
-                    if (!SelectedTrackDisplays.Contains(child))
-                    {
-                        SelectedTrackDisplays.Add(child);
-                        child.IsSelected = true;
-                        //child.GetComponent<Image>().color = Color.blue;
-                        child.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#A8DADC"); //Soft cyan
-                    }
-                }
+                HandleShiftClickSelection(trackDisplayObject);
             }
             else if (isCtrlPressed)
             {
-                var trackDisplayComponent = trackDisplayObject.GetComponent<UITrackDisplay>();
-                if (SelectedTrackDisplays.Contains(trackDisplayComponent))
-                {
-                    SelectedTrackDisplays.Remove(trackDisplayComponent);
-                    trackDisplayComponent.IsSelected = false;
-                    trackDisplayComponent.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#F1FAEE"); //panache white
-                }
-                else
-                {
-                    SelectedTrackDisplays.Add(trackDisplayComponent);
-                    trackDisplayComponent.IsSelected = true;
-                    trackDisplayComponent.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#A8DADC"); //Soft cyan
-                }
+                HandleCtrlClickSelection(trackDisplayObject);
             }
             else
             {
-                //Single track selection
-                DeselectAllTrackDisplays();
-                SelectedTrackDisplays.Clear();
-
-                var trackDisplayComponent = trackDisplayObject.GetComponent<UITrackDisplay>();
-                SelectedTrackDisplays.Add(trackDisplayComponent);
-
-                trackDisplayComponent.IsSelected = true;
-                trackDisplayComponent.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#A8DADC"); //Soft cyan
-
-                int trackDisplayID = GetTrackDisplayID(trackDisplayObject);
-                ObserverManager.Instance.NotifyObservers("OnSingleTrackSelected", trackDisplayID);
-
-            }
-
-        }
-
-        private void DeselectAllTrackDisplays()
-        {
-            foreach (Transform child in Track_List_DisplayViewportContent)
-            {
-                var trackDisplay = child.GetComponent<Image>();
-                if (trackDisplay != null)
-                {
-                    child.GetComponent<UITrackDisplay>().IsSelected = false;
-                    trackDisplay.color = AudioFileHelpers.SetHexColor("#F1FAEE"); //panache white
-                }
+                HandleSingleTrackSelection(trackDisplayObject);
             }
         }
+
         public int GetTrackDisplayID(GameObject trackDisplay)
         {
             int trackDisplayID = trackDisplay.GetComponent<UITrackDisplay>().TrackDisplayID;
             return trackDisplayID;
         }
-        public int GetTrackDisplayIndex(GameObject trackDisplay) 
+        public int GetTrackDisplayIndex(GameObject trackDisplay)
         {
             Transform contentTransform = Track_List_DisplayViewportContent;
 
@@ -231,6 +202,21 @@ namespace AudioFile.View
             return trackDisplayTransform;
         }
 
+        public List<int> GetOrderedTrackDisplayIDs(List<int> trackDisplayIDs)
+        {
+            List<int> orderedTrackDisplayIDs = new List<int>();
+
+            foreach (Transform child in Track_List_DisplayViewportContent)
+            {
+                var trackDisplay = child.GetComponent<UITrackDisplay>();
+                if (trackDisplay != null && trackDisplayIDs.Contains(trackDisplay.TrackDisplayID))
+                {
+                    orderedTrackDisplayIDs.Add(trackDisplay.TrackDisplayID);
+                }
+            }
+
+            return orderedTrackDisplayIDs;
+        }
         private List<Transform> GetAllTrackDisplays()
         {
             var allTrackDisplayTransforms = Track_List_DisplayViewportContent.Cast<Transform>().ToList();
@@ -267,7 +253,7 @@ namespace AudioFile.View
             }
         }
 
-        private IEnumerator RemoveTrackOnUpdate(object data) 
+        private IEnumerator RemoveTrackOnUpdate(object data)
         {
             if (data == null)
             {
@@ -284,27 +270,118 @@ namespace AudioFile.View
 
             Transform trackDisplayTransformToRemove = GetTrackDisplay(providedTrackID);
 
-            if (trackDisplayTransformToRemove != null) //Destroy the TrackDisplay GameObject once found
+            if (trackDisplayTransformToRemove != null)
             {
-                //Call the TrackDisplay's DestroyContext Menu method first in case there is an open Context Menu when the Track Display is removed
-                var trackDisplayGameObject = trackDisplayTransformToRemove.gameObject;
-                activeContextMenu.DestroyContextMenu();
-                Destroy(trackDisplayTransformToRemove.gameObject);
-
+                HandleTrackDisplayAndContextMenuRemoval(trackDisplayTransformToRemove);
                 yield break;
             }
 
             yield break;
         }
 
-        private IEnumerator PopulateDisplay(List<Track> trackList)
+        private void OnTrackDisplayDoubleClick(UITrackDisplay trackDisplay, string buttonType)
+        {
+            Debug.Log("Double-click detected on " + buttonType);
+            int trackDisplayID = trackDisplay.TrackDisplayID;
+
+            Action action = buttonType switch
+            {
+                "Duration" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayID)),
+                "Title" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayID)),
+                "Artist" => () =>
+                {
+                    Debug.Log("Search command sent with Artist filter");
+                    var query = trackDisplay.ArtistButton.GetComponentInChildren<Text>().text.Trim();
+                    SearchController.Instance.HandleRequest(new SearchCommand(query, TracksDisplayed, "Artist"));
+                },
+                "Album" => () =>
+                {
+                    Debug.Log("Search command sent with Album filter");
+                    var query = trackDisplay.AlbumButton.GetComponentInChildren<Text>().text.Trim();
+                    SearchController.Instance.HandleRequest(new SearchCommand(query, TracksDisplayed, "Album"));
+                },
+                _ => () => Debug.LogWarning("Unknown button type double-clicked.")
+            };
+
+            action();
+        }
+        private void HandleShiftClickSelection(GameObject trackDisplayObject)
+        {
+            int startIndex = GetTrackDisplayIndex(SelectedTrackDisplays[0].TrackDisplayGameObject);
+            int endIndex = GetTrackDisplayIndex(trackDisplayObject);
+            if (startIndex > endIndex) //If selecting from top to bottom invert startIndex and endIndex so for loop always executes and increments from the lowest index regardless of whether that index was selected first or last
+            {
+                int temp = startIndex;
+                startIndex = endIndex;
+                endIndex = temp;
+            }
+
+            for (int i = startIndex; i <= endIndex; i++)
+            {
+                var child = Track_List_DisplayViewportContent.GetChild(i).GetComponent<UITrackDisplay>();
+                if (!SelectedTrackDisplays.Contains(child))
+                {
+                    SelectedTrackDisplays.Add(child);
+                    child.IsSelected = true;
+                    //child.GetComponent<Image>().color = Color.blue;
+                    child.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#A8DADC"); //Soft cyan
+                }
+            }
+        }
+
+        private void HandleCtrlClickSelection(GameObject trackDisplayObject)
+        {
+            var trackDisplayComponent = trackDisplayObject.GetComponent<UITrackDisplay>();
+            if (SelectedTrackDisplays.Contains(trackDisplayComponent))
+            {
+                SelectedTrackDisplays.Remove(trackDisplayComponent);
+                trackDisplayComponent.IsSelected = false;
+                trackDisplayComponent.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#F1FAEE"); //panache white
+            }
+            else
+            {
+                SelectedTrackDisplays.Add(trackDisplayComponent);
+                trackDisplayComponent.IsSelected = true;
+                trackDisplayComponent.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#A8DADC"); //Soft cyan
+            }
+        }
+
+        private void HandleSingleTrackSelection(GameObject trackDisplayObject)
+        {
+            //Single track selection
+            DeselectAllTrackDisplays();
+            SelectedTrackDisplays.Clear();
+
+            var trackDisplayComponent = trackDisplayObject.GetComponent<UITrackDisplay>();
+            SelectedTrackDisplays.Add(trackDisplayComponent);
+
+            trackDisplayComponent.IsSelected = true;
+            trackDisplayComponent.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#A8DADC"); //Soft cyan
+
+            int trackDisplayID = GetTrackDisplayID(trackDisplayObject);
+            ObserverManager.Instance.NotifyObservers("OnSingleTrackSelected", trackDisplayID);
+        }
+
+        private void DeselectAllTrackDisplays()
+        {
+            foreach (Transform child in Track_List_DisplayViewportContent)
+            {
+                var trackDisplay = child.GetComponent<Image>();
+                if (trackDisplay != null)
+                {
+                    child.GetComponent<UITrackDisplay>().IsSelected = false;
+                    trackDisplay.color = AudioFileHelpers.SetHexColor("#F1FAEE"); //panache white
+                }
+            }
+        }
+
+        private IEnumerator PopulateDisplayInitally(List<Track> trackList)
         {
             foreach (var track in trackList)
             {
                 Debug.Log($"Adding TrackDisplay for {track}");
                 yield return AddTrackOnUpdate(track);
             }
-
             if (trackList == null || trackList.Count == 0)
             {
                 Debug.Log("trackList is empty/null");
@@ -321,21 +398,53 @@ namespace AudioFile.View
         private IEnumerator UpdateDisplay(List<int> sortedTrackIDs)
         {
             //Essentially this method just tries to make the display order match the order of how the provided sortedTrackList (from SortController) is ordered
-
             // Step 1: Create a dictionary to map track IDs to their corresponding Transform objects
-
             Dictionary<int, Transform> trackIDToTransformMap = new Dictionary<int, Transform>();
-
-            foreach (Transform child in Track_List_DisplayViewportContent)
-            {
-                var trackDisplay = child.GetComponent<UITrackDisplay>();
-                if (trackDisplay != null)
-                {
-                    trackIDToTransformMap[trackDisplay.TrackDisplayID] = child;
-                }
-            }
-
+            MapTrackIDToTransform(trackIDToTransformMap);
             // Step 2: Iterate through the sortedTrackList and get the corresponding Transform for each track
+            List<Transform> sortedTransforms = GetTransformsForTrackDisplays(sortedTrackIDs, trackIDToTransformMap);
+            // Step 3: Reorder the children of Track_List_DisplayViewportContent based on the sorted list
+            ReorderTrackListDisplayViewportContent(sortedTransforms);
+            // Step 4: Hide any transforms where the trackDisplay.TrackID is not present in the sortedTrackIDs
+            HideFilteredOutTrackDisplays(sortedTrackIDs, trackIDToTransformMap);
+            yield return null;
+        }
+
+        private void HandleTrackDisplayAndContextMenuRemoval(Transform trackDisplayTransformToRemove)
+        {
+            //Call the TrackDisplay's DestroyContext Menu method first in case there is an open Context Menu when the Track Display is removed
+            var trackDisplayGameObject = trackDisplayTransformToRemove.gameObject;
+            activeContextMenu.DestroyContextMenu();
+            Destroy(trackDisplayTransformToRemove.gameObject);
+        }
+
+        private void ChangeActiveTrackSelectionOnTrackCycle(int activeTrackIndex)
+        {
+            GameObject selectedTrackDisplay = Track_List_DisplayViewportContent.GetChild(activeTrackIndex - 1).gameObject;
+            OnTrackSelection(selectedTrackDisplay);
+        }
+
+        private void ChangeActiveTrackSelectionOnTrackRemoval()
+        {
+            //Select the active track ID, which is now the track before the track that was removed
+            if (PlaybackController.Instance.ActiveTrack != null)
+            {
+                int activeTrackID = PlaybackController.Instance.ActiveTrack.TrackID;
+                Transform selectedTrackDisplay = GetTrackDisplay(activeTrackID);
+                OnTrackSelection(selectedTrackDisplay.gameObject);
+            }
+        }
+
+        private static void ReorderTrackListDisplayViewportContent(List<Transform> sortedTransforms)
+        {
+            for (int i = 0; i < sortedTransforms.Count; i++)
+            {
+                sortedTransforms[i].SetSiblingIndex(i);
+            }
+        }
+
+        private static List<Transform> GetTransformsForTrackDisplays(List<int> sortedTrackIDs, Dictionary<int, Transform> trackIDToTransformMap)
+        {
             List<Transform> sortedTransforms = new List<Transform>();
             foreach (var trackID in sortedTrackIDs)
             {
@@ -345,13 +454,23 @@ namespace AudioFile.View
                 }
             }
 
-            // Step 3: Reorder the children of Track_List_DisplayViewportContent based on the sorted list
-            for (int i = 0; i < sortedTransforms.Count; i++)
-            {
-                sortedTransforms[i].SetSiblingIndex(i);
-            }
+            return sortedTransforms;
+        }
 
-            // Step 4: Hide any transforms where the trackDisplay.TrackID is not present in the sortedTrackIDs
+        private void MapTrackIDToTransform(Dictionary<int, Transform> trackIDToTransformMap)
+        {
+            foreach (Transform child in Track_List_DisplayViewportContent)
+            {
+                var trackDisplay = child.GetComponent<UITrackDisplay>();
+                if (trackDisplay != null)
+                {
+                    trackIDToTransformMap[trackDisplay.TrackDisplayID] = child;
+                }
+            }
+        }
+
+        private static void HideFilteredOutTrackDisplays(List<int> sortedTrackIDs, Dictionary<int, Transform> trackIDToTransformMap)
+        {
             foreach (var kvp in trackIDToTransformMap)
             {
                 if (!sortedTrackIDs.Contains(kvp.Key))
@@ -363,73 +482,6 @@ namespace AudioFile.View
                     kvp.Value.gameObject.SetActive(true);
                 }
             }
-
-            yield return null;
-        }
-
-        public void AudioFileUpdate(string observationType, object data)
-        {
-            Action action = observationType switch
-            {
-                "TracksDeserialized" => () =>
-                {
-                    if (data is List<Track> initialTrackList)
-                    {
-                        StartCoroutine(PopulateDisplay(initialTrackList));
-                    }
-
-                },
-                "OnNewTrackAdded" => () => StartCoroutine(AddTrackOnUpdate(data)),
-                "OnTrackRemoved" => () =>
-                {
-                    //Select the active track ID, which is now the track before the track that was removed
-                    if (PlaybackController.Instance.ActiveTrack != null)
-                    {
-                        int activeTrackID = PlaybackController.Instance.ActiveTrack.TrackID;
-                        Transform selectedTrackDisplay = GetTrackDisplay(activeTrackID);
-                        OnTrackSelection(selectedTrackDisplay.gameObject);
-                    }
-                    StartCoroutine(RemoveTrackOnUpdate(data));
-                },
-                "OnActiveTrackCycled" => () =>
-                {
-                    if (data is int activeTrackIndex)
-                    {
-                        GameObject selectedTrackDisplay = Track_List_DisplayViewportContent.GetChild(activeTrackIndex - 1).gameObject;
-                        OnTrackSelection(selectedTrackDisplay);
-                    }
-                },
-                "OnCollectionReordered" => () =>
-                {
-                    if (data is List<int> sortedTrackIDs)
-                        StartCoroutine(UpdateDisplay(sortedTrackIDs)); // TODO: have this observation get called with the full set of IDs from Tracks
-                },
-                "SearchResultsFound" => () =>
-                {
-                    if (data is List<int> searchResults)
-                        StartCoroutine(UpdateDisplay(searchResults));
-                },
-                //Add more switch arms here as needed
-                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
-            };
-
-            action();
-        }
-
-        public List<int> GetOrderedTrackDisplayIDs(List<int> trackDisplayIDs)
-        {
-            List<int> orderedTrackDisplayIDs = new List<int>();
-
-            foreach (Transform child in Track_List_DisplayViewportContent)
-            {
-                var trackDisplay = child.GetComponent<UITrackDisplay>();
-                if (trackDisplay != null && trackDisplayIDs.Contains(trackDisplay.TrackDisplayID))
-                {
-                    orderedTrackDisplayIDs.Add(trackDisplay.TrackDisplayID);
-                }
-            }
-
-            return orderedTrackDisplayIDs;
         }
     }
 }

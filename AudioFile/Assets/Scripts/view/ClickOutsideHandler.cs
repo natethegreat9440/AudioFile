@@ -26,37 +26,45 @@ namespace AudioFile.View
 
         public void OnPointerClick(PointerEventData eventData)
         {
-
             // Check if the click is outside the context menu
             if (contextMenu != null)
             {
-                RectTransform contextMenuRect = contextMenu.GetComponent<RectTransform>();
-
-                // Use RectTransformUtility to check if the click is inside the context menu bounds
-                if (!RectTransformUtility.RectangleContainsScreenPoint(
-                    contextMenuRect, eventData.position, eventData.pressEventCamera))
-                {
-                    DestroyClickOutsideHandler();
-                }
+                HandleClickOutSideContextMenu(eventData);
             }
 
             //Check if the click is outside the alpha menu's tree
             if (alphaMenu != null)
             {
-                List<RectTransform> menuTreeBounds = GenerateMenuTreeBounds();
+                HandleClickOutSideAlphaMenu(eventData);
+            }
+        }
 
-                // Use RectTransformUtility to check if the click is inside the context menu bounds
-                foreach (var rect in menuTreeBounds)
-                {
-                    if (!RectTransformUtility.RectangleContainsScreenPoint(
-                        rect, eventData.position, eventData.pressEventCamera))
-                    {
-                        alphaMenu.Hide();
-                    }
-                }
+        private void HandleClickOutSideContextMenu(PointerEventData eventData)
+        {
+            RectTransform contextMenuRect = contextMenu.GetComponent<RectTransform>();
 
+            // Use RectTransformUtility to check if the click is inside the context menu bounds
+            if (!RectTransformUtility.RectangleContainsScreenPoint(
+                contextMenuRect, eventData.position, eventData.pressEventCamera))
+            {
                 DestroyClickOutsideHandler();
             }
+        }
+        private void HandleClickOutSideAlphaMenu(PointerEventData eventData)
+        {
+            List<RectTransform> menuTreeBounds = GenerateMenuTreeBounds();
+
+            // Use RectTransformUtility to check if the click is inside the context menu bounds
+            foreach (var rect in menuTreeBounds)
+            {
+                if (!RectTransformUtility.RectangleContainsScreenPoint(
+                    rect, eventData.position, eventData.pressEventCamera))
+                {
+                    alphaMenu.Hide();
+                }
+            }
+
+            DestroyClickOutsideHandler();
         }
 
         private List<RectTransform> GenerateMenuTreeBounds()
