@@ -80,57 +80,22 @@ namespace AudioFile.Controller
             }
         }
 
-        public void Initialize()
+        public void AudioFileUpdate(string observationType, object data)
         {
-            throw new NotImplementedException();
-        }
-
-        public int GetSelectedTrackID()
-        {
-            return SelectedTrack != null ? SelectedTrack.TrackID : -1;
-        }
-
-        public void HandlePlayPauseButton(int trackDisplayID)
-        {
-            if (ActiveTrack == null)
+            Action action = observationType switch
             {
-                // Play the selected track
-                HandleRequest(new PlayCommand(trackDisplayID));
-            }
-            else if (ActiveTrack != null && ActiveTrack.TrackID == trackDisplayID && SelectedTrack.IsPlaying) //TODO: see if third condition is necessary or if it is just redundant
-            {
-                // Pause the active track
-                HandleRequest(new PauseCommand(trackDisplayID));
-            }
-            else
-            {
-                // Play the active/selected track
-                HandleRequest(new PlayCommand(trackDisplayID));
-            }
-        }
-
-        public void HandleActiveTrackAfterTrackRemoval(List<int> trackDisplayIDs)
-        {
-            if (trackDisplayIDs.Count >= UITrackListDisplayManager.Instance.AllTrackDisplayTransforms.Count)
-            {
-                ActiveTrack = null;
-                SelectedTrack = null;
-            }
-            else
-            {
-                // Reorder trackDisplayIDs to match the order in UITrackListDisplayManager
-                trackDisplayIDs = UITrackListDisplayManager.Instance.GetOrderedTrackDisplayIDs(trackDisplayIDs);
-
-                // Get the last element in the tracks to be removed and then either try to go to the next or previous item after that
-                SetActiveTrack(TrackLibraryController.Instance.GetTrackAtID(trackDisplayIDs[trackDisplayIDs.Count - 1]));
-
-                if (!NextItem())
+                "OnActiveTrackIsDone" => () => { NextItem(); },
+                "OnSingleTrackSelected" => () =>
                 {
-                    SetActiveTrack(TrackLibraryController.Instance.GetTrackAtID(trackDisplayIDs[0]));
-                    PreviousItem();
-                }
-            }
+                    SelectedTrack = TrackLibraryController.Instance.GetTrackAtID((int)data);
+                },
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
         }
+
         public void HandleRequest(object request, bool isUndo = false)
         {
             //Add methods to log these commands with the UndoController
@@ -191,7 +156,7 @@ namespace AudioFile.Controller
                     },
                     "NextItemCommand" => () => { PreviousItem(); },
                     "PreviousItemCommand" => () => { NextItem(); },
-                    "SeekCommand" => () => 
+                    "SeekCommand" => () =>
                     {
                         SeekCommand seekCommand = request as SeekCommand;
                         Seek(seekCommand.PreviousTime);
@@ -200,38 +165,6 @@ namespace AudioFile.Controller
                     _ => () => Debug.LogWarning($"Unhandled undo command: {request}")
                 };
                 action();
-            }
-        }
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetActiveTrack(Track track)
-        {
-            if (track != null)
-            {
-                ActiveTrack = track;
-                Debug.Log($"Active track set to: {ActiveTrack} with ID: {ActiveTrack.TrackID}");
-                ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
-            }
-            else
-            {
-                Debug.Log("There is no active track.");
-            }
-        }
-
-        public void SetSelectedTrack(Track track)
-        {
-            if (track != null)
-            {
-                SelectedTrack = track;
-                Debug.Log($"Selected track set to: {SelectedTrack}");
-            }
-            else
-            {
-                Debug.Log("There is no selected track.");
             }
         }
 
@@ -262,46 +195,12 @@ namespace AudioFile.Controller
 
         public bool NextItem()
         {
-            int nextTrackIndex = -1;
-            int tracksLength = -2;
-
-            if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID)) //TODO: The isFiltered = true conditions in this method need more work
-            {
-                //Adding 2 to the index here because the TrackLibraryController.Instance.GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1 (+1 for converting from 0-indexed to 1-indexed and another +1 to get the next index)
-                //Conversion necessary so they both approach the next if statement on similar basis. +1 +1 shown for verbosity here
-                nextTrackIndex = SearchController.Instance.SearchResults.IndexOf(ActiveTrack.TrackID) + 1 + 1;
-                tracksLength = SearchController.Instance.SearchResults.Count;
-            }
-            else
-            {
-                //Note that the GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1
-                nextTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, true); //True indicates to grab the index of next track in Tracks table
-                tracksLength = TrackLibraryController.Instance.GetTracksLength();
-            }
+            int nextTrackIndex, tracksLength;
+            SetNextTrackIndexAndGetTracksLength(out nextTrackIndex, out tracksLength);
 
             if (nextTrackIndex < tracksLength + 1 && nextTrackIndex > 0)
             {
-                Stop();
-                int nextTrackID = -1;
-                Track nextTrack = null;
-
-                if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID))
-                {
-                    nextTrackID = SearchController.Instance.SearchResults[nextTrackIndex - 1]; //-1 to convert from 1-indexed to 0-indexed since SearchResults is 0-indexed
-                }
-                else
-                {
-                    nextTrackID = TrackLibraryController.Instance.GetTrackIDAtIndex(nextTrackIndex);
-                }
-
-                nextTrack = TrackLibraryController.Instance.GetTrackAtID(nextTrackID);
-
-                SetActiveTrack(nextTrack);
-
-                ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);
-                ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
-                
-                Play(nextTrackID);
+                HandlePlayingNextTrack(nextTrackIndex);
                 return true;
             }
             else
@@ -311,44 +210,14 @@ namespace AudioFile.Controller
                 return false;
             }
         }
+
         public void PreviousItem()
         {
-            int prevTrackIndex = -1;
+            int prevTrackIndex = SetPrevTrackIndex();
 
-            if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID))
-            {
-                //Effectively not changing the index here because the TrackLibraryController.Instance.GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1 (+1 for converting from 0-indexed to 1-indexed and another -1 to get the previous index)
-                //Conversion necessary so they both approach the next if statement on similar basis. +1 -1 shown for verbosity here
-                prevTrackIndex = SearchController.Instance.SearchResults.IndexOf(ActiveTrack.TrackID) + 1 - 1;
-            }
-            else
-            {
-                //Note that the GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1
-                prevTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, false, true); //False and then true indicates to grab the index of previous track in table
-            }
             if (prevTrackIndex > 0)
             {
-                Stop();
-                int prevTrackID = -1;
-                Track prevTrack = null;
-
-                if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID))
-                {
-                    prevTrackID = SearchController.Instance.SearchResults[prevTrackIndex - 1]; //-1 to convert from 1-indexed to 0-indexed since SearchResults is 0-indexed
-                }
-                else
-                {
-                    prevTrackID = TrackLibraryController.Instance.GetTrackIDAtIndex(prevTrackIndex);
-                }
-
-                prevTrack = TrackLibraryController.Instance.GetTrackAtID(prevTrackID);
-
-                SetActiveTrack(prevTrack);
-
-                ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);
-                ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
-
-                Play(prevTrackID);
+                HandlePlayingPrevTrack(prevTrackIndex);
             }
             else
             {
@@ -357,7 +226,7 @@ namespace AudioFile.Controller
             }
         }
 
-        public void Skip() 
+        public void Skip()
         {
             if (ActiveTrack != null && !NextItem())
             {
@@ -376,20 +245,189 @@ namespace AudioFile.Controller
         {
             return ActiveTrack.GetTime();
         }
-        public void AudioFileUpdate(string observationType, object data)
-        {
-            Action action = observationType switch
-            {
-                "OnActiveTrackIsDone" => () => { NextItem(); },
-                "OnSingleTrackSelected" => () =>
-                {
-                    SelectedTrack = TrackLibraryController.Instance.GetTrackAtID((int)data);
-                },
-                //Add more switch arms here as needed
-                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
-            };
 
-            action();
+        public void SetActiveTrack(Track track)
+        {
+            if (track != null)
+            {
+                ActiveTrack = track;
+                Debug.Log($"Active track set to: {ActiveTrack} with ID: {ActiveTrack.TrackID}");
+                ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
+            }
+            else
+            {
+                Debug.Log("There is no active track.");
+            }
+        }
+
+        public void SetSelectedTrack(Track track)
+        {
+            if (track != null)
+            {
+                SelectedTrack = track;
+                Debug.Log($"Selected track set to: {SelectedTrack}");
+            }
+            else
+            {
+                Debug.Log("There is no selected track.");
+            }
+        }
+
+        public int GetSelectedTrackID()
+        {
+            return SelectedTrack != null ? SelectedTrack.TrackID : -1;
+        }
+        public void HandlePlayPauseButton(int trackDisplayID)
+        {
+            if (ActiveTrack == null)
+            {
+                // Play the selected track
+                HandleRequest(new PlayCommand(trackDisplayID));
+            }
+            else if (ActiveTrack != null && ActiveTrack.TrackID == trackDisplayID && SelectedTrack.IsPlaying) //TODO: see if third condition is necessary or if it is just redundant
+            {
+                // Pause the active track
+                HandleRequest(new PauseCommand(trackDisplayID));
+            }
+            else
+            {
+                // Play the active/selected track
+                HandleRequest(new PlayCommand(trackDisplayID));
+            }
+        }
+
+        private void HandlePlayingNextTrack(int nextTrackIndex)
+        {
+            Stop();
+
+            int nextTrackID;
+            Track nextTrack;
+            SetNextTrack(nextTrackIndex, out nextTrackID, out nextTrack);
+
+            SetActiveTrack(nextTrack);
+
+            ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);
+            ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
+
+            Play(nextTrackID);
+        }
+
+        private void HandlePlayingPrevTrack(int prevTrackIndex)
+        {
+            Stop();
+            int prevTrackID;
+            Track prevTrack;
+            SetPrevTrack(prevTrackIndex, out prevTrackID, out prevTrack);
+
+            SetActiveTrack(prevTrack);
+
+            ObserverManager.Instance.NotifyObservers("OnActiveTrackCycled", ActiveTrackIndex);
+            ObserverManager.Instance.NotifyObservers("OnActiveTrackChanged", null);
+
+            Play(prevTrackID);
+        }
+
+        private void SetNextTrack(int nextTrackIndex, out int nextTrackID, out Track nextTrack)
+        {
+            nextTrackID = -1;
+            nextTrack = null;
+            if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID))
+            {
+                nextTrackID = SearchController.Instance.SearchResults[nextTrackIndex - 1]; //-1 to convert from 1-indexed to 0-indexed since SearchResults is 0-indexed
+            }
+            else
+            {
+                nextTrackID = TrackLibraryController.Instance.GetTrackIDAtIndex(nextTrackIndex);
+            }
+
+            nextTrack = TrackLibraryController.Instance.GetTrackAtID(nextTrackID);
+        }
+
+        private void SetPrevTrack(int prevTrackIndex, out int prevTrackID, out Track prevTrack)
+        {
+            prevTrackID = -1;
+            prevTrack = null;
+            if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID))
+            {
+                prevTrackID = SearchController.Instance.SearchResults[prevTrackIndex - 1]; //-1 to convert from 1-indexed to 0-indexed since SearchResults is 0-indexed
+            }
+            else
+            {
+                prevTrackID = TrackLibraryController.Instance.GetTrackIDAtIndex(prevTrackIndex);
+            }
+
+            prevTrack = TrackLibraryController.Instance.GetTrackAtID(prevTrackID);
+        }
+
+        private void SetNextTrackIndexAndGetTracksLength(out int nextTrackIndex, out int tracksLength)
+        {
+            nextTrackIndex = -1;
+            tracksLength = -2;
+            if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID)) //TODO: The isFiltered = true conditions in this method need more work
+            {
+                //Adding 2 to the index here because the TrackLibraryController.Instance.GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1 (+1 for converting from 0-indexed to 1-indexed and another +1 to get the next index)
+                //Conversion necessary so they both approach the next if statement on similar basis. +1 +1 shown for verbosity here
+                nextTrackIndex = SearchController.Instance.SearchResults.IndexOf(ActiveTrack.TrackID) + 1 + 1;
+                tracksLength = SearchController.Instance.SearchResults.Count;
+            }
+            else
+            {
+                //Note that the GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1
+                nextTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, true); //True indicates to grab the index of next track in Tracks table
+                tracksLength = TrackLibraryController.Instance.GetTracksLength();
+            }
+        }
+
+        private int SetPrevTrackIndex()
+        {
+            int prevTrackIndex = -1;
+
+            if (isFiltered && SearchResults.Contains(ActiveTrack.TrackID))
+            {
+                //Effectively not changing the index here because the TrackLibraryController.Instance.GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1 (+1 for converting from 0-indexed to 1-indexed and another -1 to get the previous index)
+                //Conversion necessary so they both approach the next if statement on similar basis. +1 -1 shown for verbosity here
+                prevTrackIndex = SearchController.Instance.SearchResults.IndexOf(ActiveTrack.TrackID) + 1 - 1;
+            }
+            else
+            {
+                //Note that the GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1
+                prevTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, false, true); //False and then true indicates to grab the index of previous track in table
+            }
+
+            return prevTrackIndex;
+        }
+
+        public void HandleActiveTrackAfterTrackRemoval(List<int> trackDisplayIDs)
+        {
+            if (trackDisplayIDs.Count >= UITrackListDisplayManager.Instance.AllTrackDisplayTransforms.Count)
+            {
+                ActiveTrack = null;
+                SelectedTrack = null;
+            }
+            else
+            {
+                // Reorder trackDisplayIDs to match the order in UITrackListDisplayManager
+                trackDisplayIDs = UITrackListDisplayManager.Instance.GetOrderedTrackDisplayIDs(trackDisplayIDs);
+
+                // Get the last element in the tracks to be removed and then either try to go to the next or previous item after that
+                SetActiveTrack(TrackLibraryController.Instance.GetTrackAtID(trackDisplayIDs[trackDisplayIDs.Count - 1]));
+
+                if (!NextItem())
+                {
+                    SetActiveTrack(TrackLibraryController.Instance.GetTrackAtID(trackDisplayIDs[0]));
+                    PreviousItem();
+                }
+            }
+        }
+
+        public void Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }
