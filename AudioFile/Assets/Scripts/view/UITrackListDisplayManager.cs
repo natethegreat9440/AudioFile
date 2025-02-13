@@ -309,6 +309,7 @@ namespace AudioFile.View
         {
             int startIndex = GetTrackDisplayIndex(SelectedTrackDisplays[0].TrackDisplayGameObject);
             int endIndex = GetTrackDisplayIndex(trackDisplayObject);
+
             if (startIndex > endIndex) //If selecting from top to bottom invert startIndex and endIndex so for loop always executes and increments from the lowest index regardless of whether that index was selected first or last
             {
                 int temp = startIndex;

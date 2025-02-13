@@ -42,6 +42,24 @@ namespace AudioFile.Controller
 
         public string ConnectionString => SetupController.Instance.ConnectionString;
 
+        public void HandleRequest(object request, bool isUndo)
+        {
+            string command = request.GetType().Name;
+
+            Action action = (command, isUndo) switch
+            {
+                ("ExitProgramCommand", false) => () =>
+                {
+                    Debug.Log("Exit Program Command handled");
+                    ExitAudioFile();
+                }
+                ,
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled command: {command} at {this}")
+            };
+
+            action();
+        }
 
         void ExitAudioFile()
         {
@@ -74,24 +92,6 @@ namespace AudioFile.Controller
         public void Dispose()
         {
             throw new NotImplementedException();
-        }
-
-        public void HandleRequest(object request, bool isUndo)
-        {
-            string command = request.GetType().Name;
-
-            Action action = (command, isUndo) switch
-            {
-                ("ExitProgramCommand", false) => () =>
-                {
-                    Debug.Log("Exit Program Command handled");
-                    ExitAudioFile();
-                },
-                //Add more switch arms here as needed
-                _ => () => Debug.LogWarning($"Unhandled command: {command} at {this}")
-            };
-
-            action();
         }
 
         public void Initialize()

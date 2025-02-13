@@ -124,27 +124,17 @@ namespace AudioFile.Controller
 
                 if (activeSearchCommand.SearchType == "All")
                 {
-                    foreach (var property in Enum.GetValues(typeof(SearchProperties)).Cast<SearchProperties>())
-                    {
-                        SearchResults.AddRange(Search(activeSearchCommand.UserQuery, property, activeSearchCommand.QueryTable).Distinct());
-                    }
+                    HandleAllPropertySearch();
                 }
-                else //Search by just Artist or Album depending on Enum.Parse result of activeSearchCommand.SearchType
+                else 
                 {
-                    SearchResults.AddRange(Search(activeSearchCommand.UserQuery, (SearchProperties)Enum.Parse(typeof(SearchProperties), activeSearchCommand.SearchType), activeSearchCommand.QueryTable));
+                    HandleSinglePropertySearch();
                 }
             }
 
             if (SearchResults.Count > 0)
             {
-                // Ensure SearchResults is distinct (has no duplicates) after all iterations
-                SearchResults = SearchResults.Distinct().ToList();
-
-                if (activeSearchCommand.UserQuery != "")
-                {
-                    IsFiltered = true;
-                }
-                ObserverManager.Instance.NotifyObservers("SearchResultsFound", SearchResults);
+                HandleFoundSearchResults();
             }
 
             else if (activeSearchCommand.UserQuery == "")
@@ -155,6 +145,20 @@ namespace AudioFile.Controller
             else
             {
                 ObserverManager.Instance.NotifyObservers("AudioFileError", "Search results not found.");
+            }
+        }
+
+        private void HandleSinglePropertySearch()
+        {
+            //Search by just Artist or Album depending on Enum.Parse result of activeSearchCommand.SearchType
+            SearchResults.AddRange(Search(activeSearchCommand.UserQuery, (SearchProperties)Enum.Parse(typeof(SearchProperties), activeSearchCommand.SearchType), activeSearchCommand.QueryTable));
+        }
+
+        private void HandleAllPropertySearch()
+        {
+            foreach (var property in Enum.GetValues(typeof(SearchProperties)).Cast<SearchProperties>())
+            {
+                SearchResults.AddRange(Search(activeSearchCommand.UserQuery, property, activeSearchCommand.QueryTable).Distinct());
             }
         }
 
@@ -188,6 +192,18 @@ namespace AudioFile.Controller
                 return SearchResults.IndexOf(trackID);
             else
                 return -1;
+        }
+
+        private void HandleFoundSearchResults()
+        {
+            // Ensure SearchResults is distinct (has no duplicates) after all iterations
+            SearchResults = SearchResults.Distinct().ToList();
+
+            if (activeSearchCommand.UserQuery != "")
+            {
+                IsFiltered = true;
+            }
+            ObserverManager.Instance.NotifyObservers("SearchResultsFound", SearchResults);
         }
 
         public void Dispose()

@@ -68,25 +68,7 @@ namespace AudioFile.Controller
         }
         public void Start()
         {
-            using (var connection = new SqliteConnection(ConnectionString))
-            {
-                connection.Open(); //Will create the database if it doesn't already exist otherwise it opens it
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = @"
-                    CREATE TABLE IF NOT EXISTS Tracks (
-                        TrackID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        Title TEXT NOT NULL DEFAULT 'Untitled Track',
-                        Artist TEXT NOT NULL DEFAULT 'Unknown Artist',
-                        Album TEXT NOT NULL DEFAULT 'Unknown Album',
-                        Duration TEXT NOT NULL DEFAULT '--:--',
-                        BPM INTEGER,
-                        Path TEXT NOT NULL DEFAULT 'Unknown Path',
-                        AlbumTrackNumber INTEGER NOT NULL DEFAULT 0
-                    );";
-                    command.ExecuteNonQuery();
-                }
-            }
+            InitializeSQLiteDB();
 
             if (GetTracksLength() > 0)
             {
@@ -99,69 +81,98 @@ namespace AudioFile.Controller
             TrackList.Clear();
         }
 
-        public void Initialize()
+        public void HandleRequest(object request, bool isUndo)
         {
-            throw new NotImplementedException();
-        }
-        public Track GetTrackAtID(int trackID)
-        {
-            //Use LINQ to find the track with the specified TrackID
+            string command = request.GetType().Name;
 
-            Track track = TrackList.FirstOrDefault(t => t.TrackID == trackID);
-
-            if (track != null)
+            Action action = (command, isUndo) switch
             {
-                Debug.Log($"Track found: {track.TrackProperties.GetProperty(trackID, "Title")}");
-            }
-            else
-            {
-                Debug.LogWarning($"Track with ID {trackID} not found.");
-            }
-
-            return track;
-        }
-
-        public int GetTrackIndex(int trackID, bool isNext = false, bool isPrevious = false)
-        {
-            int rowIndex = -1; // Default value if trackID is not found
-            int currentRow = 1;
-            int indexAdjust = 0;
-
-            //TODO: Likely need to adjust this method once shuffle is introduced
-            if (isNext)
-            {
-                indexAdjust = 1;
-            }
-            else if (isPrevious)
-            {
-                indexAdjust = -1;
-            }
-
-            using (var connection = new SqliteConnection(ConnectionString))
-            {
-                connection.Open();
-
-                using (var command = new SqliteCommand(CurrentSQLQueryInject, connection))
+                ("AddTrackCommand", false) => () =>
                 {
-                    using (var reader = command.ExecuteReader())
+                    AddTrackCommand addTrackCommand = request as AddTrackCommand;
+                    LoadNewTrack(addTrackCommand);
+                },
+                ("RemoveTrackCommand", false) => () =>
+                {
+                    RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
+
+                    //Behavior for setting the selected track based on whether the active playback track is within the tracks to be removed selection or not. If there is no active track do nothing
+
+                    if (ActiveTrack != null)
                     {
-                        while (reader.Read()) //TODO: May be a more efficient way of doing this by simply using SQL commands, but this is how CoPilot suggested I do it considering that CurrentSQLQueryInject is variable. May become inefficient with a large library. Still an O(n) algorithm though.
-                        {
-                            var result = reader["TrackID"];
-                            var readTrackID = Convert.ToInt32(result);
-
-                            if (readTrackID == trackID)
-                            {
-                                rowIndex = currentRow + indexAdjust;
-                                break;
-                            }
-                            currentRow++;
-                        }
+                        HandleActiveTrackOnTrackRemoval(removeTrackCommand);
                     }
-                }
-            }
 
-            return rowIndex;
+                    //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed. It is essential for a RemoveTrackCommand instance to have a TrackProperties reference for undo operations
+                    foreach (var trackDisplayID in removeTrackCommand.TrackDisplayIDs)
+                    {
+                        HandleRemoveTrackCommandPropertiesAndTrackRemoval(removeTrackCommand, trackDisplayID);
+                    }
+                },
+                //Add more switch arms here as needed
+
+                //Start of Undo actions
+                ("AddTrackCommand", true) => () =>
+                {
+                    AddTrackCommand addTrackCommand = request as AddTrackCommand;
+                    foreach (Track track in addTrackCommand.Tracks)
+                    {
+                        RemoveTrack(track.TrackID);
+                    }
+                },
+                ("RemoveTrackCommand", true) => () =>
+                {
+                    RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
+
+                    //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed. It is essential for a RemoveTrackCommand instance to have a TrackProperties reference for undo operations
+                    foreach (var trackDisplayID in removeTrackCommand.TrackDisplayIDs)
+                    {
+                        HandleTrackRemovalCommandUndo(removeTrackCommand, trackDisplayID);
+                    }
+                },
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled command: {request}")
+            };
+
+            action();
+        }
+
+        public void LoadNewTrack(AddTrackCommand addTrackCommand)
+        {
+            string[] paths = OpenFileDialog();
+
+            bool isBulkAdd = paths.Length > 3 ? true : false;
+
+            if (isBulkAdd)
+            {
+                NotifyBulkTrackAddStart();
+            }
+            //This has to be a seperate method in order for BulkTrackAddEnd to not get called immediately, but instead wait till all LoadAudioClip coroutines to finish first
+            StartCoroutine(LoadAllNewTracks(paths, addTrackCommand, isBulkAdd));
+
+            static void NotifyBulkTrackAddStart()
+            {
+                ObserverManager.Instance.NotifyObservers("BulkTrackAddStart", null);
+            }
+        }
+
+        public void RemoveTrack(int trackDisplayID)
+        {
+            Track trackToRemove = GetTrackAtID(trackDisplayID);
+
+            var title = (string)trackToRemove.TrackProperties.GetProperty(trackToRemove.TrackID, "Title");
+
+            ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
+
+            TrackList.Remove(trackToRemove);
+
+            StartCoroutine(ShowRemovedTrackMessage(title));
+
+            HandleTrackEntryRemovalSQLCommand(trackDisplayID);
+
+            Debug.Log($"Track '{trackToRemove}' with ID '{trackToRemove.TrackID}' has been removed from the media library.");
+
+            HandleTrackInstanceDestroy(trackToRemove);
         }
 
         public int GetTrackIDAtIndex(int index)
@@ -194,6 +205,47 @@ namespace AudioFile.Controller
 
             return trackID;
         }
+        public Track GetTrackAtID(int trackID)
+        {
+            //Use LINQ to find the track with the specified TrackID
+
+            Track track = TrackList.FirstOrDefault(t => t.TrackID == trackID);
+
+            if (track != null)
+            {
+                Debug.Log($"Track found: {track.TrackProperties.GetProperty(trackID, "Title")}");
+            }
+            else
+            {
+                Debug.LogWarning($"Track with ID {trackID} not found.");
+            }
+
+            return track;
+        }
+
+        public int GetTrackIndex(int trackID)
+        {
+            int rowIndex = -1; // Default value if trackID is not found
+            int currentRow = 1;
+
+            return HandleGetTrackIndexSQLCommand(trackID, ref rowIndex, ref currentRow);
+        }
+
+        public int GetNextTrackIndex(int trackID)
+        {
+            int rowIndex = -1; // Default value if trackID is not found
+            int currentRow = 1;
+
+            return HandleGetTrackIndexSQLCommand(trackID, ref rowIndex, ref currentRow) + 1;
+        }
+
+        public int GetPrevTrackIndex(int trackID)
+        {
+            int rowIndex = -1; // Default value if trackID is not found
+            int currentRow = 1;
+
+            return HandleGetTrackIndexSQLCommand(trackID, ref rowIndex, ref currentRow) - 1;
+        }
 
         public int GetTracksLength()
         {
@@ -210,169 +262,6 @@ namespace AudioFile.Controller
             }
 
             return tracksLength;
-        }
-
-
-        public void HandleRequest(object request, bool isUndo)
-        {
-            string command = request.GetType().Name;
-
-            Action action = (command, isUndo) switch
-            {
-                ("AddTrackCommand", false) => () =>
-                {
-                    AddTrackCommand addTrackCommand = request as AddTrackCommand;
-                    LoadNewTrack(addTrackCommand);
-                },
-                ("RemoveTrackCommand", false) => () =>
-                {
-                    RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
-
-                    //Behavior for setting the selected track based on whether the active playback track is within the tracks to be removed selection or not. If there is no active track do nothing
-
-                    if (ActiveTrack != null)
-                    {
-                        var activeTrackID = ActiveTrack.TrackID;
-
-                        if (removeTrackCommand.TrackDisplayIDs.Contains(activeTrackID))
-                        {
-                            var trackDisplayIDs = removeTrackCommand.TrackDisplayIDs;
-                            PlaybackController.Instance.HandleActiveTrackAfterTrackRemoval(trackDisplayIDs);
-                        }
-                    }
-
-                    //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed. It is essential for a RemoveTrackCommand instance to have a TrackProperties reference for undo operations
-                    foreach (var trackDisplayID in removeTrackCommand.TrackDisplayIDs)
-                    {
-                        var trackProperties = TrackList
-                        .Where(track => track.TrackID == trackDisplayID)
-                        .Select(track => new Dictionary<string, object>(track.TrackProperties.GetAllProperties(track.TrackID)))
-                        .FirstOrDefault();
-
-                        removeTrackCommand.TrackProperties.Add(trackProperties);
-
-                        Track trackToRemove = GetTrackAtID(trackDisplayID);
-                        string removedTrackPath = (string)trackToRemove.TrackProperties.GetProperty(trackToRemove.TrackID, "Path");
-                        removeTrackCommand.Paths.Add(removedTrackPath);
-
-                        RemoveTrack(trackDisplayID);
-                    }
-                },
-                //Add more switch arms here as needed
-
-                //Start of Undo actions
-                ("AddTrackCommand", true) => () =>
-                {
-                    AddTrackCommand addTrackCommand = request as AddTrackCommand;
-                    foreach (Track track in addTrackCommand.Tracks)
-                    {
-                        RemoveTrack(track.TrackID);
-                    }
-                },
-                ("RemoveTrackCommand", true) => () =>
-                {
-                    RemoveTrackCommand removeTrackCommand = request as RemoveTrackCommand;
-
-                    //RemoveTrackCommand.TrackProperties has the ability to hold Track Properties for multiple tracks if a bulk remove was performed. It is essential for a RemoveTrackCommand instance to have a TrackProperties reference for undo operations
-                    foreach (var trackDisplayID in removeTrackCommand.TrackDisplayIDs)
-                    {
-                        var path = (string)removeTrackCommand.TrackProperties
-                            .Where(properties => properties.ContainsValue(trackDisplayID))
-                            .Select(properties => properties.ContainsKey("Path") ? properties["Path"] : null)
-                            .FirstOrDefault();
-
-                        var trackProperties = removeTrackCommand.TrackProperties
-                            .Where(properties => properties.ContainsValue(trackDisplayID))
-                            .Select(properties => properties)
-                            .FirstOrDefault();
-
-                        if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
-                        {
-                            StartCoroutine(LoadAudioClipFromFile(path, null, true));
-                        }
-                        else
-                        {
-                            Debug.LogError("Invalid file path or file does not exist. Action can not be undone");
-                        }
-                    }
-                },
-                //Add more switch arms here as needed
-                _ => () => Debug.LogWarning($"Unhandled command: {request}")
-            };
-
-            action();
-        }
-
-
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveTrack(int trackDisplayID)
-        {
-            Track trackToRemove = GetTrackAtID(trackDisplayID);
-            var title = (string)trackToRemove.TrackProperties.GetProperty(trackToRemove.TrackID, "Title");
-
-            ObserverManager.Instance.NotifyObservers("OnTrackRemoved", trackToRemove);
-
-            TrackList.Remove(trackToRemove);
-
-            StartCoroutine(ShowRemovedTrackMessage(title));
-
-            // Remove the track entry from the Tracks table in the database
-            using (var connection = new SqliteConnection(ConnectionString))
-            {
-                connection.Open();
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "DELETE FROM Tracks WHERE TrackID = @trackID";
-                    command.Parameters.AddWithValue("@trackID", trackDisplayID);
-                    command.ExecuteNonQuery();
-                }
-            }
-
-            Debug.Log($"Track '{trackToRemove}' with ID '{trackToRemove.TrackID}' has been removed from the media library.");
-
-            // Destroy Track Game Object in the scene
-            Track[] allTracks = FindObjectsOfType<Track>();
-            Track trackToDestroy = allTracks.FirstOrDefault(t => t.TrackID == trackToRemove.TrackID);
-            Destroy(trackToDestroy.gameObject);
-        }
-
-        private IEnumerator ShowRemovedTrackMessage(string title)
-        {
-            UITextTicker uiTextTicker = FindObjectOfType<UITextTicker>();
-
-            if (uiTextTicker != null)
-            {
-                // Wait for the message to be displayed
-                yield return StartCoroutine(uiTextTicker.TempMessage(6f, $"{title} removed from library", true));
-            }
-            else
-            {
-                Debug.LogError("UITextTicker component not found.");
-            }
-        }
-
-        public void LoadNewTrack(AddTrackCommand addTrackCommand)
-        {
-            string[] paths = OpenFileDialog();
-
-            bool isBulkAdd = paths.Length > 3 ? true : false;
-
-            if (isBulkAdd)
-            {
-                NotifyBulkTrackAddStart();
-            }
-            //This has to be a seperate method in order for BulkTrackAddEnd to not get called immediately, but instead wait till all LoadAudioClip coroutines to finish first
-            StartCoroutine(LoadAllNewTracks(paths, addTrackCommand, isBulkAdd));
-
-            static void NotifyBulkTrackAddStart()
-            {
-                ObserverManager.Instance.NotifyObservers("BulkTrackAddStart", null);
-            }
         }
 
         private IEnumerator LoadAllNewTracks(string[] paths, AddTrackCommand addTrackCommand, bool isBulkAdd)
@@ -415,7 +304,7 @@ namespace AudioFile.Controller
         {
             List<string> metadata = ExtractFileMetadata(filePath); //Metadata is always extracted even when loading clips that have already been added to the Library before.
                                                                    //This is so if the user updates/fixes any mistakes in the local file themselves these will be automatically propagated on load
-
+            metadata.Add(filePath);
             // Escape any '#' characters in the path for UnityWebRequest
             string escapedPath = filePath.Replace("#", "%23"); 
 
@@ -434,38 +323,40 @@ namespace AudioFile.Controller
                 }
                 else
                 {
-                    AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
-                    if (audioClip != null && audioClip.samples > 0)
-                    {
-                        Debug.Log("Successfully loaded audio clip!");
-
-                        string trackTitle = metadata[0];
-                        string contributingArtists = metadata[1];
-                        string trackAlbum = metadata[2];
-                        int albumTrackNumber = (metadata[3]) != null ? int.Parse(metadata[3]) : 0;
-
-                        if (isNewTrack)
-                        {
-                            trackToAdd = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, albumTrackNumber, isNewTrack);
-                        }
-                        else
-                        {
-                            trackToAdd = Track.CreateTrack(audioClip, trackTitle, contributingArtists, trackAlbum, filePath, albumTrackNumber);
-                        }
-
-                        // Invoke the callback with the new track.
-                        // If an existing track is being loaded then trackToAdd will not be used in the callback function OnAllTracksDeserialized
-                        //However trackToAdd will be used from within LoadNewTrack to set the Tracks associated with the AddTrackCommand (for undo operations later)
-
-                        onTrackLoaded?.Invoke(trackToAdd);
-                    }
-                    else
-                    {
-                        Debug.Log($"Unknown error: Audio clip is either null or has no samples. audioClip: {audioClip} samples: {audioClip.samples}");
-                        ObserverManager.Instance.NotifyObservers("AudioFileError", $"Unknown error loading/creating audio file: {metadata[0]} - {metadata[1]}");
-                    }
+                    trackToAdd = HandleTrackCreation(onTrackLoaded, isNewTrack, metadata, trackToAdd, www);
                 }
             }
+        }
+
+        private static Track HandleTrackCreation(Action<Track> onTrackLoaded, bool isNewTrack, List<string> metadata, Track trackToAdd, UnityWebRequest www)
+        {
+            AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
+            if (audioClip != null && audioClip.samples > 0)
+            {
+                Debug.Log("Successfully loaded audio clip!");
+
+                if (isNewTrack)
+                {
+                    trackToAdd = Track.CreateTrack(audioClip, metadata, isNewTrack);
+                }
+                else
+                {
+                    trackToAdd = Track.CreateTrack(audioClip, metadata);
+                }
+
+                // Invoke the callback with the new track.
+                // If an existing track is being loaded then trackToAdd will not be used in the callback function OnAllTracksDeserialized
+                //However trackToAdd will be used from within LoadAllNewTracks to set the Tracks associated with the AddTrackCommand (for undo operations later)
+
+                onTrackLoaded?.Invoke(trackToAdd);
+            }
+            else
+            {
+                Debug.Log($"Unknown error: Audio clip is either null or has no samples. audioClip: {audioClip} samples: {audioClip.samples}");
+                ObserverManager.Instance.NotifyObservers("AudioFileError", $"Unknown error loading/creating audio file: {metadata[0]} - {metadata[1]}");
+            }
+
+            return trackToAdd;
         }
 
         private List<string> ExtractFileMetadata(string filePath)
@@ -572,6 +463,160 @@ namespace AudioFile.Controller
                 // All coroutines have completed
                 ObserverManager.Instance.NotifyObservers("TracksDeserialized", TrackList);
             }
+        }
+
+        private void HandleTrackEntryRemovalSQLCommand(int trackDisplayID)
+        {
+            // Remove the track entry from the Tracks table in the database
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "DELETE FROM Tracks WHERE TrackID = @trackID";
+                    command.Parameters.AddWithValue("@trackID", trackDisplayID);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        private static void HandleTrackInstanceDestroy(Track trackToRemove)
+        {
+            // Destroy Track Game Object in the scene
+            Track[] allTracks = FindObjectsOfType<Track>();
+            Track trackToDestroy = allTracks.FirstOrDefault(t => t.TrackID == trackToRemove.TrackID);
+            Destroy(trackToDestroy.gameObject);
+        }
+
+        private IEnumerator ShowRemovedTrackMessage(string title)
+        {
+            UITextTicker uiTextTicker = FindObjectOfType<UITextTicker>();
+
+            if (uiTextTicker != null)
+            {
+                // Wait for the message to be displayed
+                yield return StartCoroutine(uiTextTicker.TempMessage(6f, $"{title} removed from library", true));
+            }
+            else
+            {
+                Debug.LogError("UITextTicker component not found.");
+            }
+        }
+
+        private void HandleTrackRemovalCommandUndo(RemoveTrackCommand removeTrackCommand, int trackDisplayID)
+        {
+            var path = (string)removeTrackCommand.TrackProperties
+                .Where(properties => properties.ContainsValue(trackDisplayID))
+                .Select(properties => properties.ContainsKey("Path") ? properties["Path"] : null)
+                .FirstOrDefault();
+
+            var trackProperties = removeTrackCommand.TrackProperties
+                .Where(properties => properties.ContainsValue(trackDisplayID))
+                .Select(properties => properties)
+                .FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+            {
+                StartCoroutine(LoadAudioClipFromFile(path, null, true));
+            }
+            else
+            {
+                Debug.LogError("Invalid file path or file does not exist. Action can not be undone");
+            }
+        }
+
+        private void HandleActiveTrackOnTrackRemoval(RemoveTrackCommand removeTrackCommand)
+        {
+            var activeTrackID = ActiveTrack.TrackID;
+
+            if (removeTrackCommand.TrackDisplayIDs.Contains(activeTrackID))
+            {
+                var trackDisplayIDs = removeTrackCommand.TrackDisplayIDs;
+                PlaybackController.Instance.HandleActiveTrackAfterTrackRemoval(trackDisplayIDs);
+            }
+        }
+
+        private void HandleRemoveTrackCommandPropertiesAndTrackRemoval(RemoveTrackCommand removeTrackCommand, int trackDisplayID)
+        {
+            var trackProperties = TrackList
+            .Where(track => track.TrackID == trackDisplayID)
+            .Select(track => new Dictionary<string, object>(track.TrackProperties.GetAllProperties(track.TrackID)))
+            .FirstOrDefault();
+
+            removeTrackCommand.TrackProperties.Add(trackProperties);
+
+            Track trackToRemove = GetTrackAtID(trackDisplayID);
+            string removedTrackPath = (string)trackToRemove.TrackProperties.GetProperty(trackToRemove.TrackID, "Path");
+            removeTrackCommand.Paths.Add(removedTrackPath);
+
+            RemoveTrack(trackDisplayID);
+        }
+
+        private int HandleGetTrackIndexSQLCommand(int trackID, ref int rowIndex, ref int currentRow)
+        {
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqliteCommand(CurrentSQLQueryInject, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read()) //TODO: May be a more efficient way of doing this by simply using SQL commands, but this is how CoPilot suggested I do it considering that CurrentSQLQueryInject is variable. May become inefficient with a large library. Still an O(n) algorithm though.
+                        {
+                            var result = reader["TrackID"];
+                            var readTrackID = Convert.ToInt32(result);
+
+                            if (readTrackID == trackID)
+                            {
+                                rowIndex = currentRow;
+                                break;
+                            }
+                            currentRow++;
+                        }
+                    }
+                }
+            }
+
+            return rowIndex;
+        }
+
+        private void InitializeSQLiteDB()
+        {
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open(); //Will create the database if it doesn't already exist otherwise it opens it
+                CreateSQLiteTracksTable(connection);
+            }
+        }
+
+        private static void CreateSQLiteTracksTable(SqliteConnection connection)
+        {
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+                    CREATE TABLE IF NOT EXISTS Tracks (
+                        TrackID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Title TEXT NOT NULL DEFAULT 'Untitled Track',
+                        Artist TEXT NOT NULL DEFAULT 'Unknown Artist',
+                        Album TEXT NOT NULL DEFAULT 'Unknown Album',
+                        Duration TEXT NOT NULL DEFAULT '--:--',
+                        BPM INTEGER,
+                        Path TEXT NOT NULL DEFAULT 'Unknown Path',
+                        AlbumTrackNumber INTEGER NOT NULL DEFAULT 0
+                    );";
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Initialize()
+        {
+            throw new NotImplementedException();
         }
     }
 }

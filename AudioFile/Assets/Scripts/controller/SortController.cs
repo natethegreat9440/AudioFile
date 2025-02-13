@@ -60,11 +60,6 @@ namespace AudioFile.Controller
                     return "";
             }
         }
-
-        public void Initialize()
-        {
-            throw new NotImplementedException();
-        }
         public void Start()
         {
             ObserverManager.Instance.RegisterObserver("OnNewTrackAdded", this);
@@ -154,37 +149,7 @@ namespace AudioFile.Controller
 
                 CurrentSortOrdering = new List<string> { mainSortProperty, sortProperties[2], sortProperties[0], sortProperties[1] };
 
-                using (var connection = new SqliteConnection(ConnectionString))
-                {
-                    connection.Open();
-
-                    //ASC = ascending
-                    //Adds a filter if a search is active with {FilterSQLQueryInject}. If search is not active, "" is passed as the FilterSQLQueryInject
-                    string query = $@"
-                        SELECT * FROM Tracks
-                        {FilterSQLQueryInject}
-                        ORDER BY 
-                            {CurrentSortOrdering[0]} ASC,
-                            {CurrentSortOrdering[1]} ASC,
-                            {CurrentSortOrdering[2]} ASC,
-                            {CurrentSortOrdering[3]} ASC";
-
-                    CurrentSQLQueryInject = query;
-
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                var result = reader["TrackID"];
-                                var trackID = Convert.ToInt32(result);
-
-                                sortedTrackIDs.Add(trackID);
-                            }
-                        }
-                    }
-                }
+                HandleSortForwardSQLCommand(sortedTrackIDs);
 
                 if (sortedTrackIDs.Count > 0)
                     ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
@@ -210,86 +175,7 @@ namespace AudioFile.Controller
 
                 CurrentSortOrdering = new List<string> { mainSortProperty, sortProperties[2], sortProperties[0], sortProperties[1] };
 
-                using (var connection = new SqliteConnection(ConnectionString))
-                {
-                    connection.Open();
-
-                    //ASC = ascending
-                    //DESC = descending (not Describe as this is not MySQL)
-                    //Adds a filter if a search is active with {FilterSQLQueryInject}. If search is not active, "" is passed as the FilterSQLQueryInject
-                    string query = $@"
-                        SELECT * FROM Tracks
-                        {FilterSQLQueryInject}
-                        ORDER BY 
-                            {CurrentSortOrdering[0]} DESC,
-                            {CurrentSortOrdering[1]} DESC,
-                            {CurrentSortOrdering[2]} ASC,
-                            {CurrentSortOrdering[3]} ASC";
-
-                    CurrentSQLQueryInject = query;
-
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                var result = reader["TrackID"];
-                                int trackID = Convert.ToInt32(result);
-
-                                sortedTrackIDs.Add(trackID);
-                            }
-                        }
-                    }
-                }
-
-                if (sortedTrackIDs.Count > 0)
-                    ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
-            }
-        }
-
-        public void RestoreDefaultOrder(string collectionToSort)
-        {
-            Debug.Log($"Setting {collectionToSort} in default order");
-            var sortedTrackIDs = new List<int>();
-
-            if (collectionToSort == "Tracks") 
-            {
-                using (var connection = new SqliteConnection(ConnectionString))
-                {
-                    connection.Open();
-
-                    //ASC = ascending
-                    string query = $@"
-                        SELECT * FROM Tracks
-                        {FilterSQLQueryInject}
-                        ORDER BY 
-                            Artist ASC,
-                            Album ASC,
-                            AlbumTrackNumber ASC,
-                            Title ASC";
-
-                    CurrentSQLQueryInject = query;
-
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                if (reader["TrackID"] != DBNull.Value)
-                                {
-                                    var trackID = Convert.ToInt32(reader["TrackID"]);
-                                    sortedTrackIDs.Add(trackID);
-                                }
-                                else
-                                {
-                                    Debug.LogWarning("TrackID is null");
-                                }
-                            }
-                        }
-                    }
-                }
+                HandleSortReverseSQLCommand(sortedTrackIDs);
 
                 if (sortedTrackIDs.Count > 0)
                     ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
@@ -302,10 +188,7 @@ namespace AudioFile.Controller
 
             foreach (var button in UISortButtonsManager.Instance.SortButtons)
             {
-                if (button.State != SortButtonState.Default)
-                {
-                    buttonToSortBy = button;
-                }
+                buttonToSortBy = GetButtonToSortBy(buttonToSortBy, button);
             }
 
             if (buttonToSortBy == null)
@@ -314,18 +197,162 @@ namespace AudioFile.Controller
             }
             else //This block ensures the sort state persists as new tracks get added
             {
-                if (buttonToSortBy.State == SortButtonState.Forward)
+                DetermineSortDirection(buttonToSortBy);
+            }
+        }
+
+        public void RestoreDefaultOrder(string collectionToSort)
+        {
+            Debug.Log($"Setting {collectionToSort} in default order");
+            var sortedTrackIDs = new List<int>();
+
+            if (collectionToSort == "Tracks")
+            {
+                HandleDefaultSortSQLCommand(sortedTrackIDs);
+
+                if (sortedTrackIDs.Count > 0)
+                    ObserverManager.Instance.NotifyObservers("OnCollectionReordered", sortedTrackIDs);
+            }
+        }
+
+        private void HandleSortForwardSQLCommand(List<int> sortedTrackIDs)
+        {
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+
+                //ASC = ascending
+                //Adds a filter if a search is active with {FilterSQLQueryInject}. If search is not active, "" is passed as the FilterSQLQueryInject
+                string query = $@"
+                        SELECT * FROM Tracks
+                        {FilterSQLQueryInject}
+                        ORDER BY 
+                            {CurrentSortOrdering[0]} ASC,
+                            {CurrentSortOrdering[1]} ASC,
+                            {CurrentSortOrdering[2]} ASC,
+                            {CurrentSortOrdering[3]} ASC";
+
+                CurrentSQLQueryInject = query;
+
+                using (var command = new SqliteCommand(query, connection))
                 {
-                    SortForward(UITrackListDisplayManager.Instance.TracksDisplayed, buttonToSortBy.SortProperty);
-                }
-                else if (buttonToSortBy.State == SortButtonState.Reverse)
-                {
-                    SortReverse(UITrackListDisplayManager.Instance.TracksDisplayed, buttonToSortBy.SortProperty);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var result = reader["TrackID"];
+                            var trackID = Convert.ToInt32(result);
+
+                            sortedTrackIDs.Add(trackID);
+                        }
+                    }
                 }
             }
         }
 
+        private void HandleSortReverseSQLCommand(List<int> sortedTrackIDs)
+        {
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+
+                //ASC = ascending
+                //DESC = descending (not Describe as this is not MySQL)
+                //Adds a filter if a search is active with {FilterSQLQueryInject}. If search is not active, "" is passed as the FilterSQLQueryInject
+                string query = $@"
+                        SELECT * FROM Tracks
+                        {FilterSQLQueryInject}
+                        ORDER BY 
+                            {CurrentSortOrdering[0]} DESC,
+                            {CurrentSortOrdering[1]} DESC,
+                            {CurrentSortOrdering[2]} ASC,
+                            {CurrentSortOrdering[3]} ASC";
+
+                CurrentSQLQueryInject = query;
+
+                using (var command = new SqliteCommand(query, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var result = reader["TrackID"];
+                            int trackID = Convert.ToInt32(result);
+
+                            sortedTrackIDs.Add(trackID);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void HandleDefaultSortSQLCommand(List<int> sortedTrackIDs)
+        {
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+
+                //ASC = ascending
+                string query = $@"
+                        SELECT * FROM Tracks
+                        {FilterSQLQueryInject}
+                        ORDER BY 
+                            Artist ASC,
+                            Album ASC,
+                            AlbumTrackNumber ASC,
+                            Title ASC";
+
+                CurrentSQLQueryInject = query;
+
+                using (var command = new SqliteCommand(query, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            if (reader["TrackID"] != DBNull.Value)
+                            {
+                                var trackID = Convert.ToInt32(reader["TrackID"]);
+                                sortedTrackIDs.Add(trackID);
+                            }
+                            else
+                            {
+                                Debug.LogWarning("TrackID is null");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void DetermineSortDirection(SortButton buttonToSortBy)
+        {
+            if (buttonToSortBy.State == SortButtonState.Forward)
+            {
+                SortForward(UITrackListDisplayManager.Instance.TracksDisplayed, buttonToSortBy.SortProperty);
+            }
+            else if (buttonToSortBy.State == SortButtonState.Reverse)
+            {
+                SortReverse(UITrackListDisplayManager.Instance.TracksDisplayed, buttonToSortBy.SortProperty);
+            }
+        }
+
+        private static SortButton GetButtonToSortBy(SortButton buttonToSortBy, SortButton button)
+        {
+            if (button.State != SortButtonState.Default)
+            {
+                buttonToSortBy = button;
+            }
+
+            return buttonToSortBy;
+        }
+
         public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Initialize()
         {
             throw new NotImplementedException();
         }

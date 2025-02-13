@@ -373,7 +373,7 @@ namespace AudioFile.Controller
             else
             {
                 //Note that the GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1
-                nextTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, true); //True indicates to grab the index of next track in Tracks table
+                nextTrackIndex = TrackLibraryController.Instance.GetNextTrackIndex(ActiveTrack.TrackID); 
                 tracksLength = TrackLibraryController.Instance.GetTracksLength();
             }
         }
@@ -391,7 +391,7 @@ namespace AudioFile.Controller
             else
             {
                 //Note that the GetTrackIndex queries a SQLite table that is non-zero indexed and starts at 1
-                prevTrackIndex = TrackLibraryController.Instance.GetTrackIndex(ActiveTrack.TrackID, false, true); //False and then true indicates to grab the index of previous track in table
+                prevTrackIndex = TrackLibraryController.Instance.GetPrevTrackIndex(ActiveTrack.TrackID); 
             }
 
             return prevTrackIndex;

@@ -50,10 +50,17 @@ namespace AudioFile.Model
 
         #region Track Setup
         // Static factory method to create and initialize Track
-        public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
+        /*public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
                                 string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album",
-                                string loadedPath = "Unknown Path", int albumTrackNumber = 0, bool isNewTrack = false)
+                                string loadedPath = "Unknown Path", int albumTrackNumber = 0, bool isNewTrack = false)*/
+        public static Track CreateTrack(AudioClip loadedClip, List<string> metadata, bool isNewTrack = false)
         {
+            string trackTitle = metadata[0];
+            string contributingArtists = metadata[1];
+            string trackAlbum = metadata[2];
+            int albumTrackNumber = (metadata[3]) != null ? int.Parse(metadata[3]) : 0;
+            string loadedPath = metadata[4];
+
             Track track = null;
 
             using (var connection = new SqliteConnection(SetupController.Instance.ConnectionString))
@@ -78,7 +85,7 @@ namespace AudioFile.Model
                     }
 
                     command.Parameters.AddWithValue("@Title", trackTitle);
-                    command.Parameters.AddWithValue("@Artist", trackArtist);
+                    command.Parameters.AddWithValue("@Artist", contributingArtists);
                     command.Parameters.AddWithValue("@Album", trackAlbum);
                     command.Parameters.AddWithValue("@Duration", ""); // Initialize() will add this
                     command.Parameters.AddWithValue("@Path", loadedPath);
