@@ -50,9 +50,6 @@ namespace AudioFile.Model
 
         #region Track Setup
         // Static factory method to create and initialize Track
-        /*public static Track CreateTrack(AudioClip loadedClip, string trackTitle = "Untitled Track",
-                                string trackArtist = "Unknown Artist", string trackAlbum = "Unknown Album",
-                                string loadedPath = "Unknown Path", int albumTrackNumber = 0, bool isNewTrack = false)*/
         public static Track CreateTrack(AudioClip loadedClip, List<string> metadata, bool isNewTrack = false)
         {
             string trackTitle = metadata[0];

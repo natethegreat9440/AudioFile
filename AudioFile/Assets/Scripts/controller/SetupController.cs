@@ -39,18 +39,6 @@ namespace AudioFile.Controller
             }
         }
 
-        private void Awake()
-        {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(this.gameObject);
-                return;
-            }
-            _instance = this;
-            DontDestroyOnLoad(this.gameObject);
-        }
-
-
         private UIFileMenuSetup fileMenuSetup;
 
         //No CreateSingleton() method needed for this controller as it is already attached to a GameObject in the scene
@@ -74,17 +62,30 @@ namespace AudioFile.Controller
             SetupFileMenu();
         }
 
+        private void Awake()
+        {
+            if (_instance != null && _instance != this)
+            {
+                Destroy(this.gameObject);
+                return;
+            }
+            _instance = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
+
+        private void SetupFileMenu()
+        {
+            GameObject fileMenuSetupObject = new GameObject("FileMenuSetup");
+            fileMenuSetup = fileMenuSetupObject.AddComponent<UIFileMenuSetup>();
+            fileMenuSetup.Initialize();
+        }
+
         private static string SetSQLLiteDBLocation()
         {
             try
             {
                 #if UNITY_EDITOR //This if statement only occurs while using the Unity Editor which defaults to the One Drive/MyDocuments folder for testing. Unfortunately Environment.SpecialFolder.MyDocuments defaults to the OneDrive/MyDocuments instead of the actual Documents folder on my PC. Maybe I'll fix that later        
-                        string dbDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AudioFileDB");
-                        if (!System.IO.Directory.Exists(dbDirectory))
-                        {
-                            System.IO.Directory.CreateDirectory(dbDirectory);
-                        }
-                        return "URI=file:" + dbDirectory.Replace("\\", "/") + "/AudioFile.db";
+                        return SetDirectoryForUnityEditor();
                 #else
                         //return AppDomain.CurrentDomain.BaseDirectory.Replace("\\", "/");; //Saves to same location as the executable, but this could result in permissions issues depending on if the default install location is selected on a non-admin user profile (ProgramFiles typically requires admin privileges when writing files)
                         return "URI=file:" + Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("\\", "/") + "/AudioFile.db";
@@ -97,6 +98,17 @@ namespace AudioFile.Controller
                 return string.Empty;
             }
         }
+
+        private static string SetDirectoryForUnityEditor()
+        {
+            string dbDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AudioFileDB");
+            if (!System.IO.Directory.Exists(dbDirectory))
+            {
+                System.IO.Directory.CreateDirectory(dbDirectory);
+            }
+            return "URI=file:" + dbDirectory.Replace("\\", "/") + "/AudioFile.db";
+        }
+
         public void Initialize()
         {
             throw new NotImplementedException();
@@ -109,13 +121,6 @@ namespace AudioFile.Controller
         public void Dispose()
         {
             throw new NotImplementedException();
-        }
-
-        private void SetupFileMenu()
-        {
-            GameObject fileMenuSetupObject = new GameObject("FileMenuSetup");
-            fileMenuSetup = fileMenuSetupObject.AddComponent<UIFileMenuSetup>();
-            fileMenuSetup.Initialize();
         }
     }
 }
