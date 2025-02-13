@@ -118,9 +118,10 @@ namespace AudioFile.Controller
 
             SearchResults.Clear();
 
-            if (request is SearchCommand searchCommand)
+            if ((request is SearchCommand ) || request == null)
             {
-                activeSearchCommand = searchCommand;
+                if (request is SearchCommand searchCommand)
+                    activeSearchCommand = searchCommand;
 
                 if (activeSearchCommand.SearchType == "All")
                 {
@@ -146,6 +147,12 @@ namespace AudioFile.Controller
             {
                 ObserverManager.Instance.NotifyObservers("AudioFileError", "Search results not found.");
             }
+        }
+
+        public void ClearSearch()
+        {
+            SearchResults.Clear();
+            IsFiltered = false;
         }
 
         private void HandleSinglePropertySearch()
