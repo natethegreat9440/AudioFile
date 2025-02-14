@@ -7,8 +7,7 @@ using Button = UnityEngine.UI.Button; // Add this line to resolve ambiguity
 using AudioFile.Controller;
 using AudioFile.Model;
 using AudioFile.Utilities;
-using Unity.VisualScripting;
-using UnityEngine.UIElements;
+
 
 namespace AudioFile.View
 {
@@ -26,6 +25,7 @@ namespace AudioFile.View
 
         Button backButton;
 
+        private bool previousFilterState;
         void Start()
         {
             Canvas canvas = GameObject.Find("GUI_Canvas").GetComponent<Canvas>();
@@ -40,13 +40,17 @@ namespace AudioFile.View
         }
         void Update()
         {
-            if (!isFiltered)
+            if (isFiltered != previousFilterState)
             {
-                DisableButton();
-            }
-            else
-            {
-                EnableButton();
+                previousFilterState = isFiltered;
+                if (previousFilterState)
+                {
+                    EnableButton();
+                }
+                else
+                {
+                    DisableButton();
+                }
             }
         }
 

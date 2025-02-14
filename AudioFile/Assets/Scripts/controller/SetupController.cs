@@ -9,6 +9,7 @@ using AudioFile.View;
 using System;
 using Mono.Data.Sqlite;
 using System.IO;
+using Application = UnityEngine.Application;
 
 namespace AudioFile.Controller
 {
@@ -48,6 +49,7 @@ namespace AudioFile.Controller
         public void Start()
         {
             ConnectionString = SetSQLLiteDBLocation();
+
             Debug.Log($"AudioFile.db located here {ConnectionString}");
 
             var observerManager = ObserverManager.Instance; //Only assigned to a reference variable here to wake it up for all of it's dependents
@@ -64,6 +66,10 @@ namespace AudioFile.Controller
 
         private void Awake()
         {
+            SQLiteLoader.ForceLoadLocalSQLite(); //Manually loads the Mono.Data.Sqlite v1.0.61.0 assembly from Plugins rather than trying to find any other versions on the system
+            Debug.Log($"Using SQLite version: {Mono.Data.Sqlite.SqliteConnection.SQLiteVersion}");
+            Debug.Log($"Application.dataPath: {Application.dataPath}");
+
             if (_instance != null && _instance != this)
             {
                 Destroy(this.gameObject);
