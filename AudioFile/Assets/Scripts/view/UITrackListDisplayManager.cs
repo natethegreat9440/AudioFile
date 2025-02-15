@@ -85,6 +85,7 @@ namespace AudioFile.View
             ObserverManager.Instance.RegisterObserver("TracksDeserialized", this);
             ObserverManager.Instance.RegisterObserver("OnCollectionReordered", this);
             ObserverManager.Instance.RegisterObserver("SearchResultsFound", this);
+            //ObserverManager.Instance.RegisterObserver("SearchCleared", this);
         }
 
         public void AudioFileUpdate(string observationType, object data)
@@ -97,7 +98,6 @@ namespace AudioFile.View
                     {
                         StartCoroutine(PopulateDisplayInitally(initialTrackList));
                     }
-
                 },
                 "OnNewTrackAdded" => () => StartCoroutine(AddTrackOnUpdate(data)),
                 "OnTrackRemoved" => () =>
@@ -122,6 +122,10 @@ namespace AudioFile.View
                     if (data is List<int> searchResults)
                         StartCoroutine(UpdateDisplay(searchResults));
                 },
+                /*"SearchCleared" => () =>
+                {
+                     StartCoroutine(UpdateDisplay(searchResults));
+                },*/
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };

@@ -25,7 +25,7 @@ namespace AudioFile.View
 
         Button backButton;
 
-        private bool previousFilterState;
+        private bool previousFilterState = true;
         void Start()
         {
             Canvas canvas = GameObject.Find("GUI_Canvas").GetComponent<Canvas>();

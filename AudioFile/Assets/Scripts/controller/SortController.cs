@@ -63,6 +63,7 @@ namespace AudioFile.Controller
         public void Start()
         {
             ObserverManager.Instance.RegisterObserver("OnNewTrackAdded", this);
+            ObserverManager.Instance.RegisterObserver("SearchCleared", this);
         }
 
         public void AudioFileUpdate(string observationType, object data)
@@ -70,6 +71,10 @@ namespace AudioFile.Controller
             Action action = observationType switch
             {
                 "OnNewTrackAdded" => () =>
+                {
+                    RefreshSorting();
+                },
+                "SearchCleared" => () =>
                 {
                     RefreshSorting();
                 },

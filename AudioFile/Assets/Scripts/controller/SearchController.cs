@@ -118,18 +118,25 @@ namespace AudioFile.Controller
 
             SearchResults.Clear();
 
-            if ((request is SearchCommand ) || request == null)
+            if ((request is SearchCommand) || request == null)
             {
                 if (request is SearchCommand searchCommand)
                     activeSearchCommand = searchCommand;
 
-                if (activeSearchCommand.SearchType == "All")
+                if (activeSearchCommand.UserQuery != "")
                 {
-                    HandleAllPropertySearch();
+                    if (activeSearchCommand.SearchType == "All")
+                    {
+                        HandleAllPropertySearch();
+                    }
+                    else
+                    {
+                        HandleSinglePropertySearch();
+                    }
                 }
-                else 
+                else
                 {
-                    HandleSinglePropertySearch();
+                    ClearSearch();
                 }
             }
 
@@ -138,10 +145,10 @@ namespace AudioFile.Controller
                 HandleFoundSearchResults();
             }
 
-            else if (activeSearchCommand.UserQuery == "")
+            /*else if (activeSearchCommand.UserQuery == "")
             {
                 IsFiltered = false;
-            }
+            }*/
 
             else
             {
@@ -153,6 +160,9 @@ namespace AudioFile.Controller
         {
             SearchResults.Clear();
             IsFiltered = false;
+            activeSearchCommand = null;
+
+            ObserverManager.Instance.NotifyObservers("SearchCleared", null);
         }
 
         private void HandleSinglePropertySearch()
@@ -203,14 +213,17 @@ namespace AudioFile.Controller
 
         private void HandleFoundSearchResults()
         {
-            // Ensure SearchResults is distinct (has no duplicates) after all iterations
-            SearchResults = SearchResults.Distinct().ToList();
-
-            if (activeSearchCommand.UserQuery != "")
+            if (activeSearchCommand != null)
             {
-                IsFiltered = true;
+                // Ensure SearchResults is distinct (has no duplicates) after all iterations
+                SearchResults = SearchResults.Distinct().ToList();
+
+                if (activeSearchCommand.UserQuery != "")
+                {
+                    IsFiltered = true;
+                }
+                ObserverManager.Instance.NotifyObservers("SearchResultsFound", SearchResults);
             }
-            ObserverManager.Instance.NotifyObservers("SearchResultsFound", SearchResults);
         }
 
         public void Dispose()
