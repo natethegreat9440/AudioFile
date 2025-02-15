@@ -14,7 +14,7 @@ namespace AudioFile.Controller
     /// Will be modified to pass along all commands to the CommandStackController for undo/redo operations.
     /// Members: ActiveTrack, SelectedTrack, GetCurentTrackIndex(), HandlePlayPauseButton(), SetActiveTrack(), SetSelectedTrack(),
     /// Play(), Pause(), Stop(), NextItem(), PreviousItem(), Skip(), Seek(), GetTime().
-    /// Implements Awake(), Start(), and Update() from MonoBehaviour. Implements AudioFileUpdate() from IAudioFileObserver. Implements HandleRequest() from IController.
+    /// Implements Awake(), Start(), and Update() from MonoBehaviour. Implements AudioFileUpdate() from IAudioFileObserver. Implements HandleUserRequest() from IController.
     /// This controller has no implementation for IController methods Initialize() or Dispose() (yet).
     /// </remarks>
     /// <see cref="MonoBehaviour"/>
@@ -96,7 +96,7 @@ namespace AudioFile.Controller
             action();
         }
 
-        public void HandleRequest(object request, bool isUndo = false)
+        public void HandleUserRequest(object request, bool isUndo = false)
         {
             //Add methods to log these commands with the UndoController
             string command = request.GetType().Name;
@@ -282,17 +282,17 @@ namespace AudioFile.Controller
             if (ActiveTrack == null)
             {
                 // Play the selected track
-                HandleRequest(new PlayCommand(trackDisplayID));
+                HandleUserRequest(new PlayCommand(trackDisplayID));
             }
             else if (ActiveTrack != null && ActiveTrack.TrackID == trackDisplayID && SelectedTrack.IsPlaying) //TODO: see if third condition is necessary or if it is just redundant
             {
                 // Pause the active track
-                HandleRequest(new PauseCommand(trackDisplayID));
+                HandleUserRequest(new PauseCommand(trackDisplayID));
             }
             else
             {
                 // Play the active/selected track
-                HandleRequest(new PlayCommand(trackDisplayID));
+                HandleUserRequest(new PlayCommand(trackDisplayID));
             }
         }
 

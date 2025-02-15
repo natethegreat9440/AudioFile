@@ -7,6 +7,7 @@ using Button = UnityEngine.UI.Button; // Add this line to resolve ambiguity
 using AudioFile.Controller;
 using AudioFile.Model;
 using AudioFile.Utilities;
+using UnityEngine.Windows;
 
 
 namespace AudioFile.View
@@ -34,7 +35,7 @@ namespace AudioFile.View
 
             if (backButton != null)
             {
-                backButton.onClick.AddListener(() => SearchController.Instance.ClearSearch());
+                backButton.onClick.AddListener(() => SearchController.Instance.HandleUserRequest(new BackCommand()));
             }
 
         }

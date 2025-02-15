@@ -13,7 +13,7 @@ namespace AudioFile.Controller
     /// Singleton Sort Controller in AudioFile used for controlling sort behavior as triggered by the UI, loading UITrackListDisplayManager, and PlaybackController among others using SQLite injections. 
     /// This class file also contains the LibrarySortProperties enum which is used internally to specify the default sort method for the library, which is the default model view upon load.
     /// <remarks>
-    /// Members: SortForward(), SortReverse(), RestoreDefaultOrder(), RefreshSorting(). Coroutine LoadAudioClipFromFile(). Implements HandleRequest() from IController. Implements AudioFileUpdate() from IAudioFileObserver.
+    /// Members: SortForward(), SortReverse(), RestoreDefaultOrder(), RefreshSorting(). Coroutine LoadAudioClipFromFile(). Implements HandleUserRequest() from IController. Implements AudioFileUpdate() from IAudioFileObserver.
     /// This controller has no implementation for IController methods Initialize() or Dispose() (yet).
     /// </remarks>
     /// <see cref="MonoBehaviour"/>
@@ -84,7 +84,7 @@ namespace AudioFile.Controller
 
             action();
         }
-        public void HandleRequest(object request, bool isUndo)
+        public void HandleUserRequest(object request, bool isUndo)
         {
             //Add methods to log these commands with the UndoController
             SortCommand command = request as SortCommand;

@@ -32,10 +32,10 @@ namespace AudioFile.View
             //if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             //{
             //    Debug.Log("Search command sent");
-            //    SearchController.Instance.HandleRequest(new SearchCommand(input, ActiveCollection));
+            //    SearchController.Instance.HandleUserRequest(new SearchCommand(input, ActiveCollection));
             //}
             Debug.Log("Search command sent");
-            SearchController.Instance.HandleRequest(new SearchCommand(input, ActiveCollection));
+            SearchController.Instance.HandleUserRequest(new SearchCommand(input, ActiveCollection));
         }
     }
 }

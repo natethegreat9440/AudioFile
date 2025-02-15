@@ -74,7 +74,7 @@ namespace AudioFile.View
             {
                 float newTime = sliderValue * PlaybackController.Instance.ActiveTrack.GetDuration();
                 float previousTime = PlaybackController.Instance.GetTime();
-                PlaybackController.Instance.HandleRequest(new SeekCommand(previousTime, newTime));
+                PlaybackController.Instance.HandleUserRequest(new SeekCommand(previousTime, newTime));
             }
         }
     }

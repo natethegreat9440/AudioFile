@@ -99,7 +99,7 @@ namespace AudioFile.View
                 {
                     if (PlaybackController.Instance.ActiveTrack != null)
                     {
-                        PlaybackController.Instance.HandleRequest(new PreviousItemCommand());
+                        PlaybackController.Instance.HandleUserRequest(new PreviousItemCommand());
                     }
                 });
             }
@@ -111,7 +111,7 @@ namespace AudioFile.View
                 {
                     if (PlaybackController.Instance.ActiveTrack != null)
                     {
-                        PlaybackController.Instance.HandleRequest(new NextItemCommand());
+                        PlaybackController.Instance.HandleUserRequest(new NextItemCommand());
                     }
                 });
             }
@@ -123,7 +123,7 @@ namespace AudioFile.View
                 {
                     if (PlaybackController.Instance.ActiveTrack != null)
                     {
-                        PlaybackController.Instance.HandleRequest(new StopCommand(trackDisplayID));
+                        PlaybackController.Instance.HandleUserRequest(new StopCommand(trackDisplayID));
                     }
                 });
             }

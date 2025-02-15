@@ -80,7 +80,7 @@ namespace AudioFile.Controller
             action();
         }
 
-        public void HandleRequest(object request, bool isUndo = false)
+        public void HandleUserRequest(object request, bool isUndo = false)
         {
             string command = request.GetType().Name;
 
@@ -91,6 +91,14 @@ namespace AudioFile.Controller
                     "SearchCommand" => () =>
                     {
                         HandleSearch(request);
+                    },
+                    "BackCommand" => () =>
+                    {
+                        if (request is BackCommand backCommand)
+                        {
+                            backCommand.PreviousSearchResults = SearchResults;
+                            ClearSearch();
+                        }
                     },
                     //Add more switch arms here as needed
                     _ => () => Debug.LogWarning($"Unhandled command: {request}")
@@ -103,7 +111,16 @@ namespace AudioFile.Controller
                 {
                     "SearchCommand" => () =>
                     {
-                        //TODO: Delegate to UITrackDisplayManager to undo the search/reset how UITrackDisplayManager is displaying
+                        ClearSearch();
+                    },
+                    "BackCommand" => () =>
+                    {
+                        if (request is BackCommand backCommand)
+                        {
+                            SearchResults = backCommand.PreviousSearchResults;
+                            IsFiltered = true;
+                            ObserverManager.Instance.NotifyObservers("SearchResultsFound", SearchResults);
+                        }
                     },
                     //Add more switch arms here as needed
                     _ => () => Debug.LogWarning($"Unhandled command: {request}")
@@ -142,7 +159,8 @@ namespace AudioFile.Controller
 
             if (SearchResults.Count > 0)
             {
-                HandleFoundSearchResults();
+                if (activeSearchCommand != null)
+                    HandleFoundSearchResults();
             }
 
             /*else if (activeSearchCommand.UserQuery == "")
@@ -213,8 +231,6 @@ namespace AudioFile.Controller
 
         private void HandleFoundSearchResults()
         {
-            if (activeSearchCommand != null)
-            {
                 // Ensure SearchResults is distinct (has no duplicates) after all iterations
                 SearchResults = SearchResults.Distinct().ToList();
 
@@ -222,8 +238,8 @@ namespace AudioFile.Controller
                 {
                     IsFiltered = true;
                 }
+
                 ObserverManager.Instance.NotifyObservers("SearchResultsFound", SearchResults);
-            }
         }
 
         public void Dispose()

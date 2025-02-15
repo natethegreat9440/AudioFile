@@ -290,19 +290,19 @@ namespace AudioFile.View
 
             Action action = buttonType switch
             {
-                "Duration" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayID)),
-                "Title" => () => PlaybackController.Instance.HandleRequest(new PlayCommand(trackDisplayID)),
+                "Duration" => () => PlaybackController.Instance.HandleUserRequest(new PlayCommand(trackDisplayID)),
+                "Title" => () => PlaybackController.Instance.HandleUserRequest(new PlayCommand(trackDisplayID)),
                 "Artist" => () =>
                 {
                     Debug.Log("Search command sent with Artist filter");
                     var query = trackDisplay.ArtistButton.GetComponentInChildren<Text>().text.Trim();
-                    SearchController.Instance.HandleRequest(new SearchCommand(query, TracksDisplayed, "Artist"));
+                    SearchController.Instance.HandleUserRequest(new SearchCommand(query, TracksDisplayed, "Artist"));
                 },
                 "Album" => () =>
                 {
                     Debug.Log("Search command sent with Album filter");
                     var query = trackDisplay.AlbumButton.GetComponentInChildren<Text>().text.Trim();
-                    SearchController.Instance.HandleRequest(new SearchCommand(query, TracksDisplayed, "Album"));
+                    SearchController.Instance.HandleUserRequest(new SearchCommand(query, TracksDisplayed, "Album"));
                 },
                 _ => () => Debug.LogWarning("Unknown button type double-clicked.")
             };

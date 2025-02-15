@@ -119,7 +119,7 @@ namespace AudioFile.Controller
         {
             throw new NotImplementedException();
         }
-        public void HandleRequest(object request, bool isUndo)
+        public void HandleUserRequest(object request, bool isUndo)
         {
             throw new NotImplementedException();
         }

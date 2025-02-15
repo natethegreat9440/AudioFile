@@ -13,7 +13,7 @@ namespace AudioFile.Controller
     /// Generic singleton controller for controlling the exit of the application when Exit command is executed
     /// <remarks>
     /// Members: ExitAudioFile() with options for specific Unity Editor and standalone program logic. DropTracksTable() for testing purposes commented out - useful for easily resetting the Tracks table to empty.
-    /// Implements HandleRequest() from IController. Initialize() and Dispose() are not implemented from MonoBehaviour.
+    /// Implements HandleUserRequest() from IController. Initialize() and Dispose() are not implemented from MonoBehaviour.
     /// Interfaces can't inherit from MonoBehaviour. Usually requests are Command objects, but don't have to be.
     /// Bool isUndo specifies if the Command passed should execute it's Undo() operation if true
     /// </remarks>
@@ -42,7 +42,7 @@ namespace AudioFile.Controller
 
         public string ConnectionString => SetupController.Instance.ConnectionString;
 
-        public void HandleRequest(object request, bool isUndo)
+        public void HandleUserRequest(object request, bool isUndo)
         {
             string command = request.GetType().Name;
 

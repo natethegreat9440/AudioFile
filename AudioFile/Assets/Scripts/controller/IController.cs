@@ -9,7 +9,7 @@ namespace AudioFile.Controller
     /// <summary>
     /// Generic interface for controllers in AudioFile
     /// <remarks>
-    /// Members: HandleRequest(). Initialize() and Dispose() are intended to be used as MonoBehaviour methods.
+    /// Members: HandleUserRequest(). Initialize() and Dispose() are intended to be used as MonoBehaviour methods.
     /// Interfaces can't inherit from MonoBehaviour. Usually requests are Command objects, but don't have to be.
     /// Bool isUndo specifies if the Command passed should execute it's Undo() operation if true
     /// </remarks>
@@ -21,7 +21,7 @@ namespace AudioFile.Controller
     {
         void Initialize();
 
-        void HandleRequest(object request, bool isUndo);
+        void HandleUserRequest(object request, bool isUndo);
 
         void Dispose();
 

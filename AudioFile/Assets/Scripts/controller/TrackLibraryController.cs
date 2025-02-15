@@ -24,7 +24,7 @@ namespace AudioFile.Controller
     /// Members: GetTrackAtID(), GetTrackIndex(), GetTrackIDAtIndex(), GetTracksLength(), RemoveTrack(), LoadNewTrack(), ExtractFileMetadata(), OpenFileDialog(), LoadTracksFromDB(), OnTracksDeserialized(). 
     /// Coroutines LoadAudioClipFromFile(), ShowRemovedTrackMessage(). 
     /// Holds TrackList reference which is for all Track objects created in scene (may want to add methods to empty/reload this whenever a playlist/album/main library is loaded/switched).
-    /// Implements Awake() and Start() from MonoBehaviour. Implements HandleRequest() from IController.
+    /// Implements Awake() and Start() from MonoBehaviour. Implements HandleUserRequest() from IController.
     /// This controller has no implementation for IController methods Initialize() or Dispose() (yet).
     /// </remarks>
     /// <see cref="MonoBehaviour"/>
@@ -81,7 +81,7 @@ namespace AudioFile.Controller
             TrackList.Clear();
         }
 
-        public void HandleRequest(object request, bool isUndo)
+        public void HandleUserRequest(object request, bool isUndo)
         {
             string command = request.GetType().Name;
 
