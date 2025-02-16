@@ -1,4 +1,9 @@
 ﻿using NUnit.Framework;
+using Moq;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using HtmlAgilityPack;
 using AudioFile.Controller;
 
 namespace AudioFile.Tests
