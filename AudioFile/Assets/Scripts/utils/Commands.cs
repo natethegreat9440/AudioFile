@@ -1,5 +1,5 @@
 ﻿using UnityEngine.UI;
-using TMPro;
+//using TMPro;
 using System.Collections.Generic;
 using System.Threading;
 using System.Xml.Linq;

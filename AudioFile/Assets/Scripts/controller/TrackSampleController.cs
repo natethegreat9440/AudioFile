@@ -37,11 +37,41 @@ namespace AudioFile.Controller
             return singletonObject.AddComponent<TrackSampleController>();
         }
 
+        private static readonly HttpClient client = new HttpClient();
         public void HandleUserRequest(object request, bool isUndo)
         {
             throw new NotImplementedException();
         }
 
+        public async Task<List<string>> SearchTrackAsync(string trackName)
+        {
+            string searchUrl = $"https://www.whosampled.com/search/tracks/?q={Uri.EscapeDataString(trackName)}";
+            var trackResults = new List<string>();
+
+            try
+            {
+                var response = await client.GetStringAsync(searchUrl);
+                var doc = new HtmlDocument();
+                doc.LoadHtml(response);
+
+                // XPath to find track titles in search results
+                var trackNodes = doc.DocumentNode.SelectNodes("//div[@class='trackName']/a"); //ToDO: Replace with better logic that matches site structure
+
+                if (trackNodes != null)
+                {
+                    foreach (var node in trackNodes)
+                    {
+                        trackResults.Add(node.InnerText.Trim());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching data: {ex.Message}");
+            }
+
+            return trackResults;
+        }
         public void Initialize()
         {
             throw new NotImplementedException();

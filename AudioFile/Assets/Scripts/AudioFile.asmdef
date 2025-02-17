@@ -1,0 +1,26 @@
+{
+    "name": "AudioFile",
+    "rootNamespace": "",
+    "references": [
+        "UnityEngine.CoreModule",
+        "StandaloneFileBrowser",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [
+        "Assets/Plugins/HtmlAgilityPack/HtmlAgilityPack.dll",
+        "Assets/Plugins/SQLite/EntityFramework.dll",
+        "Assets/Plugins/SQLite/EntityFramework.SqlServer.dll",
+        "Assets/Plugins/SQLite/Mono.Data.Sqlite.dll",
+        "Assets/Plugins/StandaloneFileBrowser/Ookii.Dialogs.dll",
+        "Assets/Plugins/StandaloneFileBrowser/System.Windows.Forms.dll",
+        "Assets/Plugins/TagLib#/TagLibSharp.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
