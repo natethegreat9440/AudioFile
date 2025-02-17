@@ -139,7 +139,7 @@ namespace AudioFile.Controller
                 doc.LoadHtml(responseBody);
 
                 // Extract track links (Modify this if needed based on the actual site structure)
-                var trackNodes = doc.DocumentNode.SelectNodes("//div[contains(@class, 'trackTitle')]/a");
+                var trackNodes = doc.DocumentNode.SelectNodes("//div[contains(@class, 'trackName')]/a");
 
                 if (trackNodes != null)
                 {
