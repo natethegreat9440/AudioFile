@@ -18,24 +18,47 @@ namespace AudioFile.Tests
             //GameObject gameObject = new GameObject("SetupControllerTest");
             //var setupControllerTest = gameObject.AddComponent<SetupController>();
         }
-
         [UnityTest]
-        public IEnumerator SearchTrackAsync_ValidQuery_ReturnsResults()
+        public IEnumerator GetGeniusTrackUrlAsync_ValidQuery_ReturnsResults()
         {
-            var trackSampleController = TrackSampleController.Instance;
+            var geniusController = GeniusWebController.Instance;
+            geniusController.Start();
+            // Wait for the Start method to complete
+            yield return null;
+
             // Act: Run the search
-            //Task<List<string>> searchTask = trackSampleController.SearchTrackAsync("MF DOOM", "Doomsday");
-            Task<List<string>> searchTask = trackSampleController.SearchTrackAsync("Doomsday MF Doom");
+            //Note: Passes will all case insensitivity variations. Fairly robust
+            //Task<string> searchTask = geniusController.FetchGeniusTrackUrlAsync("Mf doom", "doomsday");
+            //Task<string> searchTask = geniusController.FetchGeniusTrackUrlAsync("mf doom", "doomsday");
+            //Task<string> searchTask = geniusController.FetchGeniusTrackUrlAsync("MF DOOM", "DOOMSDAY"); //All caps when you spell the man's name :)
+            //Task<string> searchTask = geniusController.FetchGeniusTrackUrlAsync("not DooM", "DoOmSdAy"); //Will give you a result, but it's Genius's best guess which is not Doom
+            Task<string> searchTask = geniusController.FetchGeniusTrackUrlAsync("Mf DooM", "DoOmSdAy"); //All caps when you spell the man's name :)
             // Wait for the async method to complete
             yield return new WaitUntil(() => searchTask.IsCompleted);
 
             // Assert: Ensure we got results
-            Assert.IsNotNull(searchTask.Result); //This passes so we get some sort of result
-            Debug.Log($"Search Results: {string.Join(", ", searchTask.Result)}"); //Looks like it's just an empty string. Mthod needs refinement to work with actual site HTML structure
+            Assert.IsNotNull(searchTask.Result);
+            Debug.Log($"Search Results: {searchTask.Result}");
             Assert.IsNotEmpty(searchTask.Result);
-            //Assert.Contains("Rapp Snitch Knishes", searchTask.Result);
+            Assert.IsTrue(searchTask.Result.Contains("https://genius.com/Mf-doom-doomsday-lyrics"));
         }
+        //[UnityTest] Whosampled forbids data scraping so this test is no longer relevant
+        //public IEnumerator SearchTrackAsync_ValidQuery_ReturnsResults()
+        //{
+        //    var trackSampleController = GeniusWebController.Instance;
+        //    // Act: Run the search
+        //    //Task<List<string>> searchTask = trackSampleController.SearchTrackAsync("MF DOOM", "Doomsday");
+        //    Task<List<string>> searchTask = trackSampleController.SearchTrackAsync("Doomsday MF Doom");
+        //    // Wait for the async method to complete
+        //    yield return new WaitUntil(() => searchTask.IsCompleted);
 
-        //TODO: Add more test cases for transforming track titles and artist names that don't match casewise with the whosampled.com correpsonding page
+            //    // Assert: Ensure we got results
+            //    Assert.IsNotNull(searchTask.Result); //This passes so we get some sort of result
+            //    Debug.Log($"Search Results: {string.Join(", ", searchTask.Result)}"); //Looks like it's just an empty string. Mthod needs refinement to work with actual site HTML structure
+            //    Assert.IsNotEmpty(searchTask.Result);
+            //    //Assert.Contains("Rapp Snitch Knishes", searchTask.Result);
+            //}
+
+            //TODO: Add more test cases for transforming track titles and artist names that don't match casewise with the whosampled.com correpsonding page
     }
 }

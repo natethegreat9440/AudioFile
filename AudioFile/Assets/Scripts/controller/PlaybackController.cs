@@ -87,7 +87,7 @@ namespace AudioFile.Controller
                 "OnActiveTrackIsDone" => () => { NextItem(); },
                 "OnSingleTrackSelected" => () =>
                 {
-                    SelectedTrack = TrackLibraryController.Instance.GetTrackAtID((int)data);
+                    SetSelectedTrack(TrackLibraryController.Instance.GetTrackAtID((int)data));
                 },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")

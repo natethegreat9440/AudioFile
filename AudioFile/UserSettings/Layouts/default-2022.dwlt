@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_PixelRect:
     serializedVersion: 2
-    x: 0
+    x: 2048
     y: 43.2
     width: 2048
     height: 1068.8
@@ -119,7 +119,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 3171
+  controlID: 9551
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -139,12 +139,12 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 837.6
+    width: 1430.4
     height: 1018.80005
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 0
-  controlID: 3107
+  controlID: 9552
 --- !u!114 &7
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -162,7 +162,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 558.4
+    width: 1171.2
     height: 1018.80005
   m_MinSize: {x: 201, y: 221}
   m_MaxSize: {x: 4001, y: 4021}
@@ -189,14 +189,14 @@ MonoBehaviour:
   - {fileID: 10}
   m_Position:
     serializedVersion: 2
-    x: 558.4
+    x: 1171.2
     y: 0
-    width: 279.19995
+    width: 259.20007
     height: 1018.80005
   m_MinSize: {x: 100, y: 100}
   m_MaxSize: {x: 8096, y: 16192}
   vertical: 1
-  controlID: 3108
+  controlID: 9562
 --- !u!114 &9
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -214,7 +214,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 279.19995
+    width: 259.20007
     height: 397.6
   m_MinSize: {x: 201, y: 221}
   m_MaxSize: {x: 4001, y: 4021}
@@ -240,7 +240,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 397.6
-    width: 279.19995
+    width: 259.20007
     height: 621.2001
   m_MinSize: {x: 232, y: 271}
   m_MaxSize: {x: 10002, y: 10021}
@@ -259,24 +259,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 1
   m_Script: {fileID: 12006, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: TestRunnerWindow
+  m_Name: ConsoleWindow
   m_EditorClassIdentifier: 
   m_Children: []
   m_Position:
     serializedVersion: 2
-    x: 837.6
+    x: 1430.4
     y: 0
-    width: 1210.4
+    width: 617.6
     height: 1018.80005
   m_MinSize: {x: 101, y: 121}
   m_MaxSize: {x: 4001, y: 4021}
-  m_ActualView: {fileID: 18}
+  m_ActualView: {fileID: 17}
   m_Panes:
   - {fileID: 16}
   - {fileID: 17}
   - {fileID: 18}
-  m_Selected: 2
-  m_LastSelected: 1
+  m_Selected: 1
+  m_LastSelected: 0
 --- !u!114 &12
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -299,7 +299,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 19
-    width: 556.6
+    width: 1170.2
     height: 997.80005
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -395,9 +395,9 @@ MonoBehaviour:
     m_Tooltip: 
   m_Pos:
     serializedVersion: 2
-    x: 0
+    x: 2048
     y: 73.6
-    width: 557.4
+    width: 1170.2
     height: 997.80005
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -413,8 +413,8 @@ MonoBehaviour:
       floating: 0
       collapsed: 0
       displayed: 1
-      snapOffset: {x: -164.79999, y: -26.399994}
-      snapOffsetDelta: {x: 0, y: -0.000030517578}
+      snapOffset: {x: -166, y: -26.400024}
+      snapOffsetDelta: {x: 0, y: 0}
       snapCorner: 3
       id: Tool Settings
       index: 0
@@ -731,9 +731,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 796.98004, y: 442.4936, z: 4.351044}
+    m_Target: {x: 1240.7566, y: 569.46576, z: -1.1733054}
     speed: 2
-    m_Value: {x: 796.98004, y: 442.4936, z: 4.351044}
+    m_Value: {x: 1240.7566, y: 569.46576, z: -1.1733054}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -783,9 +783,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 707.09235
+    m_Target: 1259.5306
     speed: 2
-    m_Value: 707.09235
+    m_Value: 1259.5306
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -830,9 +830,9 @@ MonoBehaviour:
     m_Tooltip: 
   m_Pos:
     serializedVersion: 2
-    x: 558.4
+    x: 3219.2002
     y: 73.6
-    width: 277.19995
+    width: 257.20007
     height: 376.6
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -849,7 +849,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 189effff569effffb89ffffff2a0ffff30a1ffff94a2ffffeca2ffff2aa3ffffa0a4ffffd8a5ffff16a6ffff7aa7ffffb6a8fffff4a8ffff58aaffffdeaaffff1cabffff7eacffffb6adfffff4adffff56afffff92b0ffffd0b0ffff32b2ffff96c1ffffd4c1ffff36c3ffff58c4ffff96c4fffffac5ffff30fbffff
+      m_ExpandedIDs: acc8ffff66cbffffa4cbffff06cdffff1eceffff5cceffffc0cfffffdcd0ffff1ad1ffff7cd2ffff94d3ffffd2d3ffff34d5ffff56d6ffff94d6ffff0ad8ffff7cd8ffffbad8ffff1cdaffff58dbffff94dbffff0adcffffaadcffffe8dcffff5edeffffdcdeffff1adfffff90e0fffffae0ffff38e1ffff9ae2ffff32e3ffff70e3ffffd2e4ffff3ce6ffff7ae6ffffdce7ffff2ce9ffff6ae9ffffcceaffff2eebffff6cebffffe2ecffff3cedffff7aedffffdceeffff2af0ffff68f0ffffcaf1ffff28f2ffff66f2ffffc8f3ffff46f4ffff84f4fffff4f5ffff30fbffffb895000006960000f4960000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -893,9 +893,9 @@ MonoBehaviour:
     m_Tooltip: 
   m_Pos:
     serializedVersion: 2
-    x: 558.4
+    x: 3219.2002
     y: 471.2
-    width: 277.19995
+    width: 257.20007
     height: 600.2001
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -933,7 +933,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 77.400024}
     m_SelectedIDs: 646a0000
     m_LastClickedID: 27236
-    m_ExpandedIDs: ffffffff00000000c85d0000ca5d0000cc5d0000ce5d0000d05d0000d25d0000d45d0000d65d0000d85d0000
+    m_ExpandedIDs: ffffffff00000000c85d0000ca5d0000cc5d0000ce5d0000d05d0000d25d0000d45d0000d65d0000d85d0000fe5d0000005e0000045e0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -958,10 +958,10 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_AssetTreeState:
-    scrollPos: {x: 0, y: 68}
+    scrollPos: {x: 0, y: 197.79993}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: ffffffff00000000c85d0000ca5d0000cc5d0000ce5d0000d05d0000d25d0000d45d0000d65d0000d85d0000
+    m_ExpandedIDs: ffffffff00000000c85d0000ca5d0000cc5d0000ce5d0000d05d0000d25d0000d45d0000d65d0000d85d0000fe5d0000005e0000045e0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1037,9 +1037,9 @@ MonoBehaviour:
     m_Tooltip: 
   m_Pos:
     serializedVersion: 2
-    x: 3194.4
+    x: 3478.4
     y: 73.6
-    width: 900.6
+    width: 616.6
     height: 997.80005
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -1084,9 +1084,9 @@ MonoBehaviour:
     m_Tooltip: 
   m_Pos:
     serializedVersion: 2
-    x: 2885.6
+    x: 3478.4
     y: 73.6
-    width: 1209.4
+    width: 616.6
     height: 997.80005
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -1118,9 +1118,9 @@ MonoBehaviour:
     m_Tooltip: 
   m_Pos:
     serializedVersion: 2
-    x: 837.60004
+    x: 3388
     y: 73.6
-    width: 1209.4
+    width: 707
     height: 997.80005
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -1133,7 +1133,7 @@ MonoBehaviour:
     m_SaveData: []
     m_OverlaysVisible: 1
   m_Spl:
-    ID: 3205
+    ID: 3978
     splitterInitialOffset: 0
     currentActiveSplitter: -1
     realSizes:
@@ -1165,7 +1165,7 @@ MonoBehaviour:
       name: AudioFile
       fullName: AudioFile
       resultStatus: 2
-      duration: 0.4771381
+      duration: 1.3230418
       messages: One or more child tests had errors
       output: 
       stacktrace: 
@@ -1181,7 +1181,7 @@ MonoBehaviour:
       name: Tests.dll
       fullName: C:/Users/natha/Documents/AudioFile/AudioFile/Library/ScriptAssemblies/Tests.dll
       resultStatus: 2
-      duration: 0.4623697
+      duration: 1.3057184
       messages: One or more child tests had errors
       output: 
       stacktrace: 
@@ -1197,7 +1197,7 @@ MonoBehaviour:
       name: AudioFile
       fullName: AudioFile
       resultStatus: 2
-      duration: 0.4600462
+      duration: 1.303569
       messages: One or more child tests had errors
       output: 
       stacktrace: 
@@ -1213,7 +1213,7 @@ MonoBehaviour:
       name: Tests
       fullName: AudioFile.Tests
       resultStatus: 2
-      duration: 0.4581639
+      duration: 1.3018646
       messages: One or more child tests had errors
       output: 
       stacktrace: 
@@ -1229,7 +1229,7 @@ MonoBehaviour:
       name: TrackSampleController_Tests
       fullName: AudioFile.Tests.TrackSampleController_Tests
       resultStatus: 2
-      duration: 0.4548594
+      duration: 1.2993495
       messages: One or more child tests had errors
       output: 
       stacktrace: 
@@ -1241,15 +1241,17 @@ MonoBehaviour:
       parentId: 1005
       parentUniqueId: Tests.dll/AudioFile/[Tests][suite]
     - id: 1002
-      uniqueId: Tests.dll/AudioFile/Tests/TrackSampleController_Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests.SearchTrackAsync_ValidQuery_ReturnsResults]
-      name: SearchTrackAsync_ValidQuery_ReturnsResults
-      fullName: AudioFile.Tests.TrackSampleController_Tests.SearchTrackAsync_ValidQuery_ReturnsResults
+      uniqueId: Tests.dll/AudioFile/Tests/TrackSampleController_Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests.GetAnnotationsAsync_ValidQuery_ReturnsResults]
+      name: GetAnnotationsAsync_ValidQuery_ReturnsResults
+      fullName: AudioFile.Tests.TrackSampleController_Tests.GetAnnotationsAsync_ValidQuery_ReturnsResults
       resultStatus: 2
-      duration: 0.439959
-      messages: "  Expected: not <empty>\r\n  But was:  <empty>\r\n"
-      output: "HTTP Request failed: 403 (Forbidden)\r\nSearch Results: \r\n"
-      stacktrace: 'at AudioFile.Tests.TrackSampleController_Tests+<SearchTrackAsync_ValidQuery_ReturnsResults>d__1.MoveNext
-        () [0x000bd] in C:\Users\natha\Documents\AudioFile\AudioFile\Assets\PlayModeTests\TrackSampleController_Tests.cs:35
+      duration: 1.2843138
+      messages: "  Expected: True\r\n  But was:  False\r\n"
+      output: 'Search Results: More song info available at: https://genius.com/Lil-woodryc-evil-twins-lyrics
+
+'
+      stacktrace: 'at AudioFile.Tests.TrackSampleController_Tests+<GetAnnotationsAsync_ValidQuery_ReturnsResults>d__1.MoveNext
+        () [0x000ff] in C:\Users\natha\Documents\AudioFile\AudioFile\Assets\PlayModeTests\TrackSampleController_Tests.cs:43
 
         at
         UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0004e]
@@ -1264,14 +1266,14 @@ MonoBehaviour:
       - Uncategorized
       parentId: 1001
       parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests][suite]
-    m_ResultText: "SearchTrackAsync_ValidQuery_ReturnsResults (0.440s)\n---\nExpected:
-      not <empty>\r\n  But was:  <empty>\n---\nat AudioFile.Tests.TrackSampleController_Tests+<SearchTrackAsync_ValidQuery_ReturnsResults>d__1.MoveNext
-      () [0x000bd] in C:\\Users\\natha\\Documents\\AudioFile\\AudioFile\\Assets\\PlayModeTests\\TrackSampleController_Tests.cs:35\r\nat
+    m_ResultText: "GetAnnotationsAsync_ValidQuery_ReturnsResults (1.284s)\n---\nExpected:
+      True\r\n  But was:  False\n---\nat AudioFile.Tests.TrackSampleController_Tests+<GetAnnotationsAsync_ValidQuery_ReturnsResults>d__1.MoveNext
+      () [0x000ff] in C:\\Users\\natha\\Documents\\AudioFile\\AudioFile\\Assets\\PlayModeTests\\TrackSampleController_Tests.cs:43\r\nat
       UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0004e] in
-      .\\Library\\PackageCache\\com.unity.test-framework@1.1.33\\UnityEngine.TestRunner\\NUnitExtensions\\Attributes\\TestEnumerator.cs:46\n---\nHTTP
-      Request failed: 403 (Forbidden)\r\nSearch Results:"
-    m_ResultStacktrace: 'at AudioFile.Tests.TrackSampleController_Tests+<SearchTrackAsync_ValidQuery_ReturnsResults>d__1.MoveNext
-      () [0x000bd] in C:\Users\natha\Documents\AudioFile\AudioFile\Assets\PlayModeTests\TrackSampleController_Tests.cs:35
+      .\\Library\\PackageCache\\com.unity.test-framework@1.1.33\\UnityEngine.TestRunner\\NUnitExtensions\\Attributes\\TestEnumerator.cs:46\n---\nSearch
+      Results: More song info available at: https://genius.com/Lil-woodryc-evil-twins-lyrics"
+    m_ResultStacktrace: 'at AudioFile.Tests.TrackSampleController_Tests+<GetAnnotationsAsync_ValidQuery_ReturnsResults>d__1.MoveNext
+      () [0x000ff] in C:\Users\natha\Documents\AudioFile\AudioFile\Assets\PlayModeTests\TrackSampleController_Tests.cs:43
 
       at
       UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0004e] in
@@ -1280,8 +1282,8 @@ MonoBehaviour:
 '
     m_TestListState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 6c6ef2dd
-      m_LastClickedID: -571314580
+      m_SelectedIDs: 3f8178cf
+      m_LastClickedID: -814186177
       m_ExpandedIDs: be563ad6ae737de108b54ce2e557abf7b6a3c01affffff7f
       m_RenameOverlay:
         m_UserAcceptedRename: 0

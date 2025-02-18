@@ -603,7 +603,8 @@ namespace AudioFile.Controller
                         Duration TEXT NOT NULL DEFAULT '--:--',
                         BPM INTEGER,
                         Path TEXT NOT NULL DEFAULT 'Unknown Path',
-                        AlbumTrackNumber INTEGER NOT NULL DEFAULT 0
+                        AlbumTrackNumber INTEGER NOT NULL DEFAULT 0,
+                        GeniusUrl TEXT
                     );";
                 command.ExecuteNonQuery();
             }

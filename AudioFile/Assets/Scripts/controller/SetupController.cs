@@ -56,7 +56,7 @@ namespace AudioFile.Controller
             var sortController = SortController.Instance;
             var searchController = SearchController.Instance;
             var trackLibraryController = TrackLibraryController.Instance;
-            var trackSampleController = TrackSampleController.Instance;
+            var trackSampleController = GeniusWebController.Instance;
             var playbackController = PlaybackController.Instance;
             var sortButtonManager = UISortButtonsManager.Instance;
             var contextMenu = UIContextMenu.Instance;

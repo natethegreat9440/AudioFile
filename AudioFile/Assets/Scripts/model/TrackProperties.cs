@@ -26,7 +26,7 @@ namespace AudioFile.Model
 
         private readonly HashSet<string> validProperties = new HashSet<string>()
         {
-            "Title", "Artist", "Album", "Duration", "BPM", "Path", "TrackID", "AlbumTrackNumber"
+            "Title", "Artist", "Album", "Duration", "BPM", "Path", "TrackID", "AlbumTrackNumber", "GeniusUrl"
         };
         public object GetProperty(int trackID, string property)
         {
