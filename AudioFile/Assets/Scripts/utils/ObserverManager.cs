@@ -41,25 +41,7 @@ namespace AudioFile.Utilities
         // Private constructor to prevent direct instantiation
         private ObserverManager()
         {
-            observers = new Dictionary<string, List<IAudioFileObserver>>()
-            #region Observation and observer pairs
-            {
-                //These comments represent a sample (not frequently updated) of the different ObservationTypes and Observers
-                //It is simpler for initialization purposes to have objects as observers dynamically and tracking program flow at this time than to try to define all of the 
-                //relationships at the same time here
-                //For debugging purposes call CheckObservers() to see which Observers are registered to a given Observation type or just use Find All in solution in Visual Studio
-                //If something is uncommented out that just means I am doing initial debugging and testing
-
-
-                //{"OnProgramStart", new List<IAudioFileObserver>() { TrackListDisplay } }
-                //{"OnNewTrackAdded", new List<IAudioFileObserver>() { _UITrackListDisplayManager } },
-                //{"OnTrackRemoved", new List<IAudioFileObserver>() { _UITrackListDisplayManager } },
-                //{"OnQueueUpdate", new List<IAudioFileObserver>() { QueueDisplay } }
-                //{"OnActiveTrackIsDone", new List<IAudioFileObserver>() {  new TrackLibrary() } } //, NowPlayingDisplay, QueueDisplay} }
-                //{"OnTrackPropertyUpdate", new List<IAudioFileObserver>() { NowPlayingDisplay, TrackListDisplay, QueueDisplay, SampleDisplay, TabDisplay, LyricsDisplay } }
-                //{"OnTrackLibraryFilter", new List<IAudioFileObserver>() { TrackListDisplay } }
-            };
-            #endregion
+            observers = new Dictionary<string, List<IAudioFileObserver>>();
         }
         // Public property to access the singleton instance
         public static ObserverManager Instance

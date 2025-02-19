@@ -11,6 +11,8 @@ using Newtonsoft.Json.Linq;
 using HtmlAgilityPack;
 using AudioFile.Model;
 using AudioFile.Utilities;
+using AudioFile.View;
+using TagLib;
 
 namespace AudioFile.Controller
 {
@@ -46,11 +48,19 @@ namespace AudioFile.Controller
 
         private HttpClient client;
 
+        GeniusButton geniusButton => UIGeniusButtonManager.Instance.GeniusButton;
+
         public void Start()
         {
             ObserverManager.Instance.RegisterObserver("OnSingleTrackSelected", this);
             Initialize();
         }
+
+        void Update()
+        {
+            HandleCheckForGeniusButtonDefaultState();
+        }
+
         public void AudioFileUpdate(string observationType, object data)
         {
             Action action = observationType switch
@@ -76,6 +86,8 @@ namespace AudioFile.Controller
         {
             try
             {
+                //TODO: Move this logic to API proxy server controller in API project so I don't have to hard code the API Key
+
                 // Step 1: Search for the song
                 string searchUrl = $"https://api.genius.com/search?q={Uri.EscapeDataString(artist + " " + trackName)}";
                 var searchResponse = await client.GetStringAsync(searchUrl);
@@ -84,35 +96,72 @@ namespace AudioFile.Controller
                 // Step 2: Extract song ID
                 var hits = searchJson["response"]?["hits"];
                 if (hits == null || hits.Type == JTokenType.Null || !hits.HasValues)
-                    return "Song not found on Genius.";
+                    return "Not found";
 
                 string songUrl = hits[0]["result"]?["url"]?.ToString();
-                if (string.IsNullOrEmpty(songUrl)) return "Could not retrieve song URL.";
+                if (string.IsNullOrEmpty(songUrl)) return "Not found";
 
                 Debug.Log("Genius Url found using Genius API!");
                 return songUrl;
-
             }
             catch (Exception ex)
             {
-                return $"Error fetching URL: {ex.Message}";
+                Debug.Log($"Error fetching URL: {ex.Message}");
+                string emptyUrl = "Not found";
+                return emptyUrl;
             }
         }
 
         public void SetGeniusUrlForTrack(int trackID)
         {
             Track track = TrackLibraryController.Instance.GetTrackAtID(trackID);
+
+            if (track.TrackProperties.GetProperty(trackID, "GeniusUrl") is string geniusUrl)
+            {
+                if (track != null && String.IsNullOrEmpty(geniusUrl) == false)
+                {
+                    HandleCheckForGeniusButtonFoundOrNotFoundState(geniusUrl);
+                    return;
+                }
+            }
+
             string artist = (string)track.TrackProperties.GetProperty(trackID, "Artist");
             string trackName = (string)track.TrackProperties.GetProperty(trackID, "Title");
 
-            Debug.Log($"Fetching Genius URL for track {trackName} by {artist}...");
+            HandleGeniusButtonSearchingState(artist, trackName);
+
             Task<string> urlTask = FetchGeniusTrackUrlAsync(artist, trackName);
             urlTask.ContinueWith(task =>
             {
-                string url = task.Result;
-                track.TrackProperties.SetProperty(trackID, "GeniusUrl", url);
-                Debug.Log($"Genius URL for track {trackName} by {artist}: {url}");
+                HandleFetchGeniusCompletion(trackID, task, track, artist, trackName);
             });
+        }
+
+        private void HandleFetchGeniusCompletion(int trackID, Task<string> task, Track track, string artist, string trackName)
+        {
+            string url = task.Result;
+            track.TrackProperties.SetProperty(trackID, "GeniusUrl", url);
+            Debug.Log($"Genius URL for track {trackName} by {artist}: {url}");
+
+            HandleCheckForGeniusButtonFoundOrNotFoundState(url);
+        }
+
+        private void HandleGeniusButtonSearchingState(string artist, string trackName)
+        {
+            Debug.Log($"Fetching Genius URL for track {trackName} by {artist}...");
+            geniusButton.State = GeniusButtonState.Searching; // Set state to Searching
+        }
+
+        private void HandleCheckForGeniusButtonFoundOrNotFoundState(string url)
+        {
+            if (url != "Not found" && String.IsNullOrEmpty(url) == false)
+            {
+                geniusButton.State = GeniusButtonState.Found;
+            }
+            else
+            {
+                geniusButton.State = GeniusButtonState.NotFound;
+            }
         }
 
         public void Initialize()
@@ -120,6 +169,14 @@ namespace AudioFile.Controller
             client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
             client.DefaultRequestHeaders.Add("User-Agent", "CSharpApp");
+        }
+
+        private void HandleCheckForGeniusButtonDefaultState()
+        {
+            if (PlaybackController.Instance.SelectedTrack == null)
+            {
+                geniusButton.State = GeniusButtonState.Default;
+            }
         }
 
         public void Dispose()

@@ -58,6 +58,8 @@ namespace AudioFile.Controller
             var trackLibraryController = TrackLibraryController.Instance;
             var trackSampleController = GeniusWebController.Instance;
             var playbackController = PlaybackController.Instance;
+            var geniusWebController = GeniusWebController.Instance;
+            var geniusButtonManager = UIGeniusButtonManager.Instance;
             var sortButtonManager = UISortButtonsManager.Instance;
             var contextMenu = UIContextMenu.Instance;
             var trackListDisplayManager = UITrackListDisplayManager.Instance;
