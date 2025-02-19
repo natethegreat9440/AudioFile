@@ -73,10 +73,17 @@ namespace AudioFile.Controller
 
         void Update()
         {
-            if (ActiveTrack != null && ActiveTrack.IsDone())
+            try
             {
-                Debug.Log("Track has finished playing.");
-                ObserverManager.Instance.NotifyObservers("OnActiveTrackIsDone", null);
+                if (ActiveTrack != null && ActiveTrack.IsDone())
+                {
+                    Debug.Log("Track has finished playing.");
+                    ObserverManager.Instance.NotifyObservers("OnActiveTrackIsDone", null);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log($"Auto-play failed: {e}");
             }
         }
 
@@ -266,6 +273,8 @@ namespace AudioFile.Controller
             {
                 SelectedTrack = track;
                 Debug.Log($"Selected track set to: {SelectedTrack}");
+
+                ObserverManager.Instance.NotifyObservers("OnSelectedTrackSetComplete", SelectedTrack.TrackID);
             }
             else
             {

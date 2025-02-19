@@ -52,20 +52,20 @@ namespace AudioFile.Controller
 
         public void Start()
         {
-            ObserverManager.Instance.RegisterObserver("OnSingleTrackSelected", this);
+            ObserverManager.Instance.RegisterObserver("OnSelectedTrackSetComplete", this);
             Initialize();
         }
 
         void Update()
         {
-            HandleCheckForGeniusButtonDefaultState();
+            //HandleCheckForGeniusButtonDefaultState();
         }
 
         public void AudioFileUpdate(string observationType, object data)
         {
             Action action = observationType switch
             {
-                "OnSingleTrackSelected" => () =>
+                "OnSelectedTrackSetComplete" => () =>
                 {
                     int trackID = (int)data;
                     SetGeniusUrlForTrack(trackID);
@@ -150,11 +150,13 @@ namespace AudioFile.Controller
         {
             Debug.Log($"Fetching Genius URL for track {trackName} by {artist}...");
             geniusButton.State = GeniusButtonState.Searching; // Set state to Searching
+
+            UIGeniusButtonManager.Instance.UpdateGeniusButtonState();
         }
 
         private void HandleCheckForGeniusButtonFoundOrNotFoundState(string url)
         {
-            if (url != "Not found" && String.IsNullOrEmpty(url) == false)
+            if (url != "Not found")
             {
                 geniusButton.State = GeniusButtonState.Found;
             }
@@ -162,6 +164,8 @@ namespace AudioFile.Controller
             {
                 geniusButton.State = GeniusButtonState.NotFound;
             }
+
+            UIGeniusButtonManager.Instance.UpdateGeniusButtonState();
         }
 
         public void Initialize()

@@ -26,7 +26,7 @@ namespace AudioFile.View
     /// </summary>
     public class UIPlaybackButtonsManager : MonoBehaviour, IAudioFileObserver //IAudioFileObserver required method AudioFileUpdate(string observationType, object data) is last method in class
     {
-        int trackDisplayID;
+        int selectedTrackID;
 
         readonly string previousButtonPath = "Playback_Controls/Previous_Button";
         readonly string playButtonPath = "Playback_Controls/Play_Pause_Button";
@@ -80,7 +80,7 @@ namespace AudioFile.View
         {
             Action action = observationType switch
             {
-                "OnSingleTrackSelected" => () => trackDisplayID = (int)data,
+                "OnSingleTrackSelected" => () => selectedTrackID = (int)data,
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };
@@ -123,7 +123,7 @@ namespace AudioFile.View
                 {
                     if (PlaybackController.Instance.ActiveTrack != null)
                     {
-                        PlaybackController.Instance.HandleUserRequest(new StopCommand(trackDisplayID));
+                        PlaybackController.Instance.HandleUserRequest(new StopCommand(selectedTrackID));
                     }
                 });
             }
@@ -133,7 +133,7 @@ namespace AudioFile.View
             {
                 playButton.onClick.AddListener(() =>
                 {
-                    PlaybackController.Instance.HandlePlayPauseButton(trackDisplayID);
+                    PlaybackController.Instance.HandlePlayPauseButton(selectedTrackID);
                 });
             }
         }

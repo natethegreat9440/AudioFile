@@ -10,10 +10,13 @@ using Button = UnityEngine.UI.Button; // Add this line to resolve ambiguity
 using AudioFile.Controller;
 using System.Windows.Forms;
 using Codice.CM.ConfigureHelper;
+using TMPro;
+using AudioFile.Utilities;
+using static UnityEditorInternal.VersionControl.ListControl;
 
 namespace AudioFile.View
 {
-    public class UIGeniusButtonManager : MonoBehaviour
+    public class UIGeniusButtonManager : MonoBehaviour, IAudioFileObserver
     {
         private static readonly Lazy<UIGeniusButtonManager> _instance = new Lazy<UIGeniusButtonManager>(CreateSingleton);
 
@@ -51,6 +54,9 @@ namespace AudioFile.View
 
         string selectedTrackArtist => (string)PlaybackController.Instance.SelectedTrack.TrackProperties.GetProperty(PlaybackController.Instance.SelectedTrack.TrackID, "Artist");
 
+        List<UITrackDisplay> selectedTrackDisplays => UITrackListDisplayManager.Instance.SelectedTrackDisplays;
+
+        private GeniusButtonState lastState; // Store last state to prevent redundant updates
         void Start()
         {
             Canvas canvas = GameObject.Find("GUI_Canvas").GetComponent<Canvas>();
@@ -59,13 +65,36 @@ namespace AudioFile.View
 
             if (GeniusButton != null)
             {
-                ConfigureGeniusButton();
+                ConfigureGeniusButtonOnStart();
             }
+
+            ObserverManager.Instance.RegisterObserver("OnMultipleTrackSelected", this);
+            ObserverManager.Instance.RegisterObserver("OnSelectedTrackSetComplete", this);
+        }
+
+        public void AudioFileUpdate(string observationType, object data)
+        {
+            Action action = observationType switch
+            {
+                "OnMultipleTrackSelected" => () => 
+                {
+                    UpdateGeniusButtonState();
+                },
+                "OnSelectedTrackSetComplete" => () =>
+                {
+                    //UpdateGeniusButtonState();
+                    ManageButtonText();
+                },
+                //Add more switch arms here as needed
+                _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
+            };
+
+            action();
         }
 
         void Update()
         {
-            ManageButtonText();
+            //ManageButtonText();
 
             if (GeniusButton != null && GeniusButton.State == GeniusButtonState.Found)
             {
@@ -75,39 +104,71 @@ namespace AudioFile.View
             {
                 GeniusButton.interactable = false;
             }
+
+            //if (GeniusButton != null && selectedTrackDisplays.Count > 1)
+            //{
+            //    GeniusButton.State = GeniusButtonState.Default;
+            //}
         }
 
-        private void ConfigureGeniusButton()
+        //private void SetGeniusButtonState(GeniusButtonState newState)
+        //{
+        //    if (GeniusButton.State != newState)
+        //    {
+        //        GeniusButton.State = newState;
+        //        UpdateGeniusButtonState(); // Ensure UI updates immediately
+        //    }
+        //}
+
+        public void UpdateGeniusButtonState()
+        {
+            if (GeniusButton == null) return;
+
+            // Update button state based on selectedTrackDisplays
+            if (selectedTrackDisplays.Count > 1)
+            {
+                GeniusButton.State = GeniusButtonState.Default;
+                //return;
+            }
+
+            // Manage button text only if the state has changed
+            if (lastState != GeniusButton.State)
+            {
+                ManageButtonText();
+                lastState = GeniusButton.State;
+            }
+
+            // Set interactability only when it changes
+            GeniusButton.interactable = (GeniusButton.State == GeniusButtonState.Found);
+        }
+
+        private void ConfigureGeniusButtonOnStart()
         {
             if (GeniusButton != null)
             {
                 GeniusButton.onClick.AddListener(() => Application.OpenURL(targetUrl));
             }
+
+            GeniusButton.State = GeniusButtonState.Default;
         }
 
         private void ManageButtonText()
         {
-            //Note leading spaces in parameters are intentional since I don't like how close the text starts to the left button border by default
-            if (GeniusButton.State == GeniusButtonState.Default)
+            string newText = GeniusButton.State switch
             {
-                SetButtonText(" Select a track to activate Genius.com button.");
-            }
-            else if (GeniusButton.State == GeniusButtonState.Searching)
-            {
-                SetButtonText(" Searching Genius.com...");
-            }
-            else if (GeniusButton.State == GeniusButtonState.NotFound)
-            {
-                SetButtonText(" Could not find Genius.com page for selected track.");
-            }
-            else if (GeniusButton.State == GeniusButtonState.Found)
-            {
-                SetButtonText($" Click Genius.com button to visit track page for {selectedTrackTitle} by {selectedTrackArtist}");
-            }
+                GeniusButtonState.Default => "Select a track to activate Genius.com button.",
+                GeniusButtonState.Searching => "Searching Genius.com...",
+                GeniusButtonState.NotFound => "Could not find Genius.com page for selected track.",
+                GeniusButtonState.Found => $"Click Genius.com button to visit track page for {selectedTrackTitle} by {selectedTrackArtist}",
+                _ => GeniusButton.GetComponentInChildren<Text>().text // Default: Keep current text
+            };
+
+            SetButtonText(newText);
         }
         private void SetButtonText(string buttonText)
         {
-            GeniusButton.GetComponentInChildren<Text>().text = buttonText;
+            //GeniusButton.GetComponentInChildren<Text>().text = buttonText;
+            GeniusButton.GetComponentInChildren<TextMeshProUGUI>().text = buttonText;
         }
     }
 }

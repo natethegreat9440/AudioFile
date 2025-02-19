@@ -332,6 +332,8 @@ namespace AudioFile.View
                     child.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#A8DADC"); //Soft cyan
                 }
             }
+
+            ObserverManager.Instance.NotifyObservers("OnMultipleTrackSelection", null);
         }
 
         private void HandleCtrlClickSelection(GameObject trackDisplayObject)
@@ -349,6 +351,8 @@ namespace AudioFile.View
                 trackDisplayComponent.IsSelected = true;
                 trackDisplayComponent.GetComponent<Image>().color = AudioFileHelpers.SetHexColor("#A8DADC"); //Soft cyan
             }
+
+            ObserverManager.Instance.NotifyObservers("OnMultipleTrackSelection", null);
         }
 
         private void HandleSingleTrackSelection(GameObject trackDisplayObject)
