@@ -133,15 +133,16 @@ namespace AudioFile.Controller
             Task<string> urlTask = FetchGeniusTrackUrlAsync(artist, trackName);
             urlTask.ContinueWith(task =>
             {
-                HandleFetchGeniusCompletion(trackID, task, track, artist, trackName);
+                HandleFetchGeniusCompletion(trackID, task, track);
+                Debug.Log($"Genius URL for track {trackName} by {artist}: {task.Result}");
+
             });
         }
 
-        private void HandleFetchGeniusCompletion(int trackID, Task<string> task, Track track, string artist, string trackName)
+        private void HandleFetchGeniusCompletion(int trackID, Task<string> task, Track track)
         {
             string url = task.Result;
             track.TrackProperties.SetProperty(trackID, "GeniusUrl", url);
-            Debug.Log($"Genius URL for track {trackName} by {artist}: {url}");
 
             HandleCheckForGeniusButtonFoundOrNotFoundState(url);
         }

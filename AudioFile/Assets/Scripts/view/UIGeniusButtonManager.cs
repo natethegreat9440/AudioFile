@@ -68,7 +68,7 @@ namespace AudioFile.View
                 ConfigureGeniusButtonOnStart();
             }
 
-            ObserverManager.Instance.RegisterObserver("OnMultipleTrackSelected", this);
+            ObserverManager.Instance.RegisterObserver("OnMultipleTrackSelection", this);
             ObserverManager.Instance.RegisterObserver("OnSelectedTrackSetComplete", this);
         }
 
@@ -76,7 +76,7 @@ namespace AudioFile.View
         {
             Action action = observationType switch
             {
-                "OnMultipleTrackSelected" => () => 
+                "OnMultipleTrackSelection" => () => 
                 {
                     UpdateGeniusButtonState();
                 },
@@ -94,7 +94,6 @@ namespace AudioFile.View
 
         void Update()
         {
-            //ManageButtonText();
 
             if (GeniusButton != null && GeniusButton.State == GeniusButtonState.Found)
             {
@@ -105,20 +104,8 @@ namespace AudioFile.View
                 GeniusButton.interactable = false;
             }
 
-            //if (GeniusButton != null && selectedTrackDisplays.Count > 1)
-            //{
-            //    GeniusButton.State = GeniusButtonState.Default;
-            //}
-        }
 
-        //private void SetGeniusButtonState(GeniusButtonState newState)
-        //{
-        //    if (GeniusButton.State != newState)
-        //    {
-        //        GeniusButton.State = newState;
-        //        UpdateGeniusButtonState(); // Ensure UI updates immediately
-        //    }
-        //}
+        }
 
         public void UpdateGeniusButtonState()
         {
@@ -128,7 +115,9 @@ namespace AudioFile.View
             if (selectedTrackDisplays.Count > 1)
             {
                 GeniusButton.State = GeniusButtonState.Default;
-                //return;
+                ManageButtonText();
+                lastState = GeniusButton.State;
+                return;
             }
 
             // Manage button text only if the state has changed
@@ -156,8 +145,8 @@ namespace AudioFile.View
         {
             string newText = GeniusButton.State switch
             {
-                GeniusButtonState.Default => "Select a track to activate Genius.com button.",
-                GeniusButtonState.Searching => "Searching Genius.com...",
+                GeniusButtonState.Default => "Select a single track to activate Genius.com button.",
+                GeniusButtonState.Searching => $"Searching Genius.com for {selectedTrackTitle} by {selectedTrackArtist}...",
                 GeniusButtonState.NotFound => "Could not find Genius.com page for selected track.",
                 GeniusButtonState.Found => $"Click Genius.com button to visit track page for {selectedTrackTitle} by {selectedTrackArtist}",
                 _ => GeniusButton.GetComponentInChildren<Text>().text // Default: Keep current text
