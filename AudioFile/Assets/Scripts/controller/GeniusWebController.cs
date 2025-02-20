@@ -88,6 +88,9 @@ namespace AudioFile.Controller
             try
             {
                 //TODO: Move this logic to API proxy server controller in API project so I don't have to hard code the API Key
+                //Step 0: Check for ? by MFDOOM
+
+                trackName = CheckForQuestionMarkByMFDOOM(trackName);
 
                 // Step 1: Search for the song
                 string searchUrl = $"https://api.genius.com/search?q={Uri.EscapeDataString(artist + " " + trackName)}";
@@ -130,16 +133,17 @@ namespace AudioFile.Controller
                 string emptyUrl = "Not found";
                 return emptyUrl;
             }
+
+            static string CheckForQuestionMarkByMFDOOM(string trackName)
+            {
+                if (trackName == "?")
+                {
+                    trackName = "question mark";
+                }
+
+                return trackName;
+            }
         }
-
-        // Helper function to normalize strings for Genius URL comparison
-        //private string NormalizeForUrlComparison(string input)
-        //{
-        //    if (string.IsNullOrEmpty(input))
-        //        return string.Empty;
-
-        //    return Regex.Replace(input.ToLower(), @"[\s\.\'\""\,\!\?\(\)\&]", ""); // Append this if we want to remove dashes \-\—
-        //}
 
         // Helper function to normalize strings for Genius URL comparison
         private string NormalizeForUrlComparison(string input)
@@ -153,8 +157,15 @@ namespace AudioFile.Controller
             // Remove all special characters except letters, numbers, and spaces
             input = Regex.Replace(input.ToLower(), @"[^a-z0-9 ]", "");
 
+            // Collapse multiple spaces (including non-breaking spaces) into a single space
+            input = Regex.Replace(input, @"\s+", " ");
+
             // Replace spaces with hyphens
-            return input.Replace(" ", "-");
+            //input.Replace(" ", "-");
+            input = Regex.Replace(input, @"\s+", "-");
+
+            // Remove consecutive hyphens
+            return input = Regex.Replace(input, @"-{2,}", "-");
         }
         public async void SetGeniusUrlForTrack(int trackID)
         {
@@ -173,14 +184,6 @@ namespace AudioFile.Controller
             string trackName = (string)track.TrackProperties.GetProperty(trackID, "Title");
 
             HandleGeniusButtonSearchingState(artist, trackName);
-
-            //Task<string> urlTask = FetchGeniusTrackUrlAsync(artist, trackName);
-            //urlTask.ContinueWith(task =>
-            //{
-            //    HandleFetchGeniusCompletion(trackID, task, track);
-            //    Debug.Log($"Genius URL for track {trackName} by {artist}: {task.Result}");
-
-            //});
 
             string url = await FetchGeniusTrackUrlAsync(artist, trackName); // Ensures UI updates run on the main thread
 
@@ -204,7 +207,6 @@ namespace AudioFile.Controller
         private void HandleGeniusButtonSearchingState(string artist, string trackName)
         {
             Debug.Log($"Fetching Genius URL for track {trackName} by {artist}...");
-            //geniusButton.State = GeniusButtonState.Searching; // Set state to Searching
             UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Searching);
 
             UIGeniusButtonManager.Instance.HandleGeniusButtonStateAndTextUpdate();
@@ -216,12 +218,10 @@ namespace AudioFile.Controller
 
             if (url != "Not found")
             {
-                //geniusButton.State = GeniusButtonState.Found;
                 UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Found);
             }
             else
             {
-                //geniusButton.State = GeniusButtonState.NotFound;
                 UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.NotFound);
             }
 
@@ -239,7 +239,6 @@ namespace AudioFile.Controller
         {
             if (PlaybackController.Instance.SelectedTrack == null)
             {
-                //geniusButton.State = GeniusButtonState.Default;
                 UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Default);
             }
         }
@@ -248,128 +247,5 @@ namespace AudioFile.Controller
         {
             throw new NotImplementedException();
         }
-
-
-
-        //public async Task<List<string>> SearchTrackAsync(string trackArtist, string trackTitle)
-        //{
-        //    // Helper function to replace spaces with dashes
-        //    string FormatUrl(string input) => input.Replace(" ", "-");
-
-        //    string formattedArtist = FormatUrl(trackArtist);
-        //    string formattedTitle = FormatUrl(trackTitle);
-
-        //    string searchUrl = $"https://www.whosampled.com/{formattedArtist}/{formattedTitle}/samples/";
-        //    var trackResults = new List<string>();
-
-        //    try
-        //    { 
-        //        using HttpClient client = new HttpClient();
-        //        client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36");
-        //        client.DefaultRequestHeaders.Referrer = new Uri("https://www.whosampled.com/");
-        //        client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
-        //        client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
-
-        //        var response = await client.GetAsync(searchUrl); //Seems to fail here
-        //        response.EnsureSuccessStatusCode();  // Throws an exception if status code is not success
-        //        var responseBody = await response.Content.ReadAsStringAsync();
-
-        //        var doc = new HtmlDocument();
-        //        doc.LoadHtml(responseBody);
-
-        //        // XPath to find all rows <tr> inside <table class="table tdata">
-        //        var trackRows = doc.DocumentNode.SelectNodes("//table[contains(@class, 'table tdata')]/tbody/tr");
-
-        //        if (trackRows != null)
-        //        {
-        //            foreach (var row in trackRows)
-        //            {
-        //                try
-        //                {
-        //                    // Extract Sample Title
-        //                    var titleNode = row.SelectSingleNode(".//td[contains(@class, 'tdata_td2')]/a");
-        //                    string sampleTitle = titleNode?.InnerText.Trim() ?? "Unknown Title";
-
-        //                    // Extract Sample Artist Name
-        //                    var artistNode = row.SelectSingleNode(".//td[contains(@class, 'tdata_td3')]/a");
-        //                    string sampleArtist = artistNode?.InnerText.Trim() ?? "Unknown Artist";
-
-        //                    // Extract Sample Year
-        //                    var yearNode = row.SelectSingleNode(".//td[contains(@class, 'tdata_td3')][2]"); // Second occurrence
-        //                    string sampleYear = yearNode?.InnerText.Trim() ?? "Unknown Year";
-
-        //                    // Format result and add to list
-        //                    trackResults.Add($"{sampleTitle} - {sampleArtist} ({sampleYear})");
-        //                }
-        //                catch (Exception innerEx)
-        //                {
-        //                    //Console.WriteLine($"Error parsing row: {innerEx.Message}");
-        //                    Debug.LogError($"Error parsing row: {innerEx.Message}");
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (HttpRequestException httpEx)
-        //    {
-        //        //Console.WriteLine($"HTTP Request failed: {httpEx.Message}");
-        //        Debug.Log($"HTTP Request failed: {httpEx.Message}");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        //Console.WriteLine($"Error fetching data: {ex.Message}");
-        //        Debug.Log($"Error fetching data: {ex.Message}");
-        //    }
-
-        //    return trackResults;
-        //}
-
-        //public async Task<List<string>> SearchTrackAsync(string query) //Method for searching whosampled. Doesn't work due to whosampled.com's protections. You'll just get a HTTP 403 Forbidden error if you try to scrape anything
-        //{
-        //    var searchResults = new List<string>();
-
-        //    // Format the search query (replace spaces with '+')
-        //    string searchQuery = Uri.EscapeDataString(query.Replace(" ", "+"));
-        //    string searchUrl = $"https://www.whosampled.com/search/?q={searchQuery}";
-
-        //    try
-        //    {
-        //        using HttpClient client = new HttpClient();
-        //        client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36");
-        //        client.DefaultRequestHeaders.Referrer = new Uri("https://www.whosampled.com/");
-        //        client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
-        //        client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
-
-        //        var response = await client.GetAsync(searchUrl);
-        //        response.EnsureSuccessStatusCode();
-        //        var responseBody = await response.Content.ReadAsStringAsync();
-
-        //        var doc = new HtmlDocument();
-        //        doc.LoadHtml(responseBody);
-
-        //        // Extract track links (Modify this if needed based on the actual site structure)
-        //        var trackNodes = doc.DocumentNode.SelectNodes("//div[contains(@class, 'trackTitle')]/a");
-
-        //        if (trackNodes != null)
-        //        {
-        //            foreach (var node in trackNodes)
-        //            {
-        //                string trackTitle = node.InnerText.Trim();
-        //                string trackLink = "https://www.whosampled.com" + node.GetAttributeValue("href", "#");
-        //                searchResults.Add($"{trackTitle} -> {trackLink}");
-        //            }
-        //        }
-        //    }
-        //    catch (HttpRequestException httpEx)
-        //    {
-        //        Debug.Log($"HTTP Request failed: {httpEx.Message}");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.Log($"General error: {ex.Message}");
-        //    }
-
-        //    return searchResults;
-        //}
-
     }
 }

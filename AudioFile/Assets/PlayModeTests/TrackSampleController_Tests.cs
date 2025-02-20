@@ -44,7 +44,7 @@ namespace AudioFile.Tests
         }
 
         [UnityTest]
-        public IEnumerator GetGeniusTrackUrlAsync_ValidTrickyQuery_ReturnsResults()
+        public IEnumerator GetGeniusTrackUrlAsync_ValidTrickyQueries_ReturnsResults()
         {
             var geniusController = GeniusWebController.Instance;
             geniusController.Start();
@@ -55,15 +55,30 @@ namespace AudioFile.Tests
             //This is trickier query since De La Soul is known as the main artist for this track (although on my fan made Doom comp album it lists Doom as the main artist)
             //Also . in co.kane is a special character dropped from the result url fed back from the site
             //Note that I may need to invent another method to deal with ? by MF DOOM lol
-            Task<string> searchTask = geniusController.FetchGeniusTrackUrlAsync("MF DOOM", "Rock Co.Kane Flow ft. De La Soul"); 
+            Task<string> searchTask = geniusController.FetchGeniusTrackUrlAsync("MF DOOM", "Rock Co.Kane Flow ft. De La Soul");
+            Task<string> searchTask2 = geniusController.FetchGeniusTrackUrlAsync("MF DOOM", "?");
+            Task<string> searchTask3 = geniusController.FetchGeniusTrackUrlAsync("Kendrick Lamar", "untitled 01 | 08.19.2014.");
+
             // Wait for the async method to complete
             yield return new WaitUntil(() => searchTask.IsCompleted);
+            yield return new WaitUntil(() => searchTask2.IsCompleted);
+            yield return new WaitUntil(() => searchTask3.IsCompleted);
 
             // Assert: Ensure we got results
             Assert.IsNotNull(searchTask.Result);
             Debug.Log($"Search Results: {searchTask.Result}");
             Assert.IsNotEmpty(searchTask.Result);
             Assert.IsTrue(searchTask.Result.Contains("https://genius.com/De-la-soul-rock-cokane-flow-lyrics"));
+
+            Assert.IsNotNull(searchTask2.Result);
+            Debug.Log($"Search2 Results: {searchTask2.Result}");
+            Assert.IsNotEmpty(searchTask2.Result);
+            Assert.IsTrue(searchTask2.Result.Contains("https://genius.com/Mf-doom-question-mark-lyrics"));
+
+            Assert.IsNotNull(searchTask3.Result);
+            Debug.Log($"Search3 Results: {searchTask3.Result}");
+            Assert.IsNotEmpty(searchTask3.Result);
+            Assert.IsTrue(searchTask3.Result.Contains("https://genius.com/Kendrick-lamar-untitled-01-08192014-lyrics"));
         }
 
 
