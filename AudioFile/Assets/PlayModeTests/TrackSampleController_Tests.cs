@@ -42,6 +42,31 @@ namespace AudioFile.Tests
             Assert.IsNotEmpty(searchTask.Result);
             Assert.IsTrue(searchTask.Result.Contains("https://genius.com/Mf-doom-doomsday-lyrics"));
         }
+
+        [UnityTest]
+        public IEnumerator GetGeniusTrackUrlAsync_ValidTrickyQuery_ReturnsResults()
+        {
+            var geniusController = GeniusWebController.Instance;
+            geniusController.Start();
+            // Wait for the Start method to complete
+            yield return null;
+
+            // Act: Run the search
+            //This is trickier query since De La Soul is known as the main artist for this track (although on my fan made Doom comp album it lists Doom as the main artist)
+            //Also . in co.kane is a special character dropped from the result url fed back from the site
+            //Note that I may need to invent another method to deal with ? by MF DOOM lol
+            Task<string> searchTask = geniusController.FetchGeniusTrackUrlAsync("MF DOOM", "Rock Co.Kane Flow ft. De La Soul"); 
+            // Wait for the async method to complete
+            yield return new WaitUntil(() => searchTask.IsCompleted);
+
+            // Assert: Ensure we got results
+            Assert.IsNotNull(searchTask.Result);
+            Debug.Log($"Search Results: {searchTask.Result}");
+            Assert.IsNotEmpty(searchTask.Result);
+            Assert.IsTrue(searchTask.Result.Contains("https://genius.com/De-la-soul-rock-cokane-flow-lyrics"));
+        }
+
+
         //[UnityTest] Whosampled forbids data scraping so this test is no longer relevant
         //public IEnumerator SearchTrackAsync_ValidQuery_ReturnsResults()
         //{
@@ -52,13 +77,13 @@ namespace AudioFile.Tests
         //    // Wait for the async method to complete
         //    yield return new WaitUntil(() => searchTask.IsCompleted);
 
-            //    // Assert: Ensure we got results
-            //    Assert.IsNotNull(searchTask.Result); //This passes so we get some sort of result
-            //    Debug.Log($"Search Results: {string.Join(", ", searchTask.Result)}"); //Looks like it's just an empty string. Mthod needs refinement to work with actual site HTML structure
-            //    Assert.IsNotEmpty(searchTask.Result);
-            //    //Assert.Contains("Rapp Snitch Knishes", searchTask.Result);
-            //}
+        //    // Assert: Ensure we got results
+        //    Assert.IsNotNull(searchTask.Result); //This passes so we get some sort of result
+        //    Debug.Log($"Search Results: {string.Join(", ", searchTask.Result)}"); //Looks like it's just an empty string. Mthod needs refinement to work with actual site HTML structure
+        //    Assert.IsNotEmpty(searchTask.Result);
+        //    //Assert.Contains("Rapp Snitch Knishes", searchTask.Result);
+        //}
 
-            //TODO: Add more test cases for transforming track titles and artist names that don't match casewise with the whosampled.com correpsonding page
+        //TODO: Add more test cases for transforming track titles and artist names that don't match casewise with the whosampled.com correpsonding page
     }
 }

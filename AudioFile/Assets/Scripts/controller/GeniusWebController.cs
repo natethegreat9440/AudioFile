@@ -13,6 +13,7 @@ using AudioFile.Model;
 using AudioFile.Utilities;
 using AudioFile.View;
 using TagLib;
+using System.Text.RegularExpressions;
 
 namespace AudioFile.Controller
 {
@@ -98,11 +99,30 @@ namespace AudioFile.Controller
                 if (hits == null || hits.Type == JTokenType.Null || !hits.HasValues)
                     return "Not found";
 
-                string songUrl = hits[0]["result"]?["url"]?.ToString();
-                if (string.IsNullOrEmpty(songUrl)) return "Not found";
+                // Preprocess artist and track name for comparison
+                string trackLower = NormalizeForUrlComparison(trackName);
+                string artistLower = NormalizeForUrlComparison(artist);
+                string fallbackUrl = null;
 
-                Debug.Log("Genius Url found using Genius API!");
-                return songUrl;
+                // Step 3: Iterate over hits to find the best match
+                foreach (var hit in hits)
+                {
+                    string url = hit["result"]?["url"]?.ToString();
+                    if (string.IsNullOrEmpty(url))
+                        continue;
+
+                    string urlLower = url.ToLower();
+
+                    // Check if URL contains both artist and track name
+                    if (urlLower.Contains(artistLower) && urlLower.Contains(trackLower))
+                        return url;
+
+                    // Store the first match that contains only the track name as fallback
+                    if (fallbackUrl == null && urlLower.Contains(trackLower))
+                        fallbackUrl = url;
+                }
+
+                return fallbackUrl ?? "Not found";
             }
             catch (Exception ex)
             {
@@ -112,7 +132,31 @@ namespace AudioFile.Controller
             }
         }
 
-        public void SetGeniusUrlForTrack(int trackID)
+        // Helper function to normalize strings for Genius URL comparison
+        //private string NormalizeForUrlComparison(string input)
+        //{
+        //    if (string.IsNullOrEmpty(input))
+        //        return string.Empty;
+
+        //    return Regex.Replace(input.ToLower(), @"[\s\.\'\""\,\!\?\(\)\&]", ""); // Append this if we want to remove dashes \-\—
+        //}
+
+        // Helper function to normalize strings for Genius URL comparison
+        private string NormalizeForUrlComparison(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return string.Empty;
+
+            // Remove featured artist info (ft., feat., featuring, etc.)
+            input = Regex.Replace(input, @"\b(ft\.?|feat\.?|featuring|prod\.?)\b.*", "", RegexOptions.IgnoreCase).Trim();
+
+            // Remove all special characters except letters, numbers, and spaces
+            input = Regex.Replace(input.ToLower(), @"[^a-z0-9 ]", "");
+
+            // Replace spaces with hyphens
+            return input.Replace(" ", "-");
+        }
+        public async void SetGeniusUrlForTrack(int trackID)
         {
             Track track = TrackLibraryController.Instance.GetTrackAtID(trackID);
 
@@ -130,43 +174,58 @@ namespace AudioFile.Controller
 
             HandleGeniusButtonSearchingState(artist, trackName);
 
-            Task<string> urlTask = FetchGeniusTrackUrlAsync(artist, trackName);
-            urlTask.ContinueWith(task =>
-            {
-                HandleFetchGeniusCompletion(trackID, task, track);
-                Debug.Log($"Genius URL for track {trackName} by {artist}: {task.Result}");
+            //Task<string> urlTask = FetchGeniusTrackUrlAsync(artist, trackName);
+            //urlTask.ContinueWith(task =>
+            //{
+            //    HandleFetchGeniusCompletion(trackID, task, track);
+            //    Debug.Log($"Genius URL for track {trackName} by {artist}: {task.Result}");
 
-            });
+            //});
+
+            string url = await FetchGeniusTrackUrlAsync(artist, trackName); // Ensures UI updates run on the main thread
+
+            HandleFetchGeniusCompletion(trackID, Task.FromResult(url), track);
+            Debug.Log($"Genius URL for track {trackName} by {artist}: {url}");
         }
 
         private void HandleFetchGeniusCompletion(int trackID, Task<string> task, Track track)
         {
             string url = task.Result;
             track.TrackProperties.SetProperty(trackID, "GeniusUrl", url);
+            Debug.Log("Handling fetch completion");
 
-            HandleCheckForGeniusButtonFoundOrNotFoundState(url);
+            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+            {
+                HandleCheckForGeniusButtonFoundOrNotFoundState(url);
+                ObserverManager.Instance.NotifyObservers("OnGeniusSearchComplete", trackID);
+            });
         }
 
         private void HandleGeniusButtonSearchingState(string artist, string trackName)
         {
             Debug.Log($"Fetching Genius URL for track {trackName} by {artist}...");
-            geniusButton.State = GeniusButtonState.Searching; // Set state to Searching
+            //geniusButton.State = GeniusButtonState.Searching; // Set state to Searching
+            UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Searching);
 
-            UIGeniusButtonManager.Instance.UpdateGeniusButtonState();
+            UIGeniusButtonManager.Instance.HandleGeniusButtonStateAndTextUpdate();
         }
 
         private void HandleCheckForGeniusButtonFoundOrNotFoundState(string url)
         {
+            Debug.Log($"Handling check for Genius button Found or Not Found state");
+
             if (url != "Not found")
             {
-                geniusButton.State = GeniusButtonState.Found;
+                //geniusButton.State = GeniusButtonState.Found;
+                UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Found);
             }
             else
             {
-                geniusButton.State = GeniusButtonState.NotFound;
+                //geniusButton.State = GeniusButtonState.NotFound;
+                UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.NotFound);
             }
 
-            UIGeniusButtonManager.Instance.UpdateGeniusButtonState();
+            UIGeniusButtonManager.Instance.HandleGeniusButtonStateAndTextUpdate();
         }
 
         public void Initialize()
@@ -180,7 +239,8 @@ namespace AudioFile.Controller
         {
             if (PlaybackController.Instance.SelectedTrack == null)
             {
-                geniusButton.State = GeniusButtonState.Default;
+                //geniusButton.State = GeniusButtonState.Default;
+                UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Default);
             }
         }
 
