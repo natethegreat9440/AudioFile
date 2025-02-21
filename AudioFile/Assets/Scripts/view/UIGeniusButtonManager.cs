@@ -9,10 +9,8 @@ using UnityEngine.UI;
 using Button = UnityEngine.UI.Button; // Add this line to resolve ambiguity
 using AudioFile.Controller;
 using System.Windows.Forms;
-using Codice.CM.ConfigureHelper;
 using TMPro;
 using AudioFile.Utilities;
-using static UnityEditorInternal.VersionControl.ListControl;
 using System.Collections;
 
 namespace AudioFile.View
@@ -87,8 +85,6 @@ namespace AudioFile.View
                 },
                 "OnSelectedTrackSetComplete" => () =>
                 {
-                    //HandleGeniusButtonStateAndTextUpdate();
-                    //ManageButtonText();
                     StartCoroutine(DelayedButtonTextUpdate());
                 },
                 "OnGeniusSearchComplete" => () =>
@@ -104,7 +100,6 @@ namespace AudioFile.View
 
         void Update()
         {
-
             if (GeniusButton != null && GeniusButton.State == GeniusButtonState.Found)
             {
                 GeniusButton.interactable = true;
@@ -113,11 +108,9 @@ namespace AudioFile.View
             {
                 GeniusButton.interactable = false;
             }
-
-
         }
 
-        public void HandleGeniusButtonStateAndTextUpdate()
+        public void HandleGeniusButtonStateAndTextUpdate() 
         {
             Debug.Log("Handling Genius State/Text Update start");
             Debug.Log($"Current state is: {GeniusButton.State} and last state is: {lastState}");
@@ -127,9 +120,7 @@ namespace AudioFile.View
             // Update button state based on selectedTrackDisplays
             if (selectedTrackDisplays.Count > 1)
             {
-                //GeniusButton.State = GeniusButtonState.Default;
                 SetGeniusButtonState(GeniusButtonState.Default);
-                //ManageButtonText();
                 StartCoroutine(DelayedButtonTextUpdate());
                 lastState = GeniusButton.State;
                 return;
@@ -138,7 +129,6 @@ namespace AudioFile.View
             // Manage button text only if the state has changed
             if (lastState != GeniusButton.State)
             {
-                //ManageButtonText();
                 StartCoroutine(DelayedButtonTextUpdate());
                 lastState = GeniusButton.State;
             }
@@ -151,7 +141,7 @@ namespace AudioFile.View
 
         }
 
-        public void SetGeniusButtonState(GeniusButtonState newState)
+        public void SetGeniusButtonState(GeniusButtonState newState) 
         {
             lock (stateLock)
             {
@@ -160,7 +150,7 @@ namespace AudioFile.View
             }
         }
 
-        private IEnumerator DelayedButtonTextUpdate()
+        private IEnumerator DelayedButtonTextUpdate() 
         {
             yield return new WaitForEndOfFrame(); // Wait for frame to finish
 
@@ -178,7 +168,7 @@ namespace AudioFile.View
             GeniusButton.State = GeniusButtonState.Default;
         }
 
-        private void ManageButtonText()
+        private void ManageButtonText() 
         {
             Debug.Log("Handling Genius Button Text management start");
             Debug.Log($"Current state is: {GeniusButton.State} and last state is: {lastState}");
@@ -188,21 +178,19 @@ namespace AudioFile.View
                 GeniusButtonState.Searching => $"Searching Genius.com for {selectedTrackTitle} by {selectedTrackArtist}...",
                 GeniusButtonState.NotFound => "Could not find Genius.com page for selected track.",
                 GeniusButtonState.Found => $"Click Genius.com button to visit track page for {selectedTrackTitle} by {selectedTrackArtist}",
-                _ => GeniusButton.GetComponentInChildren<Text>().text // Default: Keep current text
+                _ => GeniusButton.GetComponentInChildren<Text>().text // Default case for switch: Keep current text
             };
 
             SetButtonText(newText);
             Debug.Log("Handling Genius Button Text management end");
         }
-        private void SetButtonText(string buttonText)
+        private void SetButtonText(string buttonText) 
         {
             Debug.Log("Setting Genius Button Text management start");
 
-            //GeniusButton.GetComponentInChildren<Text>().text = buttonText;
-            //GeniusButton.GetComponentInChildren<TextMeshProUGUI>().text = buttonText;
             var textComponent = GeniusButton.GetComponentInChildren<TextMeshProUGUI>();
             textComponent.text = buttonText;
-            textComponent.ForceMeshUpdate(); // Force TextMeshPro to refresh UI
+            textComponent.ForceMeshUpdate(); 
             LayoutRebuilder.ForceRebuildLayoutImmediate(GeniusButton.GetComponent<RectTransform>());
 
             //Strongly force UI element to refresh
@@ -210,7 +198,6 @@ namespace AudioFile.View
             GeniusButton.gameObject.SetActive(true);
 
             Debug.Log("Setting Genius Button Text management end");
-
         }
     }
 }

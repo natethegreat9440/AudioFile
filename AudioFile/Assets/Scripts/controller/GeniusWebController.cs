@@ -161,13 +161,12 @@ namespace AudioFile.Controller
             input = Regex.Replace(input, @"\s+", " ");
 
             // Replace spaces with hyphens
-            //input.Replace(" ", "-");
             input = Regex.Replace(input, @"\s+", "-");
 
             // Remove consecutive hyphens
             return input = Regex.Replace(input, @"-{2,}", "-");
         }
-        public async void SetGeniusUrlForTrack(int trackID)
+        public async void SetGeniusUrlForTrack(int trackID) 
         {
             Track track = TrackLibraryController.Instance.GetTrackAtID(trackID);
 
@@ -191,7 +190,7 @@ namespace AudioFile.Controller
             Debug.Log($"Genius URL for track {trackName} by {artist}: {url}");
         }
 
-        private void HandleFetchGeniusCompletion(int trackID, Task<string> task, Track track)
+        private void HandleFetchGeniusCompletion(int trackID, Task<string> task, Track track) 
         {
             string url = task.Result;
             track.TrackProperties.SetProperty(trackID, "GeniusUrl", url);
@@ -204,7 +203,7 @@ namespace AudioFile.Controller
             });
         }
 
-        private void HandleGeniusButtonSearchingState(string artist, string trackName)
+        private void HandleGeniusButtonSearchingState(string artist, string trackName) 
         {
             Debug.Log($"Fetching Genius URL for track {trackName} by {artist}...");
             UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Searching);
@@ -212,7 +211,7 @@ namespace AudioFile.Controller
             UIGeniusButtonManager.Instance.HandleGeniusButtonStateAndTextUpdate();
         }
 
-        private void HandleCheckForGeniusButtonFoundOrNotFoundState(string url)
+        private void HandleCheckForGeniusButtonFoundOrNotFoundState(string url) 
         {
             Debug.Log($"Handling check for Genius button Found or Not Found state");
 
@@ -233,14 +232,6 @@ namespace AudioFile.Controller
             client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
             client.DefaultRequestHeaders.Add("User-Agent", "CSharpApp");
-        }
-
-        private void HandleCheckForGeniusButtonDefaultState()
-        {
-            if (PlaybackController.Instance.SelectedTrack == null)
-            {
-                UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Default);
-            }
         }
 
         public void Dispose()
