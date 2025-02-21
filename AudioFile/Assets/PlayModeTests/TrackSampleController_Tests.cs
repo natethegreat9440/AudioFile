@@ -21,7 +21,7 @@ namespace AudioFile.Tests
         [UnityTest]
         public IEnumerator GetGeniusTrackUrlAsync_ValidQuery_ReturnsResults()
         {
-            var geniusController = GeniusWebController.Instance;
+            var geniusController = GeniusWebClientController.Instance;
             geniusController.Start();
             // Wait for the Start method to complete
             yield return null;
@@ -46,7 +46,7 @@ namespace AudioFile.Tests
         [UnityTest]
         public IEnumerator GetGeniusTrackUrlAsync_ValidTrickyQueries_ReturnsResults()
         {
-            var geniusController = GeniusWebController.Instance;
+            var geniusController = GeniusWebClientController.Instance;
             geniusController.Start();
             // Wait for the Start method to complete
             yield return null;

@@ -5,16 +5,16 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638755275995683493
-    m_Hash: 1743802650
+      ticks: 638756938350793902
+    m_Hash: 4184025542
   m_LockFileStatus:
     m_FilePath: C:/Users/natha/Documents/AudioFile/AudioFile/Packages/packages-lock.json
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638755275995733516
-    m_Hash: 1797218661
+      ticks: 638756938350893189
+    m_Hash: 2420187291
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
 m_LocalPackages:

@@ -91,7 +91,6 @@ namespace AudioFile.View
             {
                 ConfigureSortButton(button);
             }
-
         }
 
         void Update()
