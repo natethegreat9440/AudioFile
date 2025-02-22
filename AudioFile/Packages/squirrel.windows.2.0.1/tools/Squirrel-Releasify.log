@@ -1,0 +1,168 @@
+﻿[21/02/25 14:43:15] info: Program: Starting Squirrel Updater: --releasify C:\Users\natha\Documents\AudioFile Builds\AudioFile
+[21/02/25 14:43:15] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 14:43:15] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\Users\natha\Documents\AudioFile Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 14:45:55] info: Program: Starting Squirrel Updater: --releasify C:\Users\natha\Documents\AudioFile Builds\AudioFile
+[21/02/25 14:45:55] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 14:45:55] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\Users\natha\Documents\AudioFile Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 14:52:30] info: Program: Starting Squirrel Updater: --releasify C:\Users\natha\Documents\AudioFile Builds\AudioFile
+[21/02/25 14:52:30] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 14:52:30] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\Users\natha\Documents\AudioFile Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 14:53:14] info: Program: Starting Squirrel Updater: --releasify C:\Users\natha\Documents\AudioFile Builds\AudioFile
+[21/02/25 14:53:14] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 14:53:14] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\Users\natha\Documents\AudioFile Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 14:56:23] info: Program: Starting Squirrel Updater: --releasify C:\Users\natha\Documents\AudioFile Builds\AudioFile
+[21/02/25 14:56:23] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 14:56:23] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\Users\natha\Documents\AudioFile Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:01:43] info: Program: Starting Squirrel Updater: --releasify C:\Users\natha\Documents\AudioFile Builds\AudioFile
+[21/02/25 15:01:43] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:01:43] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\Users\natha\Documents\AudioFile Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:04:01] info: Program: Starting Squirrel Updater: --releasify C:\AudioFile_Builds\AudioFile
+[21/02/25 15:04:01] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:04:01] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:05:30] info: Program: Starting Squirrel Updater: --releasify C:\AudioFile_Builds\AudioFile
+[21/02/25 15:05:30] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:05:30] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:06:34] info: Program: Starting Squirrel Updater: --releasify C:\AudioFile_Builds\AudioFile
+[21/02/25 15:06:34] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:06:34] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:09:03] info: Program: Starting Squirrel Updater: --releasify C:\AudioFile_Builds\AudioFile
+[21/02/25 15:09:03] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:09:03] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:09:39] info: Program: Starting Squirrel Updater: --releasify C:\AudioFile_Builds\AudioFile
+[21/02/25 15:09:39] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:09:39] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:16:50] info: Program: Starting Squirrel Updater: --releasify C:\AudioFile_Builds\AudioFile
+[21/02/25 15:16:50] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:16:50] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:18:09] info: Program: Starting Squirrel Updater: --releasify C:\AudioFile_Builds\AudioFile --releaseDir C:\SquirrelOutput
+[21/02/25 15:18:09] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:18:09] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:24:24] info: Program: Starting Squirrel Updater: --releasify F:\AudioFile_Builds\AudioFile --releaseDir F:\SquirrelOutput
+[21/02/25 15:24:24] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:24:24] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'F:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:27:25] info: Program: Starting Squirrel Updater: --releasify F:\AudioFile_Builds\AudioFile
+[21/02/25 15:27:25] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:27:25] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'F:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:31:10] info: Program: Starting Squirrel Updater: --releasify C:\AudioFile_Builds\AudioFile
+[21/02/25 15:31:10] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:31:10] fatal: Finished with unhandled exception: System.IO.DirectoryNotFoundException: Could not find a part of the path 'C:\AudioFile_Builds\AudioFile'.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:32:27] info: Program: Starting Squirrel Updater: --releasify F:\AudioFile_Builds\AudioFile
+[21/02/25 15:32:27] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:32:27] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'F:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:35:08] info: Program: Starting Squirrel Updater: --releasify F:\AudioFile_Builds\AudioFile --logLevel=debug
+[21/02/25 15:35:08] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:35:08] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'F:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:38:31] info: Program: Starting Squirrel Updater: --releasify F:\AudioFile_Builds\AudioFile
+[21/02/25 15:38:31] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:38:31] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'F:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:41:41] info: Program: Starting Squirrel Updater: --releasify C:\AudioFile_Builds\AudioFile
+[21/02/25 15:41:41] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:41:41] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
+[21/02/25 15:44:42] info: Program: Starting Squirrel Updater: --releasify C:\AudioFile_Builds\AudioFile
+[21/02/25 15:44:42] info: Program: Bootstrapper EXE found at:C:\Users\natha\Documents\AudioFile\AudioFile\Packages\squirrel.windows.2.0.1\tools\Setup.exe
+[21/02/25 15:44:42] fatal: Finished with unhandled exception: System.UnauthorizedAccessException: Access to the path 'C:\AudioFile_Builds\AudioFile' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.File.InternalCopy(String sourceFileName, String destFileName, Boolean overwrite, Boolean checkHost)
+   at Squirrel.Update.Program.Releasify(String package, String targetDir, String packagesDir, String bootstrapperExe, String backgroundGif, String signingOpts, String baseUrl, String setupIcon, Boolean generateMsi, Boolean packageAs64Bit, String frameworkVersion, Boolean generateDeltas)
+   at Squirrel.Update.Program.executeCommandLine(String[] args)
+   at Squirrel.Update.Program.main(String[] args)
