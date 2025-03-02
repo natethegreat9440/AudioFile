@@ -18,6 +18,7 @@ namespace AudioFile.Tests
             //GameObject gameObject = new GameObject("SetupControllerTest");
             //var setupControllerTest = gameObject.AddComponent<SetupController>();
         }
+
         [UnityTest]
         public IEnumerator GetGeniusTrackUrlAsync_ValidQuery_ReturnsResults()
         {
@@ -81,24 +82,136 @@ namespace AudioFile.Tests
             Assert.IsTrue(searchTask3.Result.Contains("https://genius.com/Kendrick-lamar-untitled-01-08192014-lyrics"));
         }
 
+        [UnityTest]
+        public IEnumerator FetchGeniusTrackMissingInfoAsync_ValidQueries_ReturnsResults()
+        {
+            var geniusController = GeniusWebClientController.Instance;
+            geniusController.Start();
+            // Wait for the Start method to complete
+            yield return null;
 
-        //[UnityTest] Whosampled forbids data scraping so this test is no longer relevant
-        //public IEnumerator SearchTrackAsync_ValidQuery_ReturnsResults()
-        //{
-        //    var trackSampleController = GeniusWebController.Instance;
-        //    // Act: Run the search
-        //    //Task<List<string>> searchTask = trackSampleController.SearchTrackAsync("MF DOOM", "Doomsday");
-        //    Task<List<string>> searchTask = trackSampleController.SearchTrackAsync("Doomsday MF Doom");
-        //    // Wait for the async method to complete
-        //    yield return new WaitUntil(() => searchTask.IsCompleted);
+            // Act: Run the search
+            Task<List<string>> searchTask = geniusController.FetchGeniusTrackMissingInfoAsync("06 - Drake - Worst Behavior");
+            //Task<List<string>> searchTask = geniusController.FetchGeniusTrackMissingInfoAsync("Drake - Worst Behavior");
+            // Wait for the async method to complete
+            yield return new WaitUntil(() => searchTask.IsCompleted);
 
-        //    // Assert: Ensure we got results
-        //    Assert.IsNotNull(searchTask.Result); //This passes so we get some sort of result
-        //    Debug.Log($"Search Results: {string.Join(", ", searchTask.Result)}"); //Looks like it's just an empty string. Mthod needs refinement to work with actual site HTML structure
-        //    Assert.IsNotEmpty(searchTask.Result);
-        //    //Assert.Contains("Rapp Snitch Knishes", searchTask.Result);
-        //}
+            List<string> results = searchTask.Result;
 
-        //TODO: Add more test cases for transforming track titles and artist names that don't match casewise with the whosampled.com correpsonding page
+            string trackName = results[0]; 
+            string artist = results[1];
+            string album = results[2];
+            string albumTrackNumber = results[3];
+            string songUrl = results[4];
+
+            // Assert: Ensure we got results
+            Assert.IsNotNull(searchTask.Result);
+            Debug.Log($"Search Results: {searchTask.Result}");
+            Assert.IsNotEmpty(searchTask.Result);
+            Assert.IsTrue(trackName.Contains("Worst Behavior"));
+            Assert.IsTrue(artist.Contains("Drake"));
+            Assert.IsTrue(album.Contains("Nothing Was the Same"));
+            Assert.IsTrue(albumTrackNumber.Contains("6"));
+            Assert.IsTrue(songUrl.Contains("https://genius.com/Drake-worst-behavior-lyrics"));
+        }
+
+        [UnityTest]
+        public IEnumerator FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery1_ReturnsResults()
+        {
+            var geniusController = GeniusWebClientController.Instance;
+            geniusController.Start();
+            // Wait for the Start method to complete
+            yield return null;
+
+            // Act: Run the search
+            Task<List<string>> searchTask = geniusController.FetchGeniusTrackMissingInfoAsync("Big Sean -  I Know (feat. Jhen Aiko) (Lyric Video)");
+            
+            // Wait for the async method to complete
+            yield return new WaitUntil(() => searchTask.IsCompleted);
+
+            List<string> results = searchTask.Result;
+
+            string trackName = results[0];
+            string artist = results[1];
+            string album = results[2];
+            string albumTrackNumber = results[3];
+            string songUrl = results[4];
+
+            // Assert: Ensure we got results
+            Assert.IsNotNull(searchTask.Result);
+            Debug.Log($"Search Results: {searchTask.Result}");
+            Assert.IsNotEmpty(searchTask.Result);
+            Assert.IsTrue(trackName.Contains("I Know"));
+            Assert.IsTrue(artist.Contains("Big Sean"));
+            Assert.IsTrue(album.Contains("Dark Sky Paradise (Deluxe)"));
+            Assert.IsTrue(albumTrackNumber.Contains("9"));
+            Assert.IsTrue(songUrl.Contains("https://genius.com/Big-sean-i-know-lyrics"));
+        }
+
+        [UnityTest]
+        public IEnumerator FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery2_ReturnsResults()
+        {
+            var geniusController = GeniusWebClientController.Instance;
+            geniusController.Start();
+            // Wait for the Start method to complete
+            yield return null;
+
+            // Act: Run the search
+            Task<List<string>> searchTask = geniusController.FetchGeniusTrackMissingInfoAsync("Big Sean - Blessings (Extended Version _ Audio) (Explicit) ft. Drake, Kanye West");
+
+            // Wait for the async method to complete
+            yield return new WaitUntil(() => searchTask.IsCompleted);
+
+            List<string> results = searchTask.Result;
+
+            string trackName = results[0];
+            string artist = results[1];
+            string album = results[2];
+            string albumTrackNumber = results[3];
+            string songUrl = results[4];
+
+            // Assert: Ensure we got results
+            Assert.IsNotNull(searchTask.Result);
+            Debug.Log($"Search Results: {searchTask.Result}");
+            Assert.IsNotEmpty(searchTask.Result);
+            Assert.IsTrue(trackName.Contains("Blessings (Extended Version)"));
+            Assert.IsTrue(artist.Contains("Big Sean"));
+            Assert.IsTrue(album.Contains("Blessings (Single)"));
+            Assert.IsTrue(albumTrackNumber.Contains("3"));
+            Assert.IsTrue(songUrl.Contains("https://genius.com/Big-sean-blessings-extended-version-lyrics"));
+        }
+
+        [UnityTest]
+        public IEnumerator FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery3_ReturnsResults()
+        {
+            var geniusController = GeniusWebClientController.Instance;
+            geniusController.Start();
+            // Wait for the Start method to complete
+            yield return null;
+
+            // Act: Run the search
+            Task<List<string>> searchTask = geniusController.FetchGeniusTrackMissingInfoAsync("Blunt Blowin' - Lil Wayne (lyrics)");
+
+            // Wait for the async method to complete
+            yield return new WaitUntil(() => searchTask.IsCompleted);
+
+            List<string> results = searchTask.Result;
+
+            string trackName = results[0];
+            string artist = results[1];
+            string album = results[2];
+            string albumTrackNumber = results[3];
+            string songUrl = results[4];
+
+            // Assert: Ensure we got results
+            Assert.IsNotNull(searchTask.Result);
+            Debug.Log($"Search Results: {searchTask.Result}");
+            Assert.IsNotEmpty(searchTask.Result);
+            Assert.IsTrue(trackName.Contains("Blunt Blowin"));
+            Assert.IsTrue(artist.Contains("Lil Wayne"));
+            Assert.IsTrue(album.Contains("Tha Carter IV"));
+            Assert.IsTrue(albumTrackNumber.Contains("2"));
+            Assert.IsTrue(songUrl.Contains("https://genius.com/Lil-wayne-blunt-blowin-lyrics"));
+        }
     }
 }

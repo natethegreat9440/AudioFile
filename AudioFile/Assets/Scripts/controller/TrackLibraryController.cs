@@ -367,6 +367,12 @@ namespace AudioFile.Controller
             var albumTrackNumber = 0;
             List<string> metadata = new List<string>() { trackTitle, contributingArtists, trackAlbum, albumTrackNumber.ToString() };
 
+
+            //TODO: Add check to see if file has tags in it. If it doesn't, execute GeniusController to try and find song and set fields in Track setup
+            //If GeniusController fails to return information (method return empty List<string> or an exception) then proceed with try/catch below which should just set things to "Unknown" etc.
+            //Do I wrap this check in a try/catch?
+
+
             try
             {
                 var file = TagLib.File.Create(filePath);

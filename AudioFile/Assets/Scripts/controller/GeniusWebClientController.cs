@@ -77,6 +77,8 @@ namespace AudioFile.Controller
         {
             throw new NotImplementedException();
         }
+
+
         public async Task<string> FetchGeniusTrackUrlAsync(string artist, string trackName)
         {
             try
@@ -92,7 +94,7 @@ namespace AudioFile.Controller
 
                 Debug.Log($"Sending request to: {requestUrl}");
 
-                var response = await client.GetStringAsync(requestUrl);
+                var response = await client.GetStringAsync(requestUrl); //Fails here
                 Debug.Log($"Raw Response: {response}");
 
                 JObject json = JObject.Parse(response);
@@ -116,6 +118,60 @@ namespace AudioFile.Controller
             }
 
             return "Not found";
+        }
+
+        public async Task<List<string>> FetchGeniusTrackMissingInfoAsync(string fileName)
+        {
+            try
+            {
+                if (client == null)
+                {
+                    Debug.LogError("HttpClient is NULL! Initializing now...");
+                    client = new HttpClient();  // Fallback in case initialization fails
+                }
+
+                string proxyUrl = "https://audiofileproxyapi.onrender.com/api/genius/search_missing";
+                string requestUrl = $"{proxyUrl}?fileName={Uri.EscapeDataString(fileName)}";
+
+                Debug.Log($"Sending request to: {requestUrl}");
+
+                var response = await client.GetStringAsync(requestUrl); //Fails here
+                Debug.Log($"Raw Response: {response}");
+
+                JObject json = JObject.Parse(response);
+
+                if (json == null || !json.HasValues)
+                {
+                    Debug.Log("FetchGeniusTrackMissingInfoAsync: JSON response is null or empty.");
+                    return new List<string>();
+                }
+
+                string trackName = json["trackName"]?.ToString();
+                string artist = json["artist"]?.ToString();
+                string album = json["album"]?.ToString();
+                string albumTrackNumber = json["albumTrackNumber"]?.ToString();
+                string songUrl = json["songUrl"]?.ToString();
+
+                if (string.IsNullOrEmpty(songUrl))
+                {
+                    Debug.LogWarning("Warning: No song URL found in JSON response for FetchGeniusTrackMissingInfoAsync.");
+                    return new List<string>();
+                }
+
+                List<string> metaData = new List<string> { trackName, artist, album, albumTrackNumber, songUrl };
+
+                return metaData;
+            }
+            catch (HttpRequestException httpEx)
+            {
+                Debug.LogError($"HTTP Request Error: {httpEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"General Error: {ex.Message}");
+            }
+
+            return new List<string>();
         }
 
         public async void SetGeniusUrlForTrack(int trackID)
