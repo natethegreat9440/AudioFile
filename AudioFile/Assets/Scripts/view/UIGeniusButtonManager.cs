@@ -112,8 +112,8 @@ namespace AudioFile.View
 
         public void HandleGeniusButtonStateAndTextUpdate() 
         {
-            Debug.Log("Handling Genius State/Text Update start");
-            Debug.Log($"Current state is: {GeniusButton.State} and last state is: {lastState}");
+            //Debug.Log("Handling Genius State/Text Update start");
+            //Debug.Log($"Current state is: {GeniusButton.State} and last state is: {lastState}");
 
             if (GeniusButton == null) return;
 
@@ -136,8 +136,8 @@ namespace AudioFile.View
             // Set interactability only when it changes
             GeniusButton.interactable = (GeniusButton.State == GeniusButtonState.Found);
 
-            Debug.Log("Handling Genius State/Text Update end");
-            Debug.Log($"Current state is: {GeniusButton.State} and last state is: {lastState}");
+            //Debug.Log("Handling Genius State/Text Update end");
+            //Debug.Log($"Current state is: {GeniusButton.State} and last state is: {lastState}");
 
         }
 
@@ -154,7 +154,7 @@ namespace AudioFile.View
         {
             yield return new WaitForEndOfFrame(); // Wait for frame to finish
 
-            Debug.Log("[DelayedButtonTextUpdate] Applying final button text update.");
+            //Debug.Log("[DelayedButtonTextUpdate] Applying final button text update.");
             ManageButtonText();
         }
 
@@ -170,19 +170,19 @@ namespace AudioFile.View
 
         private void ManageButtonText() 
         {
-            Debug.Log("Handling Genius Button Text management start");
-            Debug.Log($"Current state is: {GeniusButton.State} and last state is: {lastState}");
+            //Debug.Log("Handling Genius Button Text management start");
+            //Debug.Log($"Current state is: {GeniusButton.State} and last state is: {lastState}");
             string newText = GeniusButton.State switch
             {
-                GeniusButtonState.Default => "Select a single track to activate Genius.com button.",
+                GeniusButtonState.Default => "Select a single track to activate Genius.com lyrics button.",
                 GeniusButtonState.Searching => $"Searching Genius.com for {selectedTrackTitle} by {selectedTrackArtist}...",
-                GeniusButtonState.NotFound => "Could not find Genius.com page for selected track.",
-                GeniusButtonState.Found => $"Click Genius.com button to visit track page for {selectedTrackTitle} by {selectedTrackArtist}",
+                GeniusButtonState.NotFound => "Could not find Genius.com lyrics page for selected track.",
+                GeniusButtonState.Found => $"Click Genius.com button to visit track lyrics page for {selectedTrackTitle} by {selectedTrackArtist}",
                 _ => GeniusButton.GetComponentInChildren<Text>().text // Default case for switch: Keep current text
             };
 
             SetButtonText(newText);
-            Debug.Log("Handling Genius Button Text management end");
+            //Debug.Log("Handling Genius Button Text management end");
         }
         private void SetButtonText(string buttonText) 
         {
@@ -197,7 +197,7 @@ namespace AudioFile.View
             GeniusButton.gameObject.SetActive(false);
             GeniusButton.gameObject.SetActive(true);
 
-            Debug.Log("Setting Genius Button Text management end");
+            //Debug.Log("Setting Genius Button Text management end");
         }
     }
 }

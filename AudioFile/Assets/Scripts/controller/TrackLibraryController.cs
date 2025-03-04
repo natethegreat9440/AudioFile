@@ -2,6 +2,7 @@ using System.Windows.Forms;
 using AudioFile;
 using AudioFile.Utilities;
 using Unity.VisualScripting;
+using System.Threading.Tasks;
 using System;
 using UnityEngine;
 using AudioFile.View;
@@ -302,9 +303,30 @@ namespace AudioFile.Controller
         // Coroutine to load the mp3 file as an AudioClip
         private IEnumerator LoadAudioClipFromFile(string filePath, Action<Track> onTrackLoaded = null, bool isNewTrack = false) 
         {
-            List<string> metadata = ExtractFileMetadata(filePath); //Metadata is always extracted even when loading clips that have already been added to the Library before.
-                                                                   //This is so if the user updates/fixes any mistakes in the local file themselves these will be automatically propagated on load
-            metadata.Add(filePath);
+            bool isUntagged = false;
+
+            var file = TagLib.File.Create(filePath);
+
+
+            //TODO: Make sure this logic works for skipping ExtractMetadata when isNewTrack = false and isUntagged = true
+
+            var metadata = new List<string>();
+
+            if (string.IsNullOrEmpty(file.Tag.Title) == true || string.IsNullOrEmpty(file.Tag.Album) == true)
+            {
+                isUntagged = true;
+            }
+
+            if (isUntagged == false)
+            {
+                var metadataTask = ExtractFileMetadata(filePath); //The program will always try to extract metadata before loading the file
+                yield return new WaitUntil(() => metadataTask.IsCompleted); //This is so if the user updates/fixes any mistakes in the local file themselves these will be automatically propagated on load
+
+                metadata = metadataTask.Result;
+                metadata.Add(filePath);
+            }
+
+
             // Escape any '#' characters in the path for UnityWebRequest
             string escapedPath = filePath.Replace("#", "%23"); 
 
@@ -323,12 +345,12 @@ namespace AudioFile.Controller
                 }
                 else
                 {
-                    trackToAdd = HandleTrackCreation(onTrackLoaded, isNewTrack, metadata, trackToAdd, www);
+                    trackToAdd = HandleTrackCreation(onTrackLoaded, isNewTrack, metadata, trackToAdd, www, isUntagged);
                 }
             }
         }
 
-        private static Track HandleTrackCreation(Action<Track> onTrackLoaded, bool isNewTrack, List<string> metadata, Track trackToAdd, UnityWebRequest www)
+        private static Track HandleTrackCreation(Action<Track> onTrackLoaded, bool isNewTrack, List<string> metadata, Track trackToAdd, UnityWebRequest www, bool isUntagged)
         {
             AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
             if (audioClip != null && audioClip.samples > 0)
@@ -341,7 +363,7 @@ namespace AudioFile.Controller
                 }
                 else
                 {
-                    trackToAdd = Track.CreateTrack(audioClip, metadata);
+                    trackToAdd = Track.CreateTrack(audioClip, metadata, isNewTrack, isUntagged);
                 }
 
                 // Invoke the callback with the new track.
@@ -359,7 +381,7 @@ namespace AudioFile.Controller
             return trackToAdd;
         }
 
-        private List<string> ExtractFileMetadata(string filePath)
+        private async Task<List<string>> ExtractFileMetadata(string filePath)
         {
             string trackTitle = "Untitled Track";
             string contributingArtists = "Unknown Artist";
@@ -371,15 +393,13 @@ namespace AudioFile.Controller
             //TODO: Add check to see if file has tags in it. If it doesn't, execute GeniusController to try and find song and set fields in Track setup
             //If GeniusController fails to return information (method return empty List<string> or an exception) then proceed with try/catch below which should just set things to "Unknown" etc.
             //Do I wrap this check in a try/catch?
-
-
             try
             {
                 var file = TagLib.File.Create(filePath);
-                trackTitle = !string.IsNullOrEmpty(file.Tag.Title) ? file.Tag.Title : Path.GetFileName(filePath);
+                trackTitle = !string.IsNullOrEmpty(file.Tag.Title) ? file.Tag.Title : Path.GetFileNameWithoutExtension(filePath);
                 trackAlbum = !string.IsNullOrEmpty(file.Tag.Album) ? file.Tag.Album : "Unknown Album";
                 //Looks for Tag.Performers first (this translates to the Contributing Artists property in File Explorer), then AlbumArtists, then finally Unknown Artist if nothing found
-                contributingArtists = !string.IsNullOrEmpty(string.Join(", ", file.Tag.Performers)) ? string.Join(", ", file.Tag.Performers) 
+                contributingArtists = !string.IsNullOrEmpty(string.Join(", ", file.Tag.Performers)) ? string.Join(", ", file.Tag.Performers)
                     : !string.IsNullOrEmpty(string.Join(", ", file.Tag.AlbumArtists)) ? string.Join(", ", file.Tag.AlbumArtists) : "Unknown Artist";
                 albumTrackNumber = (int)file.Tag.Track; //File.Tag.Track's type uint automatically defaults to 0 if not set, which is why there is no null check here and (int) will always cast safely
 
@@ -387,14 +407,29 @@ namespace AudioFile.Controller
                 metadata[1] = contributingArtists;
                 metadata[2] = trackAlbum;
                 metadata[3] = albumTrackNumber.ToString();
-
-                return metadata;
+                //return metadata;
             }
             catch (System.Exception e)
             {
                 Debug.LogError("Error reading metadata: " + e.Message);
-                return metadata;
+                //return metadata;
             }
+            finally
+            {
+                if (metadata[0] == Path.GetFileNameWithoutExtension(filePath) || metadata[1] == "Unknown Artist" || metadata[2] == "Unknown Album" || metadata[3] == "0") //Won't try to find GeniusUrl right way 
+                {
+                    var results = await GeniusWebClientController.Instance.FetchGeniusTrackMissingInfoAsync(metadata[0]);
+
+                    if (results.Any())
+                    {
+                        metadata = results; //These reults will contain the Genius track url
+
+                    }
+                }
+            }
+
+            return metadata;
+
         }
 
         private string[] OpenFileDialog()
