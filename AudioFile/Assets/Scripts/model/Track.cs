@@ -53,13 +53,22 @@ namespace AudioFile.Model
         public static Track CreateTrack(AudioClip loadedClip, List<string> metadata, bool isNewTrack = false, bool isUntagged = false)
         {
             string geniusUrl = string.Empty;
+            string trackTitle = string.Empty;
+            string contributingArtists = string.Empty;
+            string trackAlbum = string.Empty;
+            int albumTrackNumber = 0;
 
-            string trackTitle = metadata[0];
-            string contributingArtists = metadata[1];
-            string trackAlbum = metadata[2];
-            int albumTrackNumber = (metadata[3]) != null ? int.Parse(metadata[3]) : 0;
-            if (metadata.Count > 5 && metadata[4] != null)
-                geniusUrl = metadata[4];
+            if (metadata.Count > 1)
+            {
+                trackTitle = metadata[0];
+                contributingArtists = metadata[1];
+                trackAlbum = metadata[2];
+                albumTrackNumber = (metadata[3]) != null ? int.Parse(metadata[3]) : 0;
+
+                if (metadata.Count > 5 && metadata[4] != null)
+                    geniusUrl = metadata[4];
+            }
+
             string loadedPath = metadata[^1]; //Returns whatever the last index element is, which should always be the path because it gets added after ExtractMetadata
 
             Track track = null;

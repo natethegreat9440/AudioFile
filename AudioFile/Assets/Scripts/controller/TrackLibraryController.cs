@@ -312,20 +312,24 @@ namespace AudioFile.Controller
 
             var metadata = new List<string>();
 
-            if (string.IsNullOrEmpty(file.Tag.Title) == true || string.IsNullOrEmpty(file.Tag.Album) == true)
+            if (string.IsNullOrEmpty(file.Tag.Title) == true || string.IsNullOrEmpty(file.Tag.Album) == true) //Not including artist here as there are many different tags that could refer to the actual Artist. Just checking Title or Album works good enough
             {
                 isUntagged = true;
             }
 
-            if (isUntagged == false)
+            if (isUntagged == true && isNewTrack == false)
+            {
+                Debug.Log("Existing track is an untagged file in Windows. Skipping metadata extraction.");
+            }
+            else
             {
                 var metadataTask = ExtractFileMetadata(filePath); //The program will always try to extract metadata before loading the file
                 yield return new WaitUntil(() => metadataTask.IsCompleted); //This is so if the user updates/fixes any mistakes in the local file themselves these will be automatically propagated on load
 
                 metadata = metadataTask.Result;
-                metadata.Add(filePath);
             }
 
+            metadata.Add(filePath);
 
             // Escape any '#' characters in the path for UnityWebRequest
             string escapedPath = filePath.Replace("#", "%23"); 

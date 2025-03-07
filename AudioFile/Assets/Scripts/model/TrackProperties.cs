@@ -47,6 +47,7 @@ namespace AudioFile.Model
             }
         }
 
+
         public Dictionary<string, object> GetAllProperties(int trackID)
         {
             var properties = new Dictionary<string, object>();
@@ -92,6 +93,19 @@ namespace AudioFile.Model
                     command.Parameters.AddWithValue("@Value", value); //Security measure to prevent SQL injection attacks
                     command.Parameters.AddWithValue("@TrackID", trackID); //Security measure to prevent SQL injection attacks
                     command.ExecuteNonQuery();
+                }
+            }
+        }
+        public bool IsExistingPathInTracks(string path)
+        {
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT COUNT(1) FROM Tracks WHERE Path = @Path;";
+                    command.Parameters.AddWithValue("@Path", path);
+                    return Convert.ToInt32(command.ExecuteScalar()) > 0;
                 }
             }
         }
