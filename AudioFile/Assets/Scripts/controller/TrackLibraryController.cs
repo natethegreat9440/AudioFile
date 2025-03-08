@@ -649,7 +649,8 @@ namespace AudioFile.Controller
                         BPM INTEGER,
                         Path TEXT NOT NULL DEFAULT 'Unknown Path',
                         AlbumTrackNumber INTEGER NOT NULL DEFAULT 0,
-                        GeniusUrl TEXT
+                        GeniusUrl TEXT,
+                        GeniusSongID TEXT
                     );";
                 command.ExecuteNonQuery();
             }

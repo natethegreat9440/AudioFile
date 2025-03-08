@@ -13,6 +13,7 @@ using AudioFile.Utilities;
 using AudioFile.View;
 using TagLib;
 using System.Text.RegularExpressions;
+using UnityEngine.Rendering;
 
 namespace AudioFile.Controller
 {
@@ -79,7 +80,7 @@ namespace AudioFile.Controller
         }
 
 
-        public async Task<string> FetchGeniusTrackUrlAsync(string artist, string trackName)
+        public async Task<List<string>> FetchGeniusTrackUrlAndIDAsync(string artist, string trackName)
         {
             try
             {
@@ -100,13 +101,15 @@ namespace AudioFile.Controller
                 JObject json = JObject.Parse(response);
 
                 string songUrl = json["songUrl"]?.ToString();
+                string geniusSongId = json["geniusSongId"]?.ToString();
+
                 if (string.IsNullOrEmpty(songUrl))
                 {
                     Debug.LogWarning("Warning: No song URL found in JSON response.");
-                    return "Not found";
+                    return new List<string> { "Not found", "Not found" };
                 }
 
-                return songUrl;
+                return new List<string> { songUrl, geniusSongId };
             }
             catch (HttpRequestException httpEx)
             {
@@ -117,7 +120,7 @@ namespace AudioFile.Controller
                 Debug.LogError($"General Error: {ex.Message}");
             }
 
-            return "Not found";
+            return new List<string> { "Not found", "Not found" };
         }
 
         public async Task<List<string>> FetchGeniusTrackMissingInfoAsync(string fileName)
@@ -135,7 +138,7 @@ namespace AudioFile.Controller
 
                 Debug.Log($"Sending request to: {requestUrl}");
 
-                var response = await client.GetStringAsync(requestUrl); //Fails here
+                var response = await client.GetStringAsync(requestUrl); 
                 Debug.Log($"Raw Response: {response}");
 
                 JObject json = JObject.Parse(response);
@@ -151,6 +154,7 @@ namespace AudioFile.Controller
                 string album = json["album"]?.ToString();
                 string albumTrackNumber = json["albumTrackNumber"]?.ToString();
                 string songUrl = json["songUrl"]?.ToString();
+                string geniusSongId = json["geniusSongId"]?.ToString();
 
                 if (string.IsNullOrEmpty(songUrl))
                 {
@@ -161,6 +165,61 @@ namespace AudioFile.Controller
                 List<string> metaData = new List<string> { trackName, artist, album, albumTrackNumber, songUrl };
 
                 return metaData;
+            }
+            catch (HttpRequestException httpEx)
+            {
+                Debug.LogError($"HTTP Request Error: {httpEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"General Error: {ex.Message}");
+            }
+
+            return new List<string>();
+        }
+
+        public async Task<List<string>> FetchGeniusTrackSampleInfoAsync(string geniusId)
+        {
+            try
+            {
+                if (client == null)
+                {
+                    Debug.LogError("HttpClient is NULL! Initializing now...");
+                    client = new HttpClient();  // Fallback in case initialization fails
+                }
+
+                string proxyUrl = "https://audiofileproxyapi.onrender.com/api/genius/samples";
+                string requestUrl = $"{proxyUrl}?geniusId={Uri.EscapeDataString(geniusId)}";
+
+                Debug.Log($"Sending request to: {requestUrl}");
+
+                var response = await client.GetStringAsync(requestUrl); //Fails here
+                Debug.Log($"Raw Response: {response}");
+
+                JObject json = JObject.Parse(response);
+
+                if (json == null || !json.HasValues)
+                {
+                    Debug.Log("FetchGeniusTrackSampleInfoAsync: JSON response is null or empty.");
+                    return new List<string>();
+                }
+
+                string trackSamples = json["trackSamples"]?.ToString();
+                string sampledBys = json["sampledBys"]?.ToString();
+
+                if (string.IsNullOrEmpty(trackSamples))
+                {
+                    Debug.LogWarning("Warning: No samples found for track using FetchGeniusTrackSampleInfoAsync");
+                }
+
+                if (string.IsNullOrEmpty(sampledBys))
+                {
+                    Debug.LogWarning("Warning: No sampled by info found for track using FetchGeniusTrackSampleInfoAsync");
+                }
+
+                List<string> sampleData = new List<string> { trackSamples, sampledBys };
+
+                return sampleData;
             }
             catch (HttpRequestException httpEx)
             {
@@ -192,16 +251,21 @@ namespace AudioFile.Controller
 
             HandleGeniusButtonSearchingState(artist, trackName);
 
-            string url = await FetchGeniusTrackUrlAsync(artist, trackName); // Ensures UI updates run on the main thread
+            var results = await FetchGeniusTrackUrlAndIDAsync(artist, trackName); // Ensures UI updates run on the main thread
 
-            HandleFetchGeniusCompletion(trackID, Task.FromResult(url), track);
+            string url = results[0];
+            string geniusId = results[1];
+
+
+            HandleFetchGeniusUrlAndIDCompletion(trackID, url, geniusId, track);
             Debug.Log($"Genius URL for track {trackName} by {artist}: {url}");
         }
 
-        private void HandleFetchGeniusCompletion(int trackID, Task<string> task, Track track)
+        private void HandleFetchGeniusUrlAndIDCompletion(int trackID, string url, string geniusId, Track track)
         {
-            string url = task.Result;
             track.TrackProperties.SetProperty(trackID, "GeniusUrl", url);
+            track.TrackProperties.SetProperty(trackID, "GeniusSongID", geniusId);
+
             Debug.Log("Handling fetch completion");
 
             UnityMainThreadDispatcher.Instance().Enqueue(() =>
@@ -245,89 +309,4 @@ namespace AudioFile.Controller
             throw new NotImplementedException();
         }
     }
-
-
-    //public async Task<string> FetchGeniusTrackUrlAsync(string artist, string trackName)
-    //{
-    //    try
-    //    {
-    //        //TODO: Move this logic to API proxy server controller in API project so I don't have to hard code the API Key
-    //        //Step 0: Check for ? by MFDOOM
-
-    //        trackName = CheckForQuestionMarkByMFDOOM(trackName);
-
-    //        // Step 1: Search for the song
-    //        string searchUrl = $"https://api.genius.com/search?q={Uri.EscapeDataString(artist + " " + trackName)}";
-    //        var searchResponse = await client.GetStringAsync(searchUrl);
-    //        JObject searchJson = JObject.Parse(searchResponse);
-
-    //        // Step 2: Extract song ID
-    //        var hits = searchJson["response"]?["hits"];
-    //        if (hits == null || hits.Type == JTokenType.Null || !hits.HasValues)
-    //            return "Not found";
-
-    //        // Preprocess artist and track name for comparison
-    //        string trackLower = NormalizeForUrlComparison(trackName);
-    //        string artistLower = NormalizeForUrlComparison(artist);
-    //        string fallbackUrl = null;
-
-    //        // Step 3: Iterate over hits to find the best match
-    //        foreach (var hit in hits)
-    //        {
-    //            string url = hit["result"]?["url"]?.ToString();
-    //            if (string.IsNullOrEmpty(url))
-    //                continue;
-
-    //            string urlLower = url.ToLower();
-
-    //            // Check if URL contains both artist and track name
-    //            if (urlLower.Contains(artistLower) && urlLower.Contains(trackLower))
-    //                return url;
-
-    //            // Store the first match that contains only the track name as fallback
-    //            if (fallbackUrl == null && urlLower.Contains(trackLower))
-    //                fallbackUrl = url;
-    //        }
-
-    //        return fallbackUrl ?? "Not found";
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        Debug.Log($"Error fetching URL: {ex.Message}");
-    //        string emptyUrl = "Not found";
-    //        return emptyUrl;
-    //    }
-
-    //    static string CheckForQuestionMarkByMFDOOM(string trackName)
-    //    {
-    //        if (trackName == "?")
-    //        {
-    //            trackName = "question mark";
-    //        }
-
-    //        return trackName;
-    //    }
-    //}
-
-    // Helper function to normalize strings for Genius URL comparison
-    //private string NormalizeForUrlComparison(string input)
-    //{
-    //    if (string.IsNullOrEmpty(input))
-    //        return string.Empty;
-
-    //    // Remove featured artist info (ft., feat., featuring, etc.)
-    //    input = Regex.Replace(input, @"\b(ft\.?|feat\.?|featuring|prod\.?)\b.*", "", RegexOptions.IgnoreCase).Trim();
-
-    //    // Remove all special characters except letters, numbers, and spaces
-    //    input = Regex.Replace(input.ToLower(), @"[^a-z0-9 ]", "");
-
-    //    // Collapse multiple spaces (including non-breaking spaces) into a single space
-    //    input = Regex.Replace(input, @"\s+", " ");
-
-    //    // Replace spaces with hyphens
-    //    input = Regex.Replace(input, @"\s+", "-");
-
-    //    // Remove consecutive hyphens
-    //    return input = Regex.Replace(input, @"-{2,}", "-");
-    //}
 }

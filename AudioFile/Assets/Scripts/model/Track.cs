@@ -52,11 +52,13 @@ namespace AudioFile.Model
         // Static factory method to create and initialize Track
         public static Track CreateTrack(AudioClip loadedClip, List<string> metadata, bool isNewTrack = false, bool isUntagged = false)
         {
-            string geniusUrl = string.Empty;
+            
             string trackTitle = string.Empty;
             string contributingArtists = string.Empty;
             string trackAlbum = string.Empty;
             int albumTrackNumber = 0;
+            string geniusUrl = string.Empty;
+            string geniusSongId = string.Empty;
 
             if (metadata.Count > 1)
             {
@@ -66,7 +68,12 @@ namespace AudioFile.Model
                 albumTrackNumber = (metadata[3]) != null ? int.Parse(metadata[3]) : 0;
 
                 if (metadata.Count > 5 && metadata[4] != null)
+                {
                     geniusUrl = metadata[4];
+
+                    if (metadata[5] != null)
+                        geniusSongId = metadata[5];
+                }
             }
 
             string loadedPath = metadata[^1]; //Returns whatever the last index element is, which should always be the path because it gets added after ExtractMetadata
@@ -81,8 +88,8 @@ namespace AudioFile.Model
                     if (isNewTrack)
                     {
                         command.CommandText = @"
-                        INSERT INTO Tracks (Title, Artist, Album, Duration, Path, AlbumTrackNumber, GeniusUrl)
-                        VALUES (@Title, @Artist, @Album, @Duration, @Path, @AlbumTrackNumber, @GeniusUrl);
+                        INSERT INTO Tracks (Title, Artist, Album, Duration, Path, AlbumTrackNumber, GeniusUrl, GeniusSongID)
+                        VALUES (@Title, @Artist, @Album, @Duration, @Path, @AlbumTrackNumber, @GeniusUrl, @GeniusSongID);
                         SELECT TrackID FROM Tracks WHERE rowid = last_insert_rowid();";
                     }
                     else if (isNewTrack == false && isUntagged == false)
@@ -106,6 +113,7 @@ namespace AudioFile.Model
                     command.Parameters.AddWithValue("@Path", loadedPath);
                     command.Parameters.AddWithValue("@AlbumTrackNumber", albumTrackNumber);
                     command.Parameters.AddWithValue("@GeniusUrl", geniusUrl); //This doesn't get reassigned when loading existing tracks
+                    command.Parameters.AddWithValue("@GeniusSongID", geniusSongId); //This doesn't get reassigned when loading existing tracks
 
                     var result = command.ExecuteScalar();
                     int trackID = Convert.ToInt32(result);
