@@ -650,9 +650,12 @@ namespace AudioFile.Controller
                         Path TEXT NOT NULL DEFAULT 'Unknown Path',
                         AlbumTrackNumber INTEGER NOT NULL DEFAULT 0,
                         GeniusUrl TEXT,
-                        GeniusSongID TEXT
+                        GeniusSongID TEXT,
+                        Samples TEXT,
+                        SampledBys TEXT
                     );";
                 command.ExecuteNonQuery();
+                //After adding to this Table make sure to update the validProperties HashSet in TrackProperties
             }
         }
 

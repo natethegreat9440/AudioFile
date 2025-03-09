@@ -271,7 +271,7 @@ namespace AudioFile.Controller
             UnityMainThreadDispatcher.Instance().Enqueue(() =>
             {
                 HandleCheckForGeniusButtonFoundOrNotFoundState(url);
-                ObserverManager.Instance.NotifyObservers("OnGeniusSearchComplete", trackID);
+                ObserverManager.Instance.NotifyObservers("OnGeniusUrlSearchComplete", trackID);
             });
         }
 

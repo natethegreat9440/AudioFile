@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 2048
     height: 1068.8
   m_ShowMode: 4
-  m_Title: Game
+  m_Title: Scene
   m_RootView: {fileID: 2}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -119,7 +119,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 42
+  controlID: 100
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -139,7 +139,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 1445.6
+    width: 1346.4
     height: 1018.80005
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 16192}
@@ -155,23 +155,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 1
   m_Script: {fileID: 12006, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: GameView
+  m_Name: SceneView
   m_EditorClassIdentifier: 
   m_Children: []
   m_Position:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 1112
+    width: 961.6
     height: 1018.80005
   m_MinSize: {x: 200, y: 200}
   m_MaxSize: {x: 4000, y: 4000}
-  m_ActualView: {fileID: 12}
+  m_ActualView: {fileID: 13}
   m_Panes:
   - {fileID: 13}
   - {fileID: 12}
-  m_Selected: 1
-  m_LastSelected: 0
+  m_Selected: 0
+  m_LastSelected: 1
 --- !u!114 &8
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -189,9 +189,9 @@ MonoBehaviour:
   - {fileID: 10}
   m_Position:
     serializedVersion: 2
-    x: 1112
+    x: 961.6
     y: 0
-    width: 333.59998
+    width: 384.80005
     height: 1018.80005
   m_MinSize: {x: 100, y: 100}
   m_MaxSize: {x: 8096, y: 16192}
@@ -214,7 +214,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 333.59998
+    width: 384.80005
     height: 517.6
   m_MinSize: {x: 200, y: 200}
   m_MaxSize: {x: 4000, y: 4000}
@@ -240,7 +240,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 517.6
-    width: 333.59998
+    width: 384.80005
     height: 501.20007
   m_MinSize: {x: 232, y: 271}
   m_MaxSize: {x: 10002, y: 10021}
@@ -264,9 +264,9 @@ MonoBehaviour:
   m_Children: []
   m_Position:
     serializedVersion: 2
-    x: 1445.6
+    x: 1346.4
     y: 0
-    width: 602.4
+    width: 701.6
     height: 1018.80005
   m_MinSize: {x: 100, y: 100}
   m_MaxSize: {x: 4000, y: 4000}
@@ -277,7 +277,7 @@ MonoBehaviour:
   - {fileID: 18}
   - {fileID: 19}
   m_Selected: 2
-  m_LastSelected: 3
+  m_LastSelected: 0
 --- !u!114 &12
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -300,7 +300,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 2048
     y: 73.6
-    width: 1111
+    width: 960.6
     height: 997.80005
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -345,7 +345,7 @@ MonoBehaviour:
     m_HSlider: 0
     m_VSlider: 0
     m_IgnoreScrollWheelUntilClicked: 0
-    m_EnableMouseInput: 1
+    m_EnableMouseInput: 0
     m_EnableSliderZoomHorizontal: 0
     m_EnableSliderZoomVertical: 0
     m_UniformScale: 1
@@ -354,10 +354,10 @@ MonoBehaviour:
       serializedVersion: 2
       x: 0
       y: 21
-      width: 1111
+      width: 960.6
       height: 976.80005
-    m_Scale: {x: 0.54248047, y: 0.54248047}
-    m_Translation: {x: 555.5, y: 488.40002}
+    m_Scale: {x: 0.46904296, y: 0.46904296}
+    m_Translation: {x: 480.3, y: 488.40002}
     m_MarginLeft: 0
     m_MarginRight: 0
     m_MarginTop: 0
@@ -365,12 +365,12 @@ MonoBehaviour:
     m_LastShownAreaInsideMargins:
       serializedVersion: 2
       x: -1024
-      y: -900.30896
+      y: -1041.2693
       width: 2048
-      height: 1800.6179
+      height: 2082.5386
     m_MinimalGUI: 1
-  m_defaultScale: 0.54248047
-  m_LastWindowPixelSize: {x: 1388.75, y: 1247.25}
+  m_defaultScale: 0.46904296
+  m_LastWindowPixelSize: {x: 1200.75, y: 1247.25}
   m_ClearInEditMode: 1
   m_NoCameraWarning: 1
   m_LowResolutionForAspectRatios: 00000000000000000000
@@ -398,7 +398,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 2048
     y: 73.6
-    width: 1018.2
+    width: 960.6
     height: 997.80005
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -732,9 +732,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 1184.734, y: 537.1606, z: -0.49600196}
+    m_Target: {x: 1089.2124, y: 366.07745, z: -1.8515177}
     speed: 2
-    m_Value: {x: 1184.734, y: 537.1606, z: -0.49600196}
+    m_Value: {x: 1089.2124, y: 366.07745, z: -1.8515177}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -784,9 +784,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 1191.7957
+    m_Target: 1327.3405
     speed: 2
-    m_Value: 1191.7957
+    m_Value: 1327.3405
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -831,9 +831,9 @@ MonoBehaviour:
     m_Tooltip: 
   m_Pos:
     serializedVersion: 2
-    x: 3160
+    x: 3009.6
     y: 73.6
-    width: 331.59998
+    width: 382.80005
     height: 496.59998
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -850,7 +850,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 26a3ffff54a3ffff80a4ffff2ca5ffff5aa5ffff5ea6fffffca7ffff2aa8ffff38a9ffff40aeffff6eaeffffa4afffff98f5ffffc6f5fffff4f6ffff10f8ffff3ef8ffff70f9ffff2efbffff666700000e680000
+      m_ExpandedIDs: f2b8ffff30b9ffff6ebaffff44bdffff82bdffffc0beffff20c0ffff5ec0ffff9cc1fffff2c2ffff30c3ffff6ec4ffffa4c5ffffe2c5ffff20c7ffff9cc7ffffdac7ffff48c9ffffe0c9ffff1ecaffff8ccbffffeccbffff2accffff68cdffffc6cdffff04ceffff42cfffffa6cfffffe4cfffff26d1ffff74f0ffff18fbffff1060000072600000a8600000b8600000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -866,7 +866,7 @@ MonoBehaviour:
         m_IsRenaming: 0
         m_OriginalEventType: 11
         m_IsRenamingFilename: 0
-        m_ClientGUIView: {fileID: 9}
+        m_ClientGUIView: {fileID: 0}
       m_SearchString: 
     m_ExpandedScenes: []
     m_CurrenRootInstanceID: 0
@@ -894,9 +894,9 @@ MonoBehaviour:
     m_Tooltip: 
   m_Pos:
     serializedVersion: 2
-    x: 3160
+    x: 3009.6
     y: 591.2
-    width: 331.59998
+    width: 382.80005
     height: 480.20007
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -934,7 +934,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 77.400024}
     m_SelectedIDs: 646a0000
     m_LastClickedID: 27236
-    m_ExpandedIDs: 000000000e63000010630000126300001463000016630000186300001a6300001c6300001e63000020630000226300002463000026630000
+    m_ExpandedIDs: 0000000010630000126300001463000016630000186300001a6300001c6300001e6300002063000022630000246300002663000028630000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -959,10 +959,10 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_AssetTreeState:
-    scrollPos: {x: 0, y: 397.79993}
+    scrollPos: {x: 0, y: 777.7999}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: ffffffff000000000e63000010630000126300001463000016630000186300001a6300001c6300001e63000020630000226300002463000026630000
+    m_ExpandedIDs: ffffffff0000000010630000126300001463000016630000186300001a6300001c6300001e63000020630000226300002463000026630000286300006a63000094630000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1038,9 +1038,9 @@ MonoBehaviour:
     m_Tooltip: 
   m_Pos:
     serializedVersion: 2
-    x: 3555.2002
+    x: 3663.2002
     y: 73.6
-    width: 539.80005
+    width: 431.80005
     height: 997.80005
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -1085,9 +1085,9 @@ MonoBehaviour:
     m_Tooltip: 
   m_Pos:
     serializedVersion: 2
-    x: 3504
+    x: 3663.2002
     y: 73.6
-    width: 591
+    width: 431.80005
     height: 997.80005
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -1119,9 +1119,9 @@ MonoBehaviour:
     m_Tooltip: 
   m_Pos:
     serializedVersion: 2
-    x: 3493.6
+    x: 3394.4
     y: 73.6
-    width: 601.4
+    width: 700.6
     height: 997.80005
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -1165,9 +1165,9 @@ MonoBehaviour:
       uniqueId: '[AudioFile][suite]'
       name: AudioFile
       fullName: AudioFile
-      resultStatus: 2
-      duration: 16.936491
-      messages: One or more child tests had errors
+      resultStatus: 1
+      duration: 2.372863
+      messages: 
       output: 
       stacktrace: 
       notRunnable: 0
@@ -1181,9 +1181,9 @@ MonoBehaviour:
       uniqueId: '[Tests.dll][suite]'
       name: Tests.dll
       fullName: C:/Users/natha/Documents/AudioFile/AudioFile/Library/ScriptAssemblies/Tests.dll
-      resultStatus: 2
-      duration: 16.92452
-      messages: One or more child tests had errors
+      resultStatus: 1
+      duration: 2.3530483
+      messages: 
       output: 
       stacktrace: 
       notRunnable: 0
@@ -1197,9 +1197,9 @@ MonoBehaviour:
       uniqueId: Tests.dll/[AudioFile][suite]
       name: AudioFile
       fullName: AudioFile
-      resultStatus: 2
-      duration: 16.921598
-      messages: One or more child tests had errors
+      resultStatus: 1
+      duration: 2.3490243
+      messages: 
       output: 
       stacktrace: 
       notRunnable: 0
@@ -1213,9 +1213,9 @@ MonoBehaviour:
       uniqueId: Tests.dll/AudioFile/[Tests][suite]
       name: Tests
       fullName: AudioFile.Tests
-      resultStatus: 2
-      duration: 16.919214
-      messages: One or more child tests had errors
+      resultStatus: 1
+      duration: 2.3454623
+      messages: 
       output: 
       stacktrace: 
       notRunnable: 0
@@ -1226,12 +1226,12 @@ MonoBehaviour:
       parentId: 1004
       parentUniqueId: Tests.dll/[AudioFile][suite]
     - id: 1001
-      uniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests][suite]
-      name: TrackSampleController_Tests
-      fullName: AudioFile.Tests.TrackSampleController_Tests
-      resultStatus: 2
-      duration: 16.915447
-      messages: One or more child tests had errors
+      uniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.GeniusController_Tests][suite]
+      name: GeniusController_Tests
+      fullName: AudioFile.Tests.GeniusController_Tests
+      resultStatus: 1
+      duration: 2.3403952
+      messages: 
       output: 
       stacktrace: 
       notRunnable: 0
@@ -1239,31 +1239,26 @@ MonoBehaviour:
       description: 
       isSuite: 1
       categories: []
-      parentId: 1005
+      parentId: 1010
       parentUniqueId: Tests.dll/AudioFile/[Tests][suite]
     - id: 1004
-      uniqueId: Tests.dll/AudioFile/Tests/TrackSampleController_Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests.FetchGeniusTrackMissingInfoAsync_ValidQueries_ReturnsResults]
+      uniqueId: Tests.dll/AudioFile/Tests/GeniusController_Tests/[Tests][AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackMissingInfoAsync_ValidQueries_ReturnsResults]
       name: FetchGeniusTrackMissingInfoAsync_ValidQueries_ReturnsResults
-      fullName: AudioFile.Tests.TrackSampleController_Tests.FetchGeniusTrackMissingInfoAsync_ValidQueries_ReturnsResults
-      resultStatus: 2
-      duration: 0.6725563
-      messages: 'Unhandled log message: ''[Error] HTTP Request Error: 404 (Not Found)''.
-        Use UnityEngine.TestTools.LogAssert.Expect'
-      output: 'Sending request to: https://audiofileproxyapi.onrender.com/api/genius/search_missing?fileName=06%20-%20Drake%20-%20Worst%20Behavior.mp3
+      fullName: AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackMissingInfoAsync_ValidQueries_ReturnsResults
+      resultStatus: 1
+      duration: 7.9609427
+      messages: 
+      output: 'Sending request to: https://audiofileproxyapi.onrender.com/api/genius/search_missing?fileName=06%20-%20Drake%20-%20Worst%20Behavior
 
-        HTTP
-        Request Error: 404 (Not Found)
+        Raw
+        Response: {"trackName":"Worst Behavior","artist":"Drake","album":"Nothing
+        Was the Same","albumTrackNumber":"6","songUrl":"https://genius.com/Drake-worst-behavior-lyrics","geniusSongId":"217266","apiSource":"Genius"}
 
-'
-      stacktrace: 'AudioFile.Controller.GeniusWebClientController/<FetchGeniusTrackMissingInfoAsync>d__13:MoveNext
-        () (at Assets/Scripts/controller/GeniusWebClientController.cs:167)
-
-        UnityEngine.UnitySynchronizationContext:ExecuteTasks
-        ()
-
-        
+        Search
+        Results: System.Collections.Generic.List`1[System.String]
 
 '
+      stacktrace: 
       notRunnable: 0
       ignoredOrSkipped: 0
       description: 
@@ -1271,17 +1266,17 @@ MonoBehaviour:
       categories:
       - Uncategorized
       parentId: 1001
-      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests][suite]
+      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.GeniusController_Tests][suite]
     - id: 1005
-      uniqueId: Tests.dll/AudioFile/Tests/TrackSampleController_Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery1_ReturnsResults]
+      uniqueId: Tests.dll/AudioFile/Tests/GeniusController_Tests/[Tests][AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery1_ReturnsResults]
       name: FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery1_ReturnsResults
-      fullName: AudioFile.Tests.TrackSampleController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery1_ReturnsResults
+      fullName: AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery1_ReturnsResults
       resultStatus: 1
-      duration: 4.8162217
+      duration: 5.53146
       messages: 
       output: "Sending request to: https://audiofileproxyapi.onrender.com/api/genius/search_missing?fileName=Big%20Sean%20-%20%20I%20Know%20%28feat.%20Jhen%20Aiko%29%20%28Lyric%20Video%29\r\nRaw
         Response: {\"trackName\":\"I Know (Ft.\\u00A0Jhen\xE9\\u00A0Aiko)\",\"artist\":\"Big
-        Sean\",\"album\":\"Dark Sky Paradise (Deluxe)\",\"albumTrackNumber\":\"9\",\"songUrl\":\"https://genius.com/Big-sean-i-know-lyrics\",\"apiSource\":\"Genius\"}\r\nSearch
+        Sean\",\"album\":\"Dark Sky Paradise (Deluxe)\",\"albumTrackNumber\":\"9\",\"songUrl\":\"https://genius.com/Big-sean-i-know-lyrics\",\"geniusSongId\":\"703531\",\"apiSource\":\"Genius\"}\r\nSearch
         Results: System.Collections.Generic.List`1[System.String]\r\n"
       stacktrace: 
       notRunnable: 0
@@ -1291,19 +1286,19 @@ MonoBehaviour:
       categories:
       - Uncategorized
       parentId: 1001
-      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests][suite]
+      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.GeniusController_Tests][suite]
     - id: 1006
-      uniqueId: Tests.dll/AudioFile/Tests/TrackSampleController_Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery2_ReturnsResults]
+      uniqueId: Tests.dll/AudioFile/Tests/GeniusController_Tests/[Tests][AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery2_ReturnsResults]
       name: FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery2_ReturnsResults
-      fullName: AudioFile.Tests.TrackSampleController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery2_ReturnsResults
+      fullName: AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery2_ReturnsResults
       resultStatus: 1
-      duration: 4.4290113
+      duration: 5.569525
       messages: 
       output: 'Sending request to: https://audiofileproxyapi.onrender.com/api/genius/search_missing?fileName=Big%20Sean%20-%20Blessings%20%28Extended%20Version%20_%20Audio%29%20%28Explicit%29%20ft.%20Drake%2C%20Kanye%20West
 
         Raw
         Response: {"trackName":"Blessings (Extended Version) (Ft.\u00A0Drake & Kanye\u00A0West)","artist":"Big
-        Sean","album":"Blessings (Single)","albumTrackNumber":"3","songUrl":"https://genius.com/Big-sean-blessings-extended-version-lyrics","apiSource":"Genius"}
+        Sean","album":"Blessings (Single)","albumTrackNumber":"3","songUrl":"https://genius.com/Big-sean-blessings-extended-version-lyrics","geniusSongId":"4341721","apiSource":"Genius"}
 
         Search
         Results: System.Collections.Generic.List`1[System.String]
@@ -1317,19 +1312,19 @@ MonoBehaviour:
       categories:
       - Uncategorized
       parentId: 1001
-      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests][suite]
+      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.GeniusController_Tests][suite]
     - id: 1007
-      uniqueId: Tests.dll/AudioFile/Tests/TrackSampleController_Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery3_ReturnsResults]
+      uniqueId: Tests.dll/AudioFile/Tests/GeniusController_Tests/[Tests][AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery3_ReturnsResults]
       name: FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery3_ReturnsResults
-      fullName: AudioFile.Tests.TrackSampleController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery3_ReturnsResults
+      fullName: AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackMissingInfoAsync_ValidTrickierQuery3_ReturnsResults
       resultStatus: 1
-      duration: 4.986192
+      duration: 5.147027
       messages: 
       output: 'Sending request to: https://audiofileproxyapi.onrender.com/api/genius/search_missing?fileName=Blunt%20Blowin%27%20-%20Lil%20Wayne%20%28lyrics%29
 
         Raw
         Response: {"trackName":"Blunt Blowin''","artist":"Lil Wayne","album":"Tha
-        Carter IV","albumTrackNumber":"2","songUrl":"https://genius.com/Lil-wayne-blunt-blowin-lyrics","apiSource":"Genius"}
+        Carter IV","albumTrackNumber":"2","songUrl":"https://genius.com/Lil-wayne-blunt-blowin-lyrics","geniusSongId":"49153","apiSource":"Genius"}
 
         Search
         Results: System.Collections.Generic.List`1[System.String]
@@ -1343,13 +1338,73 @@ MonoBehaviour:
       categories:
       - Uncategorized
       parentId: 1001
-      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests][suite]
-    - id: 1002
-      uniqueId: Tests.dll/AudioFile/Tests/TrackSampleController_Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests.GetGeniusTrackUrlAsync_ValidQuery_ReturnsResults]
-      name: GetGeniusTrackUrlAsync_ValidQuery_ReturnsResults
-      fullName: AudioFile.Tests.TrackSampleController_Tests.GetGeniusTrackUrlAsync_ValidQuery_ReturnsResults
+      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.GeniusController_Tests][suite]
+    - id: 1009
+      uniqueId: Tests.dll/AudioFile/Tests/GeniusController_Tests/[Tests][AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackSampleInfoAsync_HasNoSamplesAndSampledBy_ReturnsResults]
+      name: FetchGeniusTrackSampleInfoAsync_HasNoSamplesAndSampledBy_ReturnsResults
+      fullName: AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackSampleInfoAsync_HasNoSamplesAndSampledBy_ReturnsResults
       resultStatus: 1
-      duration: 0.5983984
+      duration: 2.3180025
+      messages: 
+      output: 'Sending request to: https://audiofileproxyapi.onrender.com/api/genius/samples?geniusId=2185328
+
+        Raw
+        Response: {"trackSamples":"","sampledBys":"","apiSource":"Genius"}
+
+        Warning:
+        No samples found for track using FetchGeniusTrackSampleInfoAsync
+
+        Warning:
+        No sampled by info found for track using FetchGeniusTrackSampleInfoAsync
+
+        Search
+        Results: System.Collections.Generic.List`1[System.String]
+
+'
+      stacktrace: 
+      notRunnable: 0
+      ignoredOrSkipped: 0
+      description: 
+      isSuite: 0
+      categories:
+      - Uncategorized
+      parentId: 1001
+      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.GeniusController_Tests][suite]
+    - id: 1008
+      uniqueId: Tests.dll/AudioFile/Tests/GeniusController_Tests/[Tests][AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackSampleInfoAsync_HasSamplesAndSampledBy_ReturnsResults]
+      name: FetchGeniusTrackSampleInfoAsync_HasSamplesAndSampledBy_ReturnsResults
+      fullName: AudioFile.Tests.GeniusController_Tests.FetchGeniusTrackSampleInfoAsync_HasSamplesAndSampledBy_ReturnsResults
+      resultStatus: 1
+      duration: 4.006586
+      messages: 
+      output: 'Sending request to: https://audiofileproxyapi.onrender.com/api/genius/samples?geniusId=217266
+
+        Raw
+        Response: {"trackSamples":"Mo'' Money Mo'' Problems by The Notorious B.I.G.
+        (Ft. Diddy & Ma$e)","sampledBys":"#Cinemafridays by Skabzemortal, Worst Behavior
+        Freestyle (Live) by Blackwood DMV, Wave (Album Version) by Bluvercetti (Ft.
+        Pmz), Sozinho no Sukyia by Raffa Moreira (Ft. Makalister), Hold My Phone
+        #SoGoneChallenge by Soos","apiSource":"Genius"}
+
+        Search Results:
+        System.Collections.Generic.List`1[System.String]
+
+'
+      stacktrace: 
+      notRunnable: 0
+      ignoredOrSkipped: 0
+      description: 
+      isSuite: 0
+      categories:
+      - Uncategorized
+      parentId: 1001
+      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.GeniusController_Tests][suite]
+    - id: 1002
+      uniqueId: Tests.dll/AudioFile/Tests/GeniusController_Tests/[Tests][AudioFile.Tests.GeniusController_Tests.GetGeniusTrackUrlAsync_ValidQuery_ReturnsResults]
+      name: GetGeniusTrackUrlAsync_ValidQuery_ReturnsResults
+      fullName: AudioFile.Tests.GeniusController_Tests.GetGeniusTrackUrlAsync_ValidQuery_ReturnsResults
+      resultStatus: 1
+      duration: 0.5831852
       messages: 
       output: 'Sending request to: https://audiofileproxyapi.onrender.com/api/genius/search?artist=Mf%20DooM&trackName=DoOmSdAy
 
@@ -1357,7 +1412,7 @@ MonoBehaviour:
         Response: {"songUrl":"https://genius.com/Mf-doom-doomsday-lyrics","geniusSongId":"1246"}
 
         Search
-        Results: https://genius.com/Mf-doom-doomsday-lyrics
+        Results: System.Collections.Generic.List`1[System.String]
 
 '
       stacktrace: 
@@ -1368,13 +1423,13 @@ MonoBehaviour:
       categories:
       - Uncategorized
       parentId: 1001
-      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests][suite]
+      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.GeniusController_Tests][suite]
     - id: 1003
-      uniqueId: Tests.dll/AudioFile/Tests/TrackSampleController_Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests.GetGeniusTrackUrlAsync_ValidTrickyQueries_ReturnsResults]
+      uniqueId: Tests.dll/AudioFile/Tests/GeniusController_Tests/[Tests][AudioFile.Tests.GeniusController_Tests.GetGeniusTrackUrlAsync_ValidTrickyQueries_ReturnsResults]
       name: GetGeniusTrackUrlAsync_ValidTrickyQueries_ReturnsResults
-      fullName: AudioFile.Tests.TrackSampleController_Tests.GetGeniusTrackUrlAsync_ValidTrickyQueries_ReturnsResults
+      fullName: AudioFile.Tests.GeniusController_Tests.GetGeniusTrackUrlAsync_ValidTrickyQueries_ReturnsResults
       resultStatus: 1
-      duration: 1.3928437
+      duration: 1.5986912
       messages: 
       output: 'Sending request to: https://audiofileproxyapi.onrender.com/api/genius/search?artist=MF%20DOOM&trackName=Rock%20Co.Kane%20Flow%20ft.%20De%20La%20Soul
 
@@ -1394,13 +1449,13 @@ MonoBehaviour:
         Response: {"songUrl":"https://genius.com/Kendrick-lamar-untitled-01-08192014-lyrics","geniusSongId":"2433509"}
 
         Search
-        Results: https://genius.com/De-la-soul-rock-cokane-flow-lyrics
+        Results: System.Collections.Generic.List`1[System.String]
 
         Search2
-        Results: https://genius.com/Mf-doom-question-mark-lyrics
+        Results: System.Collections.Generic.List`1[System.String]
 
         Search3
-        Results: https://genius.com/Kendrick-lamar-untitled-01-08192014-lyrics
+        Results: System.Collections.Generic.List`1[System.String]
 
 '
       stacktrace: 
@@ -1411,19 +1466,31 @@ MonoBehaviour:
       categories:
       - Uncategorized
       parentId: 1001
-      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.TrackSampleController_Tests][suite]
-    m_ResultText: 'TrackSampleController_Tests (16.915s)
+      parentUniqueId: Tests.dll/AudioFile/Tests/[Tests][AudioFile.Tests.GeniusController_Tests][suite]
+    m_ResultText: 'FetchGeniusTrackSampleInfoAsync_HasNoSamplesAndSampledBy_ReturnsResults
+      (2.318s)
 
       ---
 
-      One or
-      more child tests had errors'
+      Sending request to: https://audiofileproxyapi.onrender.com/api/genius/samples?geniusId=2185328
+
+      Raw
+      Response: {"trackSamples":"","sampledBys":"","apiSource":"Genius"}
+
+      Warning:
+      No samples found for track using FetchGeniusTrackSampleInfoAsync
+
+      Warning:
+      No sampled by info found for track using FetchGeniusTrackSampleInfoAsync
+
+      Search
+      Results: System.Collections.Generic.List`1[System.String]'
     m_ResultStacktrace: 
     m_TestListState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 08b54ce2
-      m_LastClickedID: -498289400
-      m_ExpandedIDs: be563ad6ae737de108b54ce2e557abf7b6a3c01affffff7f
+      m_SelectedIDs: f1018403
+      m_LastClickedID: 58982897
+      m_ExpandedIDs: be563ad6ae737de108b54ce2e557abf7582ca603b6a3c01affffff7f
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -1535,7 +1602,7 @@ MonoBehaviour:
     m_LastAppliedPresetName: Default
     m_SaveData: []
     m_OverlaysVisible: 1
-  m_Recording: 0
+  m_Recording: 1
   m_ActiveNativePlatformSupportModuleName: 
   m_AllModules:
   - rid: 6223935534782218240

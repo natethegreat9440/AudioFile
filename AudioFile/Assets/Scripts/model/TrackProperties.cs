@@ -26,7 +26,7 @@ namespace AudioFile.Model
 
         private readonly HashSet<string> validProperties = new HashSet<string>()
         {
-            "Title", "Artist", "Album", "Duration", "BPM", "Path", "TrackID", "AlbumTrackNumber", "GeniusUrl"
+            "Title", "Artist", "Album", "Duration", "BPM", "Path", "TrackID", "AlbumTrackNumber", "GeniusUrl", "GeniusSongID", "Samples", "SampledBys"
         };
         public object GetProperty(int trackID, string property)
         {
@@ -86,7 +86,7 @@ namespace AudioFile.Model
                 {
                     if (!validProperties.Contains(property)) //Security check to prevent SQL injection attacks
                     {
-                        throw new ArgumentException("Invalid property name");
+                        throw new ArgumentException($"Invalid property name: {property}");
                     }
 
                     command.CommandText = $"UPDATE Tracks SET {property} = @Value WHERE TrackID = @TrackID;";

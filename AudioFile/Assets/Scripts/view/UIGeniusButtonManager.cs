@@ -72,9 +72,9 @@ namespace AudioFile.View
 
             ObserverManager.Instance.RegisterObserver("OnMultipleTrackSelection", this);
             ObserverManager.Instance.RegisterObserver("OnSelectedTrackSetComplete", this);
-            ObserverManager.Instance.RegisterObserver("OnGeniusSearchComplete", this);
+            ObserverManager.Instance.RegisterObserver("OnGeniusUrlSearchComplete", this);
         }
-
+            
         public void AudioFileUpdate(string observationType, object data)
         {
             Action action = observationType switch
@@ -87,7 +87,7 @@ namespace AudioFile.View
                 {
                     StartCoroutine(DelayedButtonTextUpdate());
                 },
-                "OnGeniusSearchComplete" => () =>
+                "OnGeniusUrlSearchComplete" => () =>
                 {
                     StartCoroutine(DelayedButtonTextUpdate());
                 },
