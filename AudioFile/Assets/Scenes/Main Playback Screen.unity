@@ -534,6 +534,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e056781a791eb0428b9a3b76c6586cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SamplesText: {fileID: 1277228293}
+  SampledByText: {fileID: 1422262261}
 --- !u!1 &187786150
 GameObject:
   m_ObjectHideFlags: 0
@@ -5106,7 +5108,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1277228290}
   - component: {fileID: 1277228292}
-  - component: {fileID: 1277228291}
+  - component: {fileID: 1277228293}
   m_Layer: 5
   m_Name: Samples_Text
   m_TagString: Untagged
@@ -5133,7 +5135,15 @@ RectTransform:
   m_AnchoredPosition: {x: 0.00012207031, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0, y: 1}
---- !u!114 &1277228291
+--- !u!222 &1277228292
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1277228289}
+  m_CullTransparentMesh: 1
+--- !u!114 &1277228293
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5142,7 +5152,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1277228289}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Script: {fileID: 11500000, guid: 823b67c8718b3714a88929da65e6a2de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -5216,20 +5226,12 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 6.5619507, y: 5.7418213, z: -91.04846, w: -89.40802}
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!222 &1277228292
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1277228289}
-  m_CullTransparentMesh: 1
 --- !u!1 &1299017375
 GameObject:
   m_ObjectHideFlags: 0
@@ -5742,7 +5744,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1422262258}
   - component: {fileID: 1422262260}
-  - component: {fileID: 1422262259}
+  - component: {fileID: 1422262261}
   m_Layer: 5
   m_Name: Sampled_By_Text
   m_TagString: Untagged
@@ -5769,7 +5771,15 @@ RectTransform:
   m_AnchoredPosition: {x: 0.00012207031, y: -139.9}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0, y: 1}
---- !u!114 &1422262259
+--- !u!222 &1422262260
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1422262257}
+  m_CullTransparentMesh: 1
+--- !u!114 &1422262261
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5778,7 +5788,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1422262257}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Script: {fileID: 11500000, guid: 6465ab40c917fd9429113a1612f33bd6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -5852,20 +5862,12 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 6.5619507, y: 5.7418213, z: -91.04846, w: -102.9424}
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!222 &1422262260
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1422262257}
-  m_CullTransparentMesh: 1
 --- !u!1 &1425808278
 GameObject:
   m_ObjectHideFlags: 0

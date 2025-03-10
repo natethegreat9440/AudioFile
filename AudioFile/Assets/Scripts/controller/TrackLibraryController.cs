@@ -651,8 +651,8 @@ namespace AudioFile.Controller
                         AlbumTrackNumber INTEGER NOT NULL DEFAULT 0,
                         GeniusUrl TEXT,
                         GeniusSongID TEXT,
-                        Samples TEXT,
-                        SampledBys TEXT
+                        Samples TEXT NOT NULL DEFAULT '',
+                        SampledBys TEXT NOT NULL DEFAULT ''
                     );";
                 command.ExecuteNonQuery();
                 //After adding to this Table make sure to update the validProperties HashSet in TrackProperties

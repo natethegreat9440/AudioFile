@@ -291,8 +291,8 @@ namespace AudioFile.Controller
             UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.Searching, UISampleDisplayPanelManager.Instance.SamplesText);
             UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.Searching, UISampleDisplayPanelManager.Instance.SampledByText);
 
-            UISampleDisplayPanelManager.Instance.HandleSampleTextStateAndTextUpdate(UISampleDisplayPanelManager.Instance.SamplesText);
-            UISampleDisplayPanelManager.Instance.HandleSampleTextStateAndTextUpdate(UISampleDisplayPanelManager.Instance.SampledByText);
+            StartCoroutine(UISampleDisplayPanelManager.Instance.DelayedSampleDisplayTextUpdate(UISampleDisplayPanelManager.Instance.SamplesText));
+            StartCoroutine(UISampleDisplayPanelManager.Instance.DelayedSampleDisplayTextUpdate(UISampleDisplayPanelManager.Instance.SampledByText));
         }
 
         private void HandleCheckForGeniusButtonFoundOrNotFoundState(string url)
