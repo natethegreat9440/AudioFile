@@ -95,27 +95,17 @@ namespace AudioFile.View
                 "OnSelectedTrackSetComplete" => () =>
                 {
                     //isMultipleTracksSelected = false;
-                    HandleSampleDisplayPanelTextConfiguration();
+                    HandleSelectedTrackSamplesAndSampledBysConfiguration();
                 },
                 "OnGeniusUrlSearchComplete" => () =>
                 {
-                    HandleSampleDisplayPanelTextConfiguration();
+                    HandleSelectedTrackSamplesAndSampledBysConfiguration();
                 },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
             };
 
             action();
-        }
-
-        private void HandleSampleDisplayPanelTextConfiguration()
-        {
-
-            //if (string.IsNullOrEmpty(SelectedTrackSamples) || string.IsNullOrEmpty(SelectedTrackSampledBys))
-            //{
-                HandleSelectedTrackSamplesAndSampledBysConfiguration();
-            //}
-
         }
 
         private async void HandleSelectedTrackSamplesAndSampledBysConfiguration() //
@@ -174,9 +164,10 @@ namespace AudioFile.View
                 SetSampleTextDisplayState(SampleDisplayTextState.Default, sampleDisplayText);
                 StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
 
+                //Set the last state to the default state
                 if (sampleDisplayText is SamplesText)
                     lastSamplesTextState = SamplesText.State;
-                else if (sampleDisplayText is SamplesText)
+                else if (sampleDisplayText is SampledByText)
                     lastSampledByTextState = SampledByText.State;
                 return;
             }
@@ -191,7 +182,7 @@ namespace AudioFile.View
             if (lastSampledByTextState != SampledByText.State)
             {
                 StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
-                lastSamplesTextState = SampledByText.State;
+                lastSampledByTextState = SampledByText.State;
             }
 
             Debug.Log("Handling Sample Text State/Text Update end");
@@ -211,7 +202,7 @@ namespace AudioFile.View
                 lock (samplesTextStateLock)
                 {
                     SamplesText.State = newState;
-                    lastSamplesTextState = SamplesText.State;
+                    //lastSamplesTextState = SamplesText.State;
                 }
             }
             else if (sampleDisplayText is SampledByText)
@@ -219,7 +210,7 @@ namespace AudioFile.View
                 lock (sampledByTextStateLock)
                 {
                     SampledByText.State = newState;
-                    lastSampledByTextState = SampledByText.State;
+                    //lastSampledByTextState = SampledByText.State;
                 }
             }
         }

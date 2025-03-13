@@ -277,6 +277,17 @@ namespace AudioFile.Controller
             });
         }
 
+        private void HandleFetchGeniusSampleCompletion()
+        {
+
+            Debug.Log("Handling sample fetch completion");
+
+            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+            {
+                ObserverManager.Instance.NotifyObservers("OnGeniusSampleSearchComplete", null);
+            });
+        }
+
         private void HandleGeniusButtonSearchingState(string artist, string trackName)
         {
             Debug.Log($"Fetching Genius URL for track {trackName} by {artist}...");
