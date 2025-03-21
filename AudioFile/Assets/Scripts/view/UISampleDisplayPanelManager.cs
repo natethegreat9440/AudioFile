@@ -63,6 +63,10 @@ namespace AudioFile.View
         string SelectedTrackSampledBys => (string)PlaybackController.Instance.SelectedTrack.TrackProperties.GetProperty(PlaybackController.Instance.SelectedTrack.TrackID, "SampledBys");
         string SelectedTrackGeniusSongID => (string)PlaybackController.Instance.SelectedTrack.TrackProperties.GetProperty(PlaybackController.Instance.SelectedTrack.TrackID, "GeniusSongID");
 
+        Track selectedTrack => PlaybackController.Instance.SelectedTrack;
+
+        Track lastSelectedTrack;
+        GeniusButton geniusButton => UIGeniusButtonManager.Instance.GeniusButton;
         List<UITrackDisplay> selectedTrackDisplays => UITrackListDisplayManager.Instance.SelectedTrackDisplays;
 
         void Start()
@@ -72,7 +76,7 @@ namespace AudioFile.View
 
             ObserverManager.Instance.RegisterObserver("OnSelectedTrackSetComplete", this);
             ObserverManager.Instance.RegisterObserver("OnMultipleTrackSelection", this);
-            ObserverManager.Instance.RegisterObserver("OnGeniusUrlSearchComplete", this);
+            ObserverManager.Instance.RegisterObserver("OnGeniusSampleSearchComplete", this);
         }
 
         void Update() //TODO: Remove this logic if the program lags or skips frames too much
@@ -94,12 +98,16 @@ namespace AudioFile.View
                 },
                 "OnSelectedTrackSetComplete" => () =>
                 {
-                    //isMultipleTracksSelected = false;
-                    HandleSelectedTrackSamplesAndSampledBysConfiguration();
+                    if (geniusButton.State != GeniusButtonState.NotFound)
+                    {
+                        StartCoroutine(DelayedSampleDisplayTextUpdate(SamplesText));
+                        StartCoroutine(DelayedSampleDisplayTextUpdate(SampledByText));
+                    }
                 },
-                "OnGeniusUrlSearchComplete" => () =>
+                "OnGeniusSampleSearchComplete" => () =>
                 {
-                    HandleSelectedTrackSamplesAndSampledBysConfiguration();
+                    StartCoroutine(DelayedSampleDisplayTextUpdate(SamplesText));
+                    StartCoroutine(DelayedSampleDisplayTextUpdate(SampledByText));
                 },
                 //Add more switch arms here as needed
                 _ => () => Debug.LogWarning($"Unhandled observation type: {observationType} at {this}")
@@ -107,48 +115,6 @@ namespace AudioFile.View
 
             action();
         }
-
-        private async void HandleSelectedTrackSamplesAndSampledBysConfiguration() //
-        {
-
-            var results = await GeniusWebClientController.Instance.FetchGeniusTrackSampleInfoAsync(SelectedTrackGeniusSongID);
-
-            if (results.Any())
-            {
-                //Set Samples and SampledBys in the Tracks table
-                if (string.IsNullOrEmpty(results[0]) == false)
-                {
-                    string samplesValue = results[0];
-                    SetSelectedTrackSampleInfo("Samples", samplesValue);
-                    SetSampleTextDisplayState(SampleDisplayTextState.Found, SamplesText);
-                }
-                else
-                {
-                    SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SamplesText);
-                }
-
-                if (results.Count > 1 && string.IsNullOrEmpty(results[1]) == false)
-                {
-                    string sampledBysValue = results[1];
-                    SetSelectedTrackSampleInfo("SampledBys", sampledBysValue);
-                    SetSampleTextDisplayState(SampleDisplayTextState.Found, SampledByText);
-                }
-                else
-                {
-                    SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SampledByText);
-                }
-            }
-            else
-            {
-                SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SamplesText);
-                SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SampledByText);
-            }
-
-
-            HandleSampleTextStateAndTextUpdate(SamplesText);
-            HandleSampleTextStateAndTextUpdate(SampledByText);
-        }
-
 
         public void HandleSampleTextStateAndTextUpdate(SampleDisplayText sampleDisplayText)
         {
@@ -173,16 +139,22 @@ namespace AudioFile.View
             }
 
             // Manage sample display text only if the states have changed
-            if (lastSamplesTextState != SamplesText.State)
+            if (lastSamplesTextState != SamplesText.State && lastSelectedTrack != selectedTrack)
             {
                 StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
                 lastSamplesTextState = SamplesText.State;
+
+                int selectedTrackID = PlaybackController.Instance.SelectedTrack.TrackID;
+                lastSelectedTrack = TrackLibraryController.Instance.GetTrackAtID(selectedTrackID);
             }
 
-            if (lastSampledByTextState != SampledByText.State)
+            if (lastSampledByTextState != SampledByText.State && lastSelectedTrack != selectedTrack)
             {
                 StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
                 lastSampledByTextState = SampledByText.State;
+
+                int selectedTrackID = PlaybackController.Instance.SelectedTrack.TrackID;
+                lastSelectedTrack = TrackLibraryController.Instance.GetTrackAtID(selectedTrackID);
             }
 
             Debug.Log("Handling Sample Text State/Text Update end");
@@ -190,7 +162,7 @@ namespace AudioFile.View
             Debug.Log($"Current state is: {SampledByText.State} and last state is: {lastSampledByTextState}");
         }
 
-        private static void SetSelectedTrackSampleInfo(string property, string value)
+        public static void SetSelectedTrackSampleInfo(string property, string value)
         {
             PlaybackController.Instance.SelectedTrack.TrackProperties.SetProperty(PlaybackController.Instance.SelectedTrack.TrackID, property, value);
         }
@@ -202,7 +174,7 @@ namespace AudioFile.View
                 lock (samplesTextStateLock)
                 {
                     SamplesText.State = newState;
-                    //lastSamplesTextState = SamplesText.State;
+                    lastSamplesTextState = SamplesText.State;
                 }
             }
             else if (sampleDisplayText is SampledByText)
@@ -210,7 +182,7 @@ namespace AudioFile.View
                 lock (sampledByTextStateLock)
                 {
                     SampledByText.State = newState;
-                    //lastSampledByTextState = SampledByText.State;
+                    lastSampledByTextState = SampledByText.State;
                 }
             }
         }
@@ -229,8 +201,8 @@ namespace AudioFile.View
             Debug.Log($"Current state is: {sampleDisplayText.State}");
             string newText = sampleDisplayText.State switch
             {
-                SampleDisplayTextState.Default => sampleDisplayText is SamplesText ? $"Samples: (Select single track to find)" : $"Sampled by: (Select single track to find)",
-                SampleDisplayTextState.Searching => $"Searching Genius.com for sample info...",
+                SampleDisplayTextState.Default => sampleDisplayText is SamplesText ? "Samples: (Select track to find)" : "Sampled by: (Select track to find)",
+                SampleDisplayTextState.Searching => "Searching Genius.com for sample info...",
                 SampleDisplayTextState.NotFound => "Could not find sample info page for selected track.",
                 SampleDisplayTextState.Found => sampleDisplayText is SamplesText ? $"Samples: {SelectedTrackSamples}" : $"Sampled by: {SelectedTrackSampledBys}",
                 _ => sampleDisplayText.text // Default case for switch: Keep current text                
