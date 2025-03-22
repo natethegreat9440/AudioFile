@@ -93,16 +93,13 @@ namespace AudioFile.View
             {
                 "OnMultipleTrackSelection" => () =>
                 {
-                    HandleSampleTextStateAndTextUpdate(SamplesText);
-                    HandleSampleTextStateAndTextUpdate(SampledByText);
+                    StartCoroutine(HandleSampleTextStateAndTextUpdate(SamplesText));
+                    StartCoroutine(HandleSampleTextStateAndTextUpdate(SampledByText));
                 },
                 "OnSelectedTrackSetComplete" => () =>
                 {
-                    if (geniusButton.State != GeniusButtonState.NotFound)
-                    {
-                        StartCoroutine(DelayedSampleDisplayTextUpdate(SamplesText));
-                        StartCoroutine(DelayedSampleDisplayTextUpdate(SampledByText));
-                    }
+                    StartCoroutine(DelayedSampleDisplayTextUpdate(SamplesText));
+                    StartCoroutine(DelayedSampleDisplayTextUpdate(SampledByText));
                 },
                 "OnGeniusSampleSearchComplete" => () =>
                 {
@@ -129,7 +126,7 @@ namespace AudioFile.View
             if (selectedTrackDisplays.Count > 1)
             {
                 SetSampleTextDisplayState(SampleDisplayTextState.Default, sampleDisplayText);
-                StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
+                yield return StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
 
                 //Set the last state to the default state
                 if (sampleDisplayText is SamplesText)
@@ -141,31 +138,23 @@ namespace AudioFile.View
 
             // Manage sample display text only if the states or track have changed
             bool shouldUpdateSamples = (lastSamplesTextState != SamplesText.State || lastSelectedTrack != currentTrack);
-            
+
             if (shouldUpdateSamples)
-            { 
+            {
                 Debug.Log("Updating SamplesText.State");
                 yield return StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
 
                 lastSamplesTextState = SamplesText.State;
-
-                //int selectedTrackID = PlaybackController.Instance.SelectedTrack.TrackID;
-                //lastSelectedTrack = TrackLibraryController.Instance.GetTrackAtID(selectedTrackID);
-                //Debug.Log($"lastSelectedTrack: {lastSelectedTrack}");
             }
 
             bool shouldUpdateSampledBy = (lastSampledByTextState != SampledByText.State || lastSelectedTrack != currentTrack);
-            
+
             if (shouldUpdateSampledBy)
             {
                 Debug.Log("Updating SampledByText.State");
                 yield return StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
 
                 lastSampledByTextState = SampledByText.State;
-
-                //int selectedTrackID = PlaybackController.Instance.SelectedTrack.TrackID;
-                //lastSelectedTrack = TrackLibraryController.Instance.GetTrackAtID(selectedTrackID);
-                //Debug.Log($"lastSelectedTrack: {lastSelectedTrack}");
             }
 
             // Update lastSelectedTrack only after processing both text objects.

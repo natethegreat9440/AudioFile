@@ -57,7 +57,7 @@ namespace AudioFile.Controller
         {
             ObserverManager.Instance.RegisterObserver("OnSelectedTrackSetComplete", this);
             ObserverManager.Instance.RegisterObserver("OnGeniusUrlSearchComplete", this);
-
+            ObserverManager.Instance.RegisterObserver("OnMultipleTrackSelection", this);
         }
 
         public void Awake()
@@ -71,22 +71,31 @@ namespace AudioFile.Controller
 
             Action action = observationType switch
             {
+                //"OnMultipleTrackSelection" => () =>
+                //{
+
+                //},
                 "OnSelectedTrackSetComplete" => () =>
                 {
                     int trackID = (int)data;
                     SetGeniusUrlForTrack(trackID);
                     //HandleSampleDisplaySearchingStates();
                     Debug.Log($"Genius Button State is: {geniusButton.State}");
+
                     if (geniusButton.State == GeniusButtonState.Found)
                     {
                         HandleSampleDisplaySearchingStates();
                         SetSelectedTrackSamplesAndSampledBysConfiguration(trackID);
                     }
-
-                    if (geniusButton.State == GeniusButtonState.NotFound)
+                    else if (geniusButton.State == GeniusButtonState.NotFound)
+                    {
+                        //HandleSampleDisplaySearchingStates();
+                        SetSelectedTrackSamplesAndSampledBysConfiguration(trackID);
+                    }
+                    else if (geniusButton.State == GeniusButtonState.Searching)
                     {
                         HandleSampleDisplaySearchingStates();
-                        SetSelectedTrackSamplesAndSampledBysConfiguration(trackID);
+                        //SetSelectedTrackSamplesAndSampledBysConfiguration(trackID);
                     }
                 },
                 "OnGeniusUrlSearchComplete" => () =>
