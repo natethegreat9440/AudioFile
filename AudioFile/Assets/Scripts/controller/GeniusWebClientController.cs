@@ -67,18 +67,27 @@ namespace AudioFile.Controller
 
         public void AudioFileUpdate(string observationType, object data)
         {
+            Debug.Log($"AudioFileUpdate: {observationType} handled at {this}");
+
             Action action = observationType switch
             {
                 "OnSelectedTrackSetComplete" => () =>
                 {
                     int trackID = (int)data;
                     SetGeniusUrlForTrack(trackID);
-
-                    if (geniusButton.State != GeniusButtonState.NotFound)
+                    //HandleSampleDisplaySearchingStates();
+                    Debug.Log($"Genius Button State is: {geniusButton.State}");
+                    if (geniusButton.State == GeniusButtonState.Found)
                     {
                         HandleSampleDisplaySearchingStates();
+                        SetSelectedTrackSamplesAndSampledBysConfiguration(trackID);
                     }
-                    SetSelectedTrackSamplesAndSampledBysConfiguration(trackID); //Move to inside of initial block in SetGeniusUrlForTrack
+
+                    if (geniusButton.State == GeniusButtonState.NotFound)
+                    {
+                        HandleSampleDisplaySearchingStates();
+                        SetSelectedTrackSamplesAndSampledBysConfiguration(trackID);
+                    }
                 },
                 "OnGeniusUrlSearchComplete" => () =>
                 {
@@ -293,8 +302,6 @@ namespace AudioFile.Controller
                 }
             }
 
-            //HandleSampleDisplaySearchingStates();
-
             var results = await FetchGeniusTrackSampleInfoAsync(SelectedTrackGeniusSongID);
 
             HandleFetchGeniusSampleCompletion(results, trackID);
@@ -353,7 +360,7 @@ namespace AudioFile.Controller
             track.TrackProperties.SetProperty(trackID, "GeniusUrl", url);
             track.TrackProperties.SetProperty(trackID, "GeniusSongID", geniusId);
 
-            Debug.Log("Handling fetch completion");
+            Debug.Log("Handling Genius URL and ID fetch completion");
 
             UnityMainThreadDispatcher.Instance().Enqueue(() =>
             {
@@ -376,7 +383,7 @@ namespace AudioFile.Controller
 
         private void HandleGeniusButtonSearchingState(string artist, string trackName)
         {
-            Debug.Log($"Fetching Genius URL for track {trackName} by {artist}...");
+            //Debug.Log($"Fetching Genius URL for track {trackName} by {artist}...");
             UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Searching);
 
             UIGeniusButtonManager.Instance.HandleGeniusButtonStateAndTextUpdate();
@@ -384,7 +391,7 @@ namespace AudioFile.Controller
 
         private void HandleCheckForGeniusButtonFoundOrNotFoundState(string url)
         {
-            Debug.Log($"Handling check for Genius button Found or Not Found state");
+            //Debug.Log($"Handling check for Genius button Found or Not Found state");
 
             if (url != "Not found")
             {

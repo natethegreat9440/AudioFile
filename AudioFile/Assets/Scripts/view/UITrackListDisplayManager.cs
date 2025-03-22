@@ -388,7 +388,7 @@ namespace AudioFile.View
         {
             foreach (var track in trackList)
             {
-                Debug.Log($"Adding TrackDisplay for {track}");
+                //Debug.Log($"Adding TrackDisplay for {track}");
                 yield return AddTrackOnUpdate(track);
             }
             if (trackList == null || trackList.Count == 0)

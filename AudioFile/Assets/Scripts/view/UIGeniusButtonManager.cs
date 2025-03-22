@@ -197,7 +197,7 @@ namespace AudioFile.View
             GeniusButton.gameObject.SetActive(false);
             GeniusButton.gameObject.SetActive(true);
 
-            //Debug.Log("Setting Genius Button Text management end");
+            Debug.Log("Setting Genius Button Text management end");
         }
     }
 }

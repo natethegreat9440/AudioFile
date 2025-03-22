@@ -359,7 +359,7 @@ namespace AudioFile.Controller
             AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
             if (audioClip != null && audioClip.samples > 0)
             {
-                Debug.Log("Successfully loaded audio clip!");
+                //Debug.Log("Successfully loaded audio clip!");
 
                 if (isNewTrack)
                 {
@@ -446,7 +446,7 @@ namespace AudioFile.Controller
                 if (paths.Length > 0)
                 {
                     string selectedFilePath = paths[i];
-                    Debug.Log("Selected file: " + selectedFilePath);
+                    //Debug.Log("Selected file: " + selectedFilePath);
                 }
                 else
                 {

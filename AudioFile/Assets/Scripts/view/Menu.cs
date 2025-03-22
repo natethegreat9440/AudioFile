@@ -80,7 +80,7 @@ namespace AudioFile.View
                     //catcher doesn't intercept mouse behavior
                     //this.gameObject.transform.SetAsLastSibling();
 
-                    Debug.Log($"{child} was displayed");
+                    //Debug.Log($"{child} was displayed");
                     //child.Display(); Don't call this or else you will get full recursion
                 }
             }

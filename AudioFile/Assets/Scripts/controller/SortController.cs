@@ -208,7 +208,7 @@ namespace AudioFile.Controller
 
         public void RestoreDefaultOrder(string collectionToSort)
         {
-            Debug.Log($"Setting {collectionToSort} in default order");
+            //Debug.Log($"Setting {collectionToSort} in default order");
             var sortedTrackIDs = new List<int>();
 
             if (collectionToSort == "Tracks")

@@ -116,13 +116,14 @@ namespace AudioFile.View
             action();
         }
 
-        public void HandleSampleTextStateAndTextUpdate(SampleDisplayText sampleDisplayText)
+        public IEnumerator HandleSampleTextStateAndTextUpdate(SampleDisplayText sampleDisplayText)
         {
-            Debug.Log("Handling Sample Display State/Text Update start");
-            Debug.Log($"Current state is: {SamplesText.State} and last state is: {lastSamplesTextState}");
-            Debug.Log($"Current state is: {SampledByText.State} and last state is: {lastSampledByTextState}");
+            Debug.Log($"Handling Sample Display State/Text Update start for {sampleDisplayText.GetType().Name}. Current state for SamplesText is: {SamplesText.State} and last state is: {lastSamplesTextState}. Current state for SampledByText is: {SampledByText.State} and last state is: {lastSampledByTextState}");
 
-            if (sampleDisplayText == null) return;
+            // Get the currently selected track once.
+            Track currentTrack = PlaybackController.Instance.SelectedTrack;
+
+            if (sampleDisplayText == null) yield break;
 
             // Update Sample Display Text state based on selectedTrackDisplays
             if (selectedTrackDisplays.Count > 1)
@@ -135,31 +136,46 @@ namespace AudioFile.View
                     lastSamplesTextState = SamplesText.State;
                 else if (sampleDisplayText is SampledByText)
                     lastSampledByTextState = SampledByText.State;
-                return;
+                yield break;
             }
 
-            // Manage sample display text only if the states have changed
-            if (lastSamplesTextState != SamplesText.State && lastSelectedTrack != selectedTrack)
-            {
-                StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
+            // Manage sample display text only if the states or track have changed
+            bool shouldUpdateSamples = (lastSamplesTextState != SamplesText.State || lastSelectedTrack != currentTrack);
+            
+            if (shouldUpdateSamples)
+            { 
+                Debug.Log("Updating SamplesText.State");
+                yield return StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
+
                 lastSamplesTextState = SamplesText.State;
 
-                int selectedTrackID = PlaybackController.Instance.SelectedTrack.TrackID;
-                lastSelectedTrack = TrackLibraryController.Instance.GetTrackAtID(selectedTrackID);
+                //int selectedTrackID = PlaybackController.Instance.SelectedTrack.TrackID;
+                //lastSelectedTrack = TrackLibraryController.Instance.GetTrackAtID(selectedTrackID);
+                //Debug.Log($"lastSelectedTrack: {lastSelectedTrack}");
             }
 
-            if (lastSampledByTextState != SampledByText.State && lastSelectedTrack != selectedTrack)
+            bool shouldUpdateSampledBy = (lastSampledByTextState != SampledByText.State || lastSelectedTrack != currentTrack);
+            
+            if (shouldUpdateSampledBy)
             {
-                StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
+                Debug.Log("Updating SampledByText.State");
+                yield return StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
+
                 lastSampledByTextState = SampledByText.State;
 
-                int selectedTrackID = PlaybackController.Instance.SelectedTrack.TrackID;
-                lastSelectedTrack = TrackLibraryController.Instance.GetTrackAtID(selectedTrackID);
+                //int selectedTrackID = PlaybackController.Instance.SelectedTrack.TrackID;
+                //lastSelectedTrack = TrackLibraryController.Instance.GetTrackAtID(selectedTrackID);
+                //Debug.Log($"lastSelectedTrack: {lastSelectedTrack}");
             }
 
-            Debug.Log("Handling Sample Text State/Text Update end");
-            Debug.Log($"Current state is: {SamplesText.State} and last state is: {lastSamplesTextState}");
-            Debug.Log($"Current state is: {SampledByText.State} and last state is: {lastSampledByTextState}");
+            // Update lastSelectedTrack only after processing both text objects.
+            if (shouldUpdateSamples || shouldUpdateSampledBy)
+            {
+                lastSelectedTrack = currentTrack;
+                Debug.Log($"lastSelectedTrack changed to: {lastSelectedTrack}");
+            }
+
+            Debug.Log($"Handling Sample Display State/Text Update end. Current state for SamplesText is: {SamplesText.State} and last state is: {lastSamplesTextState}. Current state for SampledByText is: {SampledByText.State} and last state is: {lastSampledByTextState}");
         }
 
         public static void SetSelectedTrackSampleInfo(string property, string value)
@@ -197,8 +213,7 @@ namespace AudioFile.View
 
         private void ManageSampleDisplayText(SampleDisplayText sampleDisplayText)
         {
-            Debug.Log($"Handling Sample Display Text management start for {sampleDisplayText.GetType().Name}");
-            Debug.Log($"Current state is: {sampleDisplayText.State}");
+            Debug.Log($"Handling Sample Display Text management start for {sampleDisplayText.GetType().Name}. Current state is: {sampleDisplayText.State}");
             string newText = sampleDisplayText.State switch
             {
                 SampleDisplayTextState.Default => sampleDisplayText is SamplesText ? "Samples: (Select track to find)" : "Sampled by: (Select track to find)",
@@ -213,7 +228,7 @@ namespace AudioFile.View
         }
         private void SetSampleDisplayText(string textToDisplay, SampleDisplayText sampleDisplayText)
         {
-            Debug.Log($"Setting Sample Display Text management start for {sampleDisplayText.GetType().Name}");
+            Debug.Log($"Setting Sample Display Text management start for {sampleDisplayText.GetType().Name} to {textToDisplay}");
 
             if (sampleDisplayText is SamplesText)
             {
