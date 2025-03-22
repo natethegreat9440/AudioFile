@@ -393,10 +393,6 @@ namespace AudioFile.Controller
             var albumTrackNumber = 0;
             List<string> metadata = new List<string>() { trackTitle, contributingArtists, trackAlbum, albumTrackNumber.ToString() };
 
-
-            //TODO: Add check to see if file has tags in it. If it doesn't, execute GeniusController to try and find song and set fields in Track setup
-            //If GeniusController fails to return information (method return empty List<string> or an exception) then proceed with try/catch below which should just set things to "Unknown" etc.
-            //Do I wrap this check in a try/catch?
             try
             {
                 var file = TagLib.File.Create(filePath);
@@ -411,12 +407,10 @@ namespace AudioFile.Controller
                 metadata[1] = contributingArtists;
                 metadata[2] = trackAlbum;
                 metadata[3] = albumTrackNumber.ToString();
-                //return metadata;
             }
             catch (System.Exception e)
             {
                 Debug.LogError("Error reading metadata: " + e.Message);
-                //return metadata;
             }
             finally
             {
@@ -427,7 +421,6 @@ namespace AudioFile.Controller
                     if (results.Any())
                     {
                         metadata = results; //These reults will contain the Genius track url
-
                     }
                 }
             }
@@ -607,7 +600,7 @@ namespace AudioFile.Controller
                 {
                     using (var reader = command.ExecuteReader())
                     {
-                        while (reader.Read()) //TODO: May be a more efficient way of doing this by simply using SQL commands, but this is how CoPilot suggested I do it considering that CurrentSQLQueryInject is variable. May become inefficient with a large library. Still an O(n) algorithm though.
+                        while (reader.Read()) 
                         {
                             var result = reader["TrackID"];
                             var readTrackID = Convert.ToInt32(result);

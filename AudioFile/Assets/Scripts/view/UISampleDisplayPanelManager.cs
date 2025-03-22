@@ -17,6 +17,16 @@ using UnityEditor.PackageManager.UI;
 
 namespace AudioFile.View
 {
+    /// <summary>
+    /// View class for controlling the Sample Display Panel's Samples text object and it's Sampled By text object.
+    /// <remarks>
+    /// Members: SamplesText, SampledBytext, SetSelectedTrackSampleInfo(), SetSampleTextDisplayState(), ManageSampleDisplayText(), SetSampleDisplayText()
+    /// and DelayedSampleDisplayTextUpdate(), HandleSampleTextStateAndTextUpdate() coroutines
+    /// Implements IAudioFileObserver, and MonoBehaviour
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// <seealso cref="IAudioFileObserver"/>
+    /// </summary>
     public class UISampleDisplayPanelManager : MonoBehaviour, IAudioFileObserver
     {
         private static readonly Lazy<UISampleDisplayPanelManager> _instance = new Lazy<UISampleDisplayPanelManager>(CreateSingleton);
@@ -79,14 +89,6 @@ namespace AudioFile.View
             ObserverManager.Instance.RegisterObserver("OnGeniusSampleSearchComplete", this);
         }
 
-        void Update() //TODO: Remove this logic if the program lags or skips frames too much
-        {
-            //if (isMultipleTracksSelected || PlaybackController.Instance.SelectedTrack == null)
-            //{
-            //    SetSampleTextDisplayState(SampleDisplayTextState.Default, SamplesText);
-            //    SetSampleTextDisplayState(SampleDisplayTextState.Default, SampledByText);
-            //}
-        }
         public void AudioFileUpdate(string observationType, object data)
         {
             Action action = observationType switch
@@ -122,13 +124,13 @@ namespace AudioFile.View
 
             if (sampleDisplayText == null) yield break;
 
-            // Update Sample Display Text state based on selectedTrackDisplays
+            // Update Sample Display Text state based on selectedTrackDisplays if multi-selection is active
             if (selectedTrackDisplays.Count > 1)
             {
                 SetSampleTextDisplayState(SampleDisplayTextState.Default, sampleDisplayText);
                 yield return StartCoroutine(DelayedSampleDisplayTextUpdate(sampleDisplayText));
 
-                //Set the last state to the default state
+                //Set the last states to the default state
                 if (sampleDisplayText is SamplesText)
                     lastSamplesTextState = SamplesText.State;
                 else if (sampleDisplayText is SampledByText)
@@ -197,12 +199,14 @@ namespace AudioFile.View
             yield return new WaitForEndOfFrame(); // Wait for frame to finish
 
             //Debug.Log("[DelayedSampleDisplayTextUpdate] Applying final sample text update.");
+
             ManageSampleDisplayText(sampleDisplayText);
         }
 
         private void ManageSampleDisplayText(SampleDisplayText sampleDisplayText)
         {
-            Debug.Log($"Handling Sample Display Text management start for {sampleDisplayText.GetType().Name}. Current state is: {sampleDisplayText.State}");
+            //Debug.Log($"Handling Sample Display Text management start for {sampleDisplayText.GetType().Name}. Current state is: {sampleDisplayText.State}");
+            
             string newText = sampleDisplayText.State switch
             {
                 SampleDisplayTextState.Default => sampleDisplayText is SamplesText ? "Samples: (Select track to find)" : "Sampled by: (Select track to find)",
@@ -213,11 +217,12 @@ namespace AudioFile.View
             };
 
             SetSampleDisplayText(newText, sampleDisplayText);
-            Debug.Log("Handling Sample Display Text management end");
+            
+            //Debug.Log("Handling Sample Display Text management end");
         }
         private void SetSampleDisplayText(string textToDisplay, SampleDisplayText sampleDisplayText)
         {
-            Debug.Log($"Setting Sample Display Text management start for {sampleDisplayText.GetType().Name} to {textToDisplay}");
+            //Debug.Log($"Setting Sample Display Text management start for {sampleDisplayText.GetType().Name} to {textToDisplay}");
 
             if (sampleDisplayText is SamplesText)
             {
@@ -240,7 +245,7 @@ namespace AudioFile.View
                 SampledByText.gameObject.SetActive(true);
             }
 
-            Debug.Log("Setting Sample Display Text management end");
+            //Debug.Log("Setting Sample Display Text management end");
         }
     }
 }

@@ -15,6 +15,16 @@ using System.Collections;
 
 namespace AudioFile.View
 {
+    /// <summary>
+    /// View class for controlling the Genius Button's text state
+    /// <remarks>
+    /// Members: GeniusButton, HandleGeniusButtonStateAndTextUpdate(), SetGeniusButtonState(), ConfigureGeniusButtonOnStart(), ManageButtonText(), SetButtonText(),
+    /// and DelayedButtonTextUpdate() coroutine
+    /// Implements IAudioFileObserver, and MonoBehaviour
+    /// </remarks>
+    /// <see cref="MonoBehaviour"/>
+    /// <seealso cref="IAudioFileObserver"/>
+    /// </summary>
     public class UIGeniusButtonManager : MonoBehaviour, IAudioFileObserver
     {
         private static readonly Lazy<UIGeniusButtonManager> _instance = new Lazy<UIGeniusButtonManager>(CreateSingleton);
@@ -155,6 +165,7 @@ namespace AudioFile.View
             yield return new WaitForEndOfFrame(); // Wait for frame to finish
 
             //Debug.Log("[DelayedButtonTextUpdate] Applying final button text update.");
+
             ManageButtonText();
         }
 
@@ -172,6 +183,7 @@ namespace AudioFile.View
         {
             //Debug.Log("Handling Genius Button Text management start");
             //Debug.Log($"Current state is: {GeniusButton.State} and last state is: {lastState}");
+
             string newText = GeniusButton.State switch
             {
                 GeniusButtonState.Default => "Select a single track to activate Genius.com lyrics button.",
@@ -182,6 +194,7 @@ namespace AudioFile.View
             };
 
             SetButtonText(newText);
+
             //Debug.Log("Handling Genius Button Text management end");
         }
         private void SetButtonText(string buttonText) 

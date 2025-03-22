@@ -18,13 +18,17 @@ using UnityEngine.Rendering;
 namespace AudioFile.Controller
 {
     /// <summary>
-    /// Singleton Track Library Controller in AudioFile used for finding and storing track samples from whosampled.com
+    /// Singleton Track Library Controller in AudioFile used for finding and storing track samples and page urls from Genius.com
     /// <remarks>
-    /// Members: 
+    /// Members: Need to refactor so this controller doesn't have so many members with different responsibility groups
+    /// Implements IAudioFileObserver, IController, and MonoBehaviour
     /// </remarks>
     /// <see cref="MonoBehaviour"/>
     /// <seealso cref="IController"/>
     /// </summary>
+
+    //TODO: Need to break this controller into three smaller controllers (see different regions) for single responsibility principle adherence. GeniusWebClientController can then become an interface or abstract class for the three other controller to inherit/implement
+    //TODO: Make the logic for finding samples and sampledbys cleaner and more efficient while avoiding DRY mistakes
     public class GeniusWebClientController : MonoBehaviour, IController, IAudioFileObserver
     {
         // Lazy<T> ensures that the instance is created in a thread-safe manner
@@ -49,9 +53,7 @@ namespace AudioFile.Controller
         GeniusButton geniusButton => UIGeniusButtonManager.Instance.GeniusButton;
         SamplesText SamplesText => UISampleDisplayPanelManager.Instance.SamplesText;
         SampledByText SampledByText => UISampleDisplayPanelManager.Instance.SampledByText;
-
         string SelectedTrackGeniusSongID => (string)PlaybackController.Instance.SelectedTrack.TrackProperties.GetProperty(PlaybackController.Instance.SelectedTrack.TrackID, "GeniusSongID");
-
 
         public void Start()
         {
@@ -71,32 +73,14 @@ namespace AudioFile.Controller
 
             Action action = observationType switch
             {
-                //"OnMultipleTrackSelection" => () =>
-                //{
-
-                //},
                 "OnSelectedTrackSetComplete" => () =>
                 {
                     int trackID = (int)data;
                     SetGeniusUrlForTrack(trackID);
-                    //HandleSampleDisplaySearchingStates();
+
                     Debug.Log($"Genius Button State is: {geniusButton.State}");
 
-                    if (geniusButton.State == GeniusButtonState.Found)
-                    {
-                        HandleSampleDisplaySearchingStates();
-                        SetSelectedTrackSamplesAndSampledBysConfiguration(trackID);
-                    }
-                    else if (geniusButton.State == GeniusButtonState.NotFound)
-                    {
-                        //HandleSampleDisplaySearchingStates();
-                        SetSelectedTrackSamplesAndSampledBysConfiguration(trackID);
-                    }
-                    else if (geniusButton.State == GeniusButtonState.Searching)
-                    {
-                        HandleSampleDisplaySearchingStates();
-                        //SetSelectedTrackSamplesAndSampledBysConfiguration(trackID);
-                    }
+                    HandleSampleDisplayTextBasedOnGeniusButtonState(trackID);
                 },
                 "OnGeniusUrlSearchComplete" => () =>
                 {
@@ -110,11 +94,224 @@ namespace AudioFile.Controller
 
             action();
         }
-        public void HandleUserRequest(object request, bool isUndo)
+        #region Genius Sample Info/Sample Text State Management Methods
+        private void HandleSampleDisplayTextBasedOnGeniusButtonState(int trackID)
         {
-            throw new NotImplementedException();
+            if (geniusButton.State == GeniusButtonState.Found)
+            {
+                HandleSampleDisplaySearchingStates();
+                SetSelectedTrackSamplesAndSampledBysConfiguration(trackID);
+            }
+            else if (geniusButton.State == GeniusButtonState.NotFound)
+            {
+                SetSelectedTrackSamplesAndSampledBysConfiguration(trackID);
+            }
+            else if (geniusButton.State == GeniusButtonState.Searching)
+            {
+                HandleSampleDisplaySearchingStates();
+            }
         }
 
+        private async void SetSelectedTrackSamplesAndSampledBysConfiguration(int trackID)
+        {
+            Track track = TrackLibraryController.Instance.GetTrackAtID(trackID);
+
+            if (track.TrackProperties.GetProperty(trackID, "Samples") is string samples && track.TrackProperties.GetProperty(trackID, "SampledBys") is string sampledBys)
+            {
+                if (track != null && (String.IsNullOrEmpty(samples) == false || String.IsNullOrEmpty(sampledBys) == false))
+                {
+                    List<string> sampleInfo = new List<string> { samples, sampledBys };
+                    HandleCheckForSampleInfoFoundOrNotFound(sampleInfo);
+                    return;
+                }
+            }
+
+            var results = await FetchGeniusTrackSampleInfoAsync(SelectedTrackGeniusSongID);
+
+            HandleFetchGeniusSampleCompletion(results, trackID);
+        }
+
+        private void HandleSampleDisplaySearchingStates()
+        {
+            Debug.Log($"Fetching Genius Sample info for selected track {PlaybackController.Instance.SelectedTrack}...");
+
+            UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.Searching, SamplesText);
+            UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.Searching, SampledByText);
+
+            UISampleDisplayPanelManager.Instance.HandleSampleTextStateAndTextUpdate(SamplesText);
+            UISampleDisplayPanelManager.Instance.HandleSampleTextStateAndTextUpdate(SampledByText);
+        }
+
+        private void HandleFetchGeniusSampleCompletion(List<string> results, int trackId)
+        {
+
+            Debug.Log("Handling sample fetch completion");
+
+            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+            {
+                HandleCheckForSampleInfoFoundOrNotFound(results);
+                ObserverManager.Instance.NotifyObservers("OnGeniusSampleSearchComplete", trackId);
+            });
+        }
+
+        private void HandleCheckForSampleInfoFoundOrNotFound(List<string> results)
+        {
+            if (results.Any())
+            {
+                if (string.IsNullOrEmpty(results[0]) == false)
+                {
+                    string samplesValue = results[0];
+                    UISampleDisplayPanelManager.SetSelectedTrackSampleInfo("Samples", samplesValue);  //Set Samples in the Tracks table as one comma separated string for now
+                    UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.Found, SamplesText);
+                }
+                else
+                {
+                    UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SamplesText);
+                }
+
+                if (results.Count > 1 && string.IsNullOrEmpty(results[1]) == false)
+                {
+                    string sampledBysValue = results[1];
+                    UISampleDisplayPanelManager.SetSelectedTrackSampleInfo("SampledBys", sampledBysValue); //Set SampledBys in the Tracks table as one comma separated string for now
+                    UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.Found, SampledByText);
+                }
+                else
+                {
+                    UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SampledByText);
+                }
+            }
+            else
+            {
+                UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SamplesText);
+                UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SampledByText);
+            }
+
+            UISampleDisplayPanelManager.Instance.HandleSampleTextStateAndTextUpdate(SamplesText);
+            UISampleDisplayPanelManager.Instance.HandleSampleTextStateAndTextUpdate(SampledByText);
+        }
+
+        public async Task<List<string>> FetchGeniusTrackSampleInfoAsync(string geniusId)
+        {
+            try
+            {
+                if (client == null)
+                {
+                    Debug.LogError("HttpClient is NULL! Initializing now...");
+                    client = new HttpClient();  // Fallback in case initialization fails
+                }
+
+                string proxyUrl = "https://audiofileproxyapi.onrender.com/api/genius/samples";
+                string requestUrl = $"{proxyUrl}?geniusId={Uri.EscapeDataString(geniusId)}";
+
+                Debug.Log($"Sending request to: {requestUrl}");
+
+                var response = await client.GetStringAsync(requestUrl);
+                Debug.Log($"Raw Response: {response}");
+
+                JObject json = JObject.Parse(response);
+
+                if (json == null || !json.HasValues)
+                {
+                    Debug.Log("FetchGeniusTrackSampleInfoAsync: JSON response is null or empty.");
+                    return new List<string>();
+                }
+
+                string trackSamples = json["trackSamples"]?.ToString();
+                string sampledBys = json["sampledBys"]?.ToString();
+
+                if (string.IsNullOrEmpty(trackSamples))
+                {
+                    Debug.LogWarning("Warning: No samples found for track using FetchGeniusTrackSampleInfoAsync");
+                }
+
+                if (string.IsNullOrEmpty(sampledBys))
+                {
+                    Debug.LogWarning("Warning: No sampled by info found for track using FetchGeniusTrackSampleInfoAsync");
+                }
+
+                List<string> sampleData = new List<string> { trackSamples, sampledBys };
+
+                return sampleData;
+            }
+            catch (HttpRequestException httpEx)
+            {
+                Debug.LogError($"HTTP Request Error: {httpEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"General Error: {ex.Message}");
+            }
+
+            return new List<string>();
+        }
+        #endregion
+        #region Genius Url Finding/Genius Button State Management Methods
+        public async void SetGeniusUrlForTrack(int trackID)
+        {
+            Track track = TrackLibraryController.Instance.GetTrackAtID(trackID);
+
+            if (track.TrackProperties.GetProperty(trackID, "GeniusUrl") is string geniusUrl)
+            {
+                if (track != null && String.IsNullOrEmpty(geniusUrl) == false)
+                {
+                    HandleCheckForGeniusButtonFoundOrNotFoundState(geniusUrl);
+                    return;
+                }
+            }
+
+            string artist = (string)track.TrackProperties.GetProperty(trackID, "Artist");
+            string trackName = (string)track.TrackProperties.GetProperty(trackID, "Title");
+
+            HandleGeniusButtonSearchingState(artist, trackName);
+
+            var results = await FetchGeniusTrackUrlAndIDAsync(artist, trackName); // Ensures UI updates run on the main thread
+
+            string url = results[0];
+            string geniusId = results[1];
+
+
+            HandleFetchGeniusUrlAndIDCompletion(trackID, url, geniusId, track);
+            Debug.Log($"Genius URL for track {trackName} by {artist}: {url}");
+        }
+
+        private void HandleGeniusButtonSearchingState(string artist, string trackName)
+        {
+            //Debug.Log($"Fetching Genius URL for track {trackName} by {artist}...");
+
+            UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Searching);
+
+            UIGeniusButtonManager.Instance.HandleGeniusButtonStateAndTextUpdate();
+        }
+
+        private void HandleFetchGeniusUrlAndIDCompletion(int trackID, string url, string geniusId, Track track)
+        {
+            track.TrackProperties.SetProperty(trackID, "GeniusUrl", url);
+            track.TrackProperties.SetProperty(trackID, "GeniusSongID", geniusId);
+
+            Debug.Log("Handling Genius URL and ID fetch completion");
+
+            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+            {
+                HandleCheckForGeniusButtonFoundOrNotFoundState(url);
+                ObserverManager.Instance.NotifyObservers("OnGeniusUrlSearchComplete", trackID);
+            });
+        }
+
+        private void HandleCheckForGeniusButtonFoundOrNotFoundState(string url)
+        {
+            //Debug.Log($"Handling check for Genius button Found or Not Found state");
+
+            if (url != "Not found")
+            {
+                UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Found);
+            }
+            else
+            {
+                UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.NotFound);
+            }
+
+            UIGeniusButtonManager.Instance.HandleGeniusButtonStateAndTextUpdate();
+        }
 
         public async Task<List<string>> FetchGeniusTrackUrlAndIDAsync(string artist, string trackName)
         {
@@ -126,12 +323,12 @@ namespace AudioFile.Controller
                     client = new HttpClient();  // Fallback in case initialization fails
                 }
 
-                string proxyUrl = "https://audiofileproxyapi.onrender.com/api/genius/search"; //Edit this once Render set-up complete
+                string proxyUrl = "https://audiofileproxyapi.onrender.com/api/genius/search"; 
                 string requestUrl = $"{proxyUrl}?artist={Uri.EscapeDataString(artist)}&trackName={Uri.EscapeDataString(trackName)}";
 
                 Debug.Log($"Sending request to: {requestUrl}");
 
-                var response = await client.GetStringAsync(requestUrl); //Fails here
+                var response = await client.GetStringAsync(requestUrl); 
                 Debug.Log($"Raw Response: {response}");
 
                 JObject json = JObject.Parse(response);
@@ -158,7 +355,8 @@ namespace AudioFile.Controller
 
             return new List<string> { "Not found", "Not found" };
         }
-
+#endregion
+        #region FetchGeniusTrackMissingInfo Method
         public async Task<List<string>> FetchGeniusTrackMissingInfoAsync(string fileName)
         {
             try
@@ -213,206 +411,11 @@ namespace AudioFile.Controller
 
             return new List<string>();
         }
-
-        public async Task<List<string>> FetchGeniusTrackSampleInfoAsync(string geniusId)
+        #endregion
+        #region Non-Implemented IController Methods
+        public void HandleUserRequest(object request, bool isUndo)
         {
-            try
-            {
-                if (client == null)
-                {
-                    Debug.LogError("HttpClient is NULL! Initializing now...");
-                    client = new HttpClient();  // Fallback in case initialization fails
-                }
-
-                string proxyUrl = "https://audiofileproxyapi.onrender.com/api/genius/samples";
-                string requestUrl = $"{proxyUrl}?geniusId={Uri.EscapeDataString(geniusId)}";
-
-                Debug.Log($"Sending request to: {requestUrl}");
-
-                var response = await client.GetStringAsync(requestUrl); //Fails here
-                Debug.Log($"Raw Response: {response}");
-
-                JObject json = JObject.Parse(response);
-
-                if (json == null || !json.HasValues)
-                {
-                    Debug.Log("FetchGeniusTrackSampleInfoAsync: JSON response is null or empty.");
-                    return new List<string>();
-                }
-
-                string trackSamples = json["trackSamples"]?.ToString();
-                string sampledBys = json["sampledBys"]?.ToString();
-
-                if (string.IsNullOrEmpty(trackSamples))
-                {
-                    Debug.LogWarning("Warning: No samples found for track using FetchGeniusTrackSampleInfoAsync");
-                }
-
-                if (string.IsNullOrEmpty(sampledBys))
-                {
-                    Debug.LogWarning("Warning: No sampled by info found for track using FetchGeniusTrackSampleInfoAsync");
-                }
-
-                List<string> sampleData = new List<string> { trackSamples, sampledBys };
-
-                return sampleData;
-            }
-            catch (HttpRequestException httpEx)
-            {
-                Debug.LogError($"HTTP Request Error: {httpEx.Message}");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"General Error: {ex.Message}");
-            }
-
-            return new List<string>();
-        }
-
-        public async void SetGeniusUrlForTrack(int trackID)
-        {
-            Track track = TrackLibraryController.Instance.GetTrackAtID(trackID);
-
-            if (track.TrackProperties.GetProperty(trackID, "GeniusUrl") is string geniusUrl)
-            {
-                if (track != null && String.IsNullOrEmpty(geniusUrl) == false)
-                {
-                    HandleCheckForGeniusButtonFoundOrNotFoundState(geniusUrl);
-                    return;
-                }
-            }
-
-            string artist = (string)track.TrackProperties.GetProperty(trackID, "Artist");
-            string trackName = (string)track.TrackProperties.GetProperty(trackID, "Title");
-
-            HandleGeniusButtonSearchingState(artist, trackName);
-
-            var results = await FetchGeniusTrackUrlAndIDAsync(artist, trackName); // Ensures UI updates run on the main thread
-
-            string url = results[0];
-            string geniusId = results[1];
-
-
-            HandleFetchGeniusUrlAndIDCompletion(trackID, url, geniusId, track);
-            Debug.Log($"Genius URL for track {trackName} by {artist}: {url}");
-        }
-
-        private async void SetSelectedTrackSamplesAndSampledBysConfiguration(int trackID)
-        {
-            Track track = TrackLibraryController.Instance.GetTrackAtID(trackID);
-
-            if (track.TrackProperties.GetProperty(trackID, "Samples") is string samples && track.TrackProperties.GetProperty(trackID, "SampledBys") is string sampledBys)
-            {
-                if (track != null && (String.IsNullOrEmpty(samples) == false || String.IsNullOrEmpty(sampledBys) == false))
-                {
-                    List<string> sampleInfo = new List<string> { samples, sampledBys };
-                    HandleCheckForSampleInfoFoundOrNotFound(sampleInfo);
-                    return;
-                }
-            }
-
-            var results = await FetchGeniusTrackSampleInfoAsync(SelectedTrackGeniusSongID);
-
-            HandleFetchGeniusSampleCompletion(results, trackID);
-        }
-
-        private void HandleCheckForSampleInfoFoundOrNotFound(List<string> results)
-        {
-            if (results.Any())
-            {
-                //Set Samples and SampledBys in the Tracks table
-                if (string.IsNullOrEmpty(results[0]) == false)
-                {
-                    string samplesValue = results[0];
-                    UISampleDisplayPanelManager.SetSelectedTrackSampleInfo("Samples", samplesValue);
-                    UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.Found, SamplesText);
-                }
-                else
-                {
-                    UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SamplesText);
-                }
-
-                if (results.Count > 1 && string.IsNullOrEmpty(results[1]) == false)
-                {
-                    string sampledBysValue = results[1];
-                    UISampleDisplayPanelManager.SetSelectedTrackSampleInfo("SampledBys", sampledBysValue);
-                    UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.Found, SampledByText);
-                }
-                else
-                {
-                    UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SampledByText);
-                }
-            }
-            else
-            {
-                UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SamplesText);
-                UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.NotFound, SampledByText);
-            }
-
-            UISampleDisplayPanelManager.Instance.HandleSampleTextStateAndTextUpdate(SamplesText);
-            UISampleDisplayPanelManager.Instance.HandleSampleTextStateAndTextUpdate(SampledByText);
-        }
-
-        private void HandleSampleDisplaySearchingStates()
-        {
-            Debug.Log($"Fetching Genius Sample info for selected track {PlaybackController.Instance.SelectedTrack}...");
-
-            UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.Searching, SamplesText);
-            UISampleDisplayPanelManager.Instance.SetSampleTextDisplayState(SampleDisplayTextState.Searching, SampledByText);
-
-            UISampleDisplayPanelManager.Instance.HandleSampleTextStateAndTextUpdate(SamplesText);
-            UISampleDisplayPanelManager.Instance.HandleSampleTextStateAndTextUpdate(SampledByText);
-        }
-
-        private void HandleFetchGeniusUrlAndIDCompletion(int trackID, string url, string geniusId, Track track)
-        {
-            track.TrackProperties.SetProperty(trackID, "GeniusUrl", url);
-            track.TrackProperties.SetProperty(trackID, "GeniusSongID", geniusId);
-
-            Debug.Log("Handling Genius URL and ID fetch completion");
-
-            UnityMainThreadDispatcher.Instance().Enqueue(() =>
-            {
-                HandleCheckForGeniusButtonFoundOrNotFoundState(url);
-                ObserverManager.Instance.NotifyObservers("OnGeniusUrlSearchComplete", trackID);
-            });
-        }
-
-        private void HandleFetchGeniusSampleCompletion(List<string> results, int trackId)
-        {
-
-            Debug.Log("Handling sample fetch completion");
-
-            UnityMainThreadDispatcher.Instance().Enqueue(() =>
-            {
-                HandleCheckForSampleInfoFoundOrNotFound(results);
-                ObserverManager.Instance.NotifyObservers("OnGeniusSampleSearchComplete", trackId);
-            });
-        }
-
-        private void HandleGeniusButtonSearchingState(string artist, string trackName)
-        {
-            //Debug.Log($"Fetching Genius URL for track {trackName} by {artist}...");
-            UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Searching);
-
-            UIGeniusButtonManager.Instance.HandleGeniusButtonStateAndTextUpdate();
-        }
-
-        private void HandleCheckForGeniusButtonFoundOrNotFoundState(string url)
-        {
-            //Debug.Log($"Handling check for Genius button Found or Not Found state");
-
-            if (url != "Not found")
-            {
-                UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.Found);
-            }
-            else
-            {
-                UIGeniusButtonManager.Instance.SetGeniusButtonState(GeniusButtonState.NotFound);
-                //SetSelectedTrackSamplesAndSampledBysConfiguration(PlaybackController.Instance.SelectedTrack.TrackID);
-            }
-
-            UIGeniusButtonManager.Instance.HandleGeniusButtonStateAndTextUpdate();
+            throw new NotImplementedException();
         }
 
         public void Initialize()
@@ -424,5 +427,6 @@ namespace AudioFile.Controller
         {
             throw new NotImplementedException();
         }
+        #endregion
     }
 }
