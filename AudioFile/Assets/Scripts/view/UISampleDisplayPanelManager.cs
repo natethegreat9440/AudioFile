@@ -12,8 +12,6 @@ using System.Windows.Forms;
 using TMPro;
 using AudioFile.Utilities;
 using System.Collections;
-using static UnityEditorInternal.VersionControl.ListControl;
-using UnityEditor.PackageManager.UI;
 
 namespace AudioFile.View
 {

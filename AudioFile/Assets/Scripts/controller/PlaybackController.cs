@@ -44,6 +44,10 @@ namespace AudioFile.Controller
 
         private string CurrentSQLQueryInject => SortController.Instance.CurrentSQLQueryInject;
 
+        private bool IsShuffleMode = false;
+
+        private List<int> PlayedTracks = new List<int>();
+
         public int ActiveTrackIndex
         {
             get
@@ -200,8 +204,37 @@ namespace AudioFile.Controller
             ActiveTrack.Stop();
         }
 
+        // Method to toggle shuffle mode
+        public void ToggleShuffleMode()
+        {
+            IsShuffleMode = !IsShuffleMode;
+            PlayedTracks.Clear(); // Reset played tracks when toggling shuffle mode
+            Debug.Log($"Shuffle mode is now {(IsShuffleMode ? "enabled" : "disabled")}");
+        }
+
+        // Update NextItem method to support shuffle mode
         public bool NextItem()
         {
+            if (IsShuffleMode)
+            {
+                if (PlayedTracks.Count >= TrackList.Count)
+                {
+                    Debug.Log("All tracks have been played in shuffle mode. Resetting.");
+                    PlayedTracks.Clear();
+                }
+
+                int randomIndex;
+                do
+                {
+                    randomIndex = UnityEngine.Random.Range(0, TrackList.Count);
+                } while (PlayedTracks.Contains(randomIndex));
+
+                PlayedTracks.Add(randomIndex);
+                HandlePlayingNextTrack(randomIndex + 1); // Adjust for 1-based indexing
+                return true;
+            }
+
+            // Existing logic for non-shuffle mode
             int nextTrackIndex, tracksLength;
             SetNextTrackIndexAndGetTracksLength(out nextTrackIndex, out tracksLength);
 
